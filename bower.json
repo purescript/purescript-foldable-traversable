@@ -16,9 +16,9 @@
     "js"
   ],
   "dependencies": {
-    "purescript-arrays": "*"
+    "purescript-arrays": "*",
     "purescript-either": "*",
     "purescript-maybe": "*",
-    "purescript-tuples": "*",
+    "purescript-tuples": "*"
   }
 }
