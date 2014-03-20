@@ -1,7 +1,7 @@
 module Data.Traversable where
 
 import Prelude
-import Data.Array ((:))
+import Data.Array ((:), zipWith)
 import Data.Either
 import Data.Eq
 import Data.Foldable
@@ -45,3 +45,7 @@ instance traversableTuple :: Traversable (Tuple a) where
 
 for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 for x f = traverse f x
+
+zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
+zipWithA f xs ys = sequence (zipWith f xs ys)
+
