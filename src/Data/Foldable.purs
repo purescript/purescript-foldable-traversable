@@ -60,13 +60,13 @@ instance foldableTuple :: Foldable (Tuple a) where
 fold :: forall f m. (Foldable f, Monoid m) => f m -> m
 fold = foldMap id
 
-traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m {}
+traverse_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => (a -> m b) -> f a -> m {}
 traverse_ f = foldr ((*>) <<< f) (pure {})
 
-for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m {}
+for_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => f a -> (a -> m b) -> m {}
 for_ = flip traverse_
 
-sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m {}
+sequence_ :: forall a f m. (Functor m, Applicative m, Foldable f) => f (m a) -> m {}
 sequence_ = traverse_ id
 
 mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m

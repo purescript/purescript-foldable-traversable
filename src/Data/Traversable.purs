@@ -9,8 +9,8 @@ import Data.Maybe
 import Data.Tuple
 
 class Traversable t where
-  traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
-  sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
+  traverse :: forall a b m. (Functor m, Applicative m) => (a -> m b) -> t a -> m (t b)
+  sequence :: forall a m. (Functor m, Applicative m) => t (m a) -> m (t a)
 
 instance traversableArray :: Traversable [] where
   traverse _ []     = pure []
@@ -43,9 +43,9 @@ instance traversableTuple :: Traversable (Tuple a) where
 
   sequence (Tuple x y) = Tuple x <$> y
 
-for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
+for :: forall a b m t. (Functor m, Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 for x f = traverse f x
 
-zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
+zipWithA :: forall m a b c. (Functor m, Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
 zipWithA f xs ys = sequence (zipWith f xs ys)
 
