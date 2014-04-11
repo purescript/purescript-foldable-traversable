@@ -1,7 +1,7 @@
 module Data.Traversable where
 
 import Prelude
-import Data.Array ((:), zipWith)
+import Data.Array (zipWith)
 import Data.Either
 import Data.Eq
 import Data.Foldable
