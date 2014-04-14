@@ -14,14 +14,11 @@ class Foldable f where
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 
 instance foldableArray :: Foldable [] where
-  foldr _ z []     = z
-  foldr f z (x:xs) = x `f` (foldr f z xs)
+  foldr f z xs = foldrArray f z xs
 
-  foldl _ z []     = z
-  foldl f z (x:xs) = foldl f (z `f` x) xs
+  foldl f z xs = foldlArray f z xs
 
-  foldMap _ []     = mempty
-  foldMap f (x:xs) = f x <> foldMap f xs
+  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance foldableEither :: Foldable (Either a) where
   foldr _ z (Left _)  = z
@@ -100,3 +97,29 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 find p f = case foldMap (\x -> if p x then [x] else []) f of
   (x:_) -> Just x
   []    -> Nothing
+
+foreign import foldrArray
+  "function foldrArray(f) {\
+  \  return function(z) {\
+  \    return function(xs) {\
+  \      var acc = z;\
+  \      for (var i = xs.length - 1; i >= 0; --i) {\
+  \        acc = f(xs[i])(acc);\
+  \      }\
+  \      return acc;\
+  \    }\
+  \  }\
+  \}" :: forall a b. (a -> b -> b) -> b -> [a] -> b
+
+foreign import foldlArray
+  "function foldlArray(f) {\
+  \  return function(z) {\
+  \    return function(xs) {\
+  \      var acc = z;\
+  \      for (var i = 0, len = xs.length; i < len; ++i) {\
+  \        acc = f(acc)(xs[i]);\
+  \      }\
+  \      return acc;\
+  \    }\
+  \  }\
+  \}" :: forall a b. (b -> a -> b) -> b -> [a] -> b
