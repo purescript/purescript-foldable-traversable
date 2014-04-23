@@ -1,7 +1,7 @@
 module Data.Foldable where
 
 import Prelude
-import Control.Applicative
+import Control.Apply
 import Data.Either
 import Data.Eq
 import Data.Maybe
