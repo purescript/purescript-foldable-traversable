@@ -1,6 +1,5 @@
 {
   "name": "purescript-foldable-traversable",
-  "version": "0.0.0",
   "homepage": "https://github.com/purescript/purescript-foldable-traversable",
   "description": "Classes for foldable and traversable data structures",
   "keywords": [
@@ -9,11 +8,15 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
-    "node_modules",
     "bower_components",
     "examples",
-    "externs",
-    "js"
+    "node_modules",
+    "output",
+    "tests",
+    "tmp",
+    "bower.json",
+    "Gruntfile.js",
+    "package.json"
   ],
   "dependencies": {
     "purescript-arrays": "*",
@@ -21,6 +24,7 @@
     "purescript-maybe": "*",
     "purescript-tuples": "*",
     "purescript-control": "*",
-    "purescript-monoid": "*"
+    "purescript-monoid": "*",
+    "purescript-tuples": "*"
   }
 }
