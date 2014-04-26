@@ -58,7 +58,6 @@
     traverse_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => (a -> m b) -> f a -> m {  }
 
 
-
 ## Module Data.Traversable
 
 ### Type Classes
@@ -86,6 +85,3 @@
     for :: forall a b m t. (Functor m, Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 
     zipWithA :: forall m a b c. (Functor m, Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
-
-
-
