@@ -41,7 +41,7 @@
 
     foldrArray :: forall a b. (a -> b -> b) -> b -> [a] -> b
 
-    for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m {  }
+    for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m Unit
 
     mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 
@@ -51,11 +51,11 @@
 
     product :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
 
-    sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m {  }
+    sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 
     sum :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
 
-    traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m {  }
+    traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m Unit
 
 
 ## Module Data.Traversable
