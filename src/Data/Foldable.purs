@@ -6,6 +6,7 @@ import Data.Either
 import Data.Eq
 import Data.Maybe
 import Data.Monoid
+import Data.Monoid.First
 import Data.Tuple
 
 class Foldable f where
@@ -97,6 +98,9 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 find p f = case foldMap (\x -> if p x then [x] else []) f of
   (x:_) -> Just x
   []    -> Nothing
+ 
+lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
+lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
 
 foreign import foldrArray
   "function foldrArray(f) {\

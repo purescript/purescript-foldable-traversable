@@ -43,6 +43,8 @@
 
     for_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => f a -> (a -> m b) -> m {  }
 
+    lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
+
     mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 
     notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Prim.Boolean
