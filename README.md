@@ -41,7 +41,7 @@
 
     foldrArray :: forall a b. (a -> b -> b) -> b -> [a] -> b
 
-    for_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => f a -> (a -> m b) -> m {  }
+    for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m Unit
 
     lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
 
@@ -53,11 +53,11 @@
 
     product :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
 
-    sequence_ :: forall a f m. (Functor m, Applicative m, Foldable f) => f (m a) -> m {  }
+    sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 
     sum :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
 
-    traverse_ :: forall a b f m. (Functor m, Applicative m, Foldable f) => (a -> m b) -> f a -> m {  }
+    traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m Unit
 
 
 ## Module Data.Traversable
@@ -65,8 +65,8 @@
 ### Type Classes
 
     class Traversable t where
-      traverse :: forall a b m. (Functor m, Applicative m) => (a -> m b) -> t a -> m (t b)
-      sequence :: forall a m. (Functor m, Applicative m) => t (m a) -> m (t a)
+      traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
+      sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
 
 ### Type Class Instances
@@ -84,6 +84,6 @@
 
 ### Values
 
-    for :: forall a b m t. (Functor m, Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
+    for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 
-    zipWithA :: forall m a b c. (Functor m, Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
+    zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
