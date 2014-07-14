@@ -25,15 +25,15 @@
 
 ### Values
 
-    all :: forall a f. (Foldable f) => (a -> Prim.Boolean) -> f a -> Prim.Boolean
+    all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 
-    and :: forall f. (Foldable f) => f Prim.Boolean -> Prim.Boolean
+    and :: forall f. (Foldable f) => f Boolean -> Boolean
 
-    any :: forall a f. (Foldable f) => (a -> Prim.Boolean) -> f a -> Prim.Boolean
+    any :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 
-    elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Prim.Boolean
+    elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 
-    find :: forall a f. (Foldable f) => (a -> Prim.Boolean) -> f a -> Maybe a
+    find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 
     fold :: forall f m. (Foldable f, Monoid m) => f m -> m
 
@@ -47,15 +47,15 @@
 
     mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 
-    notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Prim.Boolean
+    notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 
-    or :: forall f. (Foldable f) => f Prim.Boolean -> Prim.Boolean
+    or :: forall f. (Foldable f) => f Boolean -> Boolean
 
-    product :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
+    product :: forall f. (Foldable f) => f Number -> Number
 
     sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 
-    sum :: forall f. (Foldable f) => f Prim.Number -> Prim.Number
+    sum :: forall f. (Foldable f) => f Number -> Number
 
     traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m Unit
 
@@ -64,7 +64,7 @@
 
 ### Type Classes
 
-    class Traversable t where
+    class (Functor t, Foldable t) <= Traversable t where
       traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
       sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
