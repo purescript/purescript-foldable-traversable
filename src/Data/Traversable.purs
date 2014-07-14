@@ -8,7 +8,7 @@ import Data.Foldable
 import Data.Maybe
 import Data.Tuple
 
-class Traversable t where
+class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
