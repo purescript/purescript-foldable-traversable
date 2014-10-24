@@ -71,10 +71,10 @@ mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 mconcat = foldl (<>) mempty
 
 intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
-intercalate sep xs = (foldr go { init: true, acc: mempty } xs).acc
+intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
-  go x { init = init } | init = { init: false, acc: x }
-  go x { acc = acc } = { init: false, acc: x <> sep <> acc }
+  go { init = true } x = { init: false, acc: x }
+  go { acc = acc } x   = { init: false, acc: acc <> sep <> x }
 
 and :: forall f. (Foldable f) => f Boolean -> Boolean
 and = foldl (&&) true
