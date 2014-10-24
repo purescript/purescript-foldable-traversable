@@ -70,6 +70,12 @@ sequence_ = traverse_ id
 mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 mconcat = foldl (<>) mempty
 
+intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
+intercalate sep xs = (foldr go { init: true, acc: mempty } xs).acc
+  where
+  go x { init = init } | init = { init: false, acc: x }
+  go x { acc = acc } = { init: false, acc: x <> sep <> acc }
+
 and :: forall f. (Foldable f) => f Boolean -> Boolean
 and = foldl (&&) true
 
@@ -98,7 +104,7 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 find p f = case foldMap (\x -> if p x then [x] else []) f of
   (x:_) -> Just x
   []    -> Nothing
- 
+
 lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
 lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
 
