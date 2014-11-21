@@ -108,28 +108,28 @@ find p f = case foldMap (\x -> if p x then [x] else []) f of
 lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
 lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
 
-foreign import foldrArray
-  "function foldrArray(f) {\
-  \  return function(z) {\
-  \    return function(xs) {\
-  \      var acc = z;\
-  \      for (var i = xs.length - 1; i >= 0; --i) {\
-  \        acc = f(xs[i])(acc);\
-  \      }\
-  \      return acc;\
-  \    }\
-  \  }\
-  \}" :: forall a b. (a -> b -> b) -> b -> [a] -> b
+foreign import foldrArray """
+  function foldrArray(f) {
+    return function(z) {
+      return function(xs) {
+        var acc = z;
+        for (var i = xs.length - 1; i >= 0; --i) {
+          acc = f(xs[i])(acc);
+        }
+        return acc;
+      }
+    }
+  }""" :: forall a b. (a -> b -> b) -> b -> [a] -> b
 
-foreign import foldlArray
-  "function foldlArray(f) {\
-  \  return function(z) {\
-  \    return function(xs) {\
-  \      var acc = z;\
-  \      for (var i = 0, len = xs.length; i < len; ++i) {\
-  \        acc = f(acc)(xs[i]);\
-  \      }\
-  \      return acc;\
-  \    }\
-  \  }\
-  \}" :: forall a b. (b -> a -> b) -> b -> [a] -> b
+foreign import foldlArray """
+  function foldlArray(f) {
+    return function(z) {
+      return function(xs) {
+        var acc = z;
+        for (var i = 0, len = xs.length; i < len; ++i) {
+          acc = f(acc)(xs[i]);
+        }
+        return acc;
+      }
+    }
+  }""" :: forall a b. (b -> a -> b) -> b -> [a] -> b
