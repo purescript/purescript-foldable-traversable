@@ -95,7 +95,7 @@ product :: forall f. (Foldable f) => f Number -> Number
 product = foldl (*) 1
 
 elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
-elem = any  <<< (==)
+elem = any <<< (==)
 
 notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 notElem x = not <<< elem x
