@@ -64,6 +64,9 @@
 
 ## Module Data.Traversable
 
+### Types
+
+
 ### Type Classes
 
     class (Functor t, Foldable t) <= Traversable t where
@@ -72,6 +75,18 @@
 
 
 ### Type Class Instances
+
+    instance applicativeStateL :: Applicative (StateL s)
+
+    instance applicativeStateR :: Applicative (StateR s)
+
+    instance applyStateL :: Apply (StateL s)
+
+    instance applyStateR :: Apply (StateR s)
+
+    instance functorStateL :: Functor (StateL s)
+
+    instance functorStateR :: Functor (StateR s)
 
     instance traversableArray :: Traversable Prim.Array
 
@@ -87,5 +102,9 @@
 ### Values
 
     for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
+
+    mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
+
+    mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 
     zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
