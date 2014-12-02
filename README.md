@@ -66,12 +66,6 @@
 
 ### Types
 
-    newtype StateL s a where
-      StateL :: (s -> Tuple s a) -> StateL s a
-
-    newtype StateR s a where
-      StateR :: (s -> Tuple s a) -> StateR s a
-
 
 ### Type Classes
 
@@ -112,9 +106,5 @@
     mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 
     mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
-
-    stateL :: forall s a. StateL s a -> s -> Tuple s a
-
-    stateR :: forall s a. StateR s a -> s -> Tuple s a
 
     zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]

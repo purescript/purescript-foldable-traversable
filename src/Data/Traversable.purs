@@ -1,4 +1,12 @@
-module Data.Traversable where
+module Data.Traversable 
+  ( Traversable
+  , traverse
+  , sequence
+  , for
+  , zipWithA
+  , mapAccumL
+  , mapAccumR
+  ) where
 
 import Prelude
 import Data.Array (zipWith)
