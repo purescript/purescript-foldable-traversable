@@ -4,6 +4,8 @@ module Data.Traversable
   , sequence
   , for
   , zipWithA
+  , scanl
+  , scanr
   , mapAccumL
   , mapAccumR
   ) where
@@ -74,6 +76,9 @@ instance applyStateL :: Apply (StateL s) where
 instance applicativeStateL :: Applicative (StateL s) where
   pure a = StateL $ \s -> Tuple s a
 
+scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
+scanl f b0 xs = snd $ mapAccumL (\b a -> let b' = f b a in Tuple b' b') b0 xs
+
 mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 mapAccumL f s0 xs = stateL (traverse (\a -> StateL $ \s -> f s a) xs) s0
 
@@ -93,6 +98,9 @@ instance applyStateR :: Apply (StateR s) where
 
 instance applicativeStateR :: Applicative (StateR s) where
   pure a = StateR $ \s -> Tuple s a
+
+scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
+scanr f b0 xs = snd $ mapAccumR (\b a -> let b' = f a b in Tuple b' b') b0 xs
 
 mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 mapAccumR f s0 xs = stateR (traverse (\a -> StateR $ \s -> f s a) xs) s0
