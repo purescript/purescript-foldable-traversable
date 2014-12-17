@@ -18,8 +18,6 @@
 
     instance foldableMaybe :: Foldable Maybe
 
-    instance foldableRef :: Foldable Ref
-
     instance foldableTuple :: Foldable (Tuple a)
 
 
@@ -93,8 +91,6 @@
     instance traversableEither :: Traversable (Either a)
 
     instance traversableMaybe :: Traversable Maybe
-
-    instance traversableRef :: Traversable Ref
 
     instance traversableTuple :: Traversable (Tuple a)
 
