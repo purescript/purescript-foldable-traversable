@@ -1,9 +1,7 @@
 module Data.Foldable where
 
-import Prelude
 import Control.Apply
 import Data.Either
-import Data.Eq
 import Data.Maybe
 import Data.Monoid
 import Data.Monoid.First
@@ -40,13 +38,6 @@ instance foldableMaybe :: Foldable Maybe where
 
   foldMap f Nothing  = mempty
   foldMap f (Just x) = f x
-
-instance foldableRef :: Foldable Ref where
-  foldr f z (Ref x) = x `f` z
-
-  foldl f z (Ref x) = z `f` x
-
-  foldMap f (Ref x) = f x
 
 instance foldableTuple :: Foldable (Tuple a) where
   foldr f z (Tuple _ x) = x `f` z

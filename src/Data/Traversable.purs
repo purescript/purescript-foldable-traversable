@@ -1,4 +1,4 @@
-module Data.Traversable 
+module Data.Traversable
   ( Traversable
   , traverse
   , sequence
@@ -8,10 +8,8 @@ module Data.Traversable
   , mapAccumR
   ) where
 
-import Prelude
 import Data.Array (zipWith)
 import Data.Either
-import Data.Eq
 import Data.Foldable
 import Data.Maybe
 import Data.Tuple
@@ -33,11 +31,6 @@ instance traversableEither :: Traversable (Either a) where
 
   sequence (Left x) = pure (Left x)
   sequence (Right x)  = Right <$> x
-
-instance traversableRef :: Traversable Ref where
-  traverse f (Ref x) = Ref <$> f x
-
-  sequence (Ref x) = Ref <$> x
 
 instance traversableMaybe :: Traversable Maybe where
   traverse _ Nothing  = pure Nothing
@@ -85,7 +78,7 @@ stateR (StateR k) = k
 instance functorStateR :: Functor (StateR s) where
   (<$>) f k = StateR $ \s -> case stateR k s of
     Tuple s1 a -> Tuple s1 (f a)
-                                            
+
 instance applyStateR :: Apply (StateR s) where
   (<*>) f x = StateR $ \s -> case stateR x s of
     Tuple s1 x' -> case stateR f s1 of
