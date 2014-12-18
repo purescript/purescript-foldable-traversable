@@ -103,4 +103,8 @@
 
     mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 
+    scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
+
+    scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
+
     zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
