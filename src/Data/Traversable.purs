@@ -14,6 +14,11 @@ import Data.Array (zipWith)
 import Data.Either
 import Data.Foldable
 import Data.Maybe
+import Data.Monoid.Additive
+import Data.Monoid.Dual
+import Data.Monoid.First
+import Data.Monoid.Last
+import Data.Monoid.Multiplicative
 import Data.Tuple
 
 class (Functor t, Foldable t) <= Traversable t where
@@ -23,28 +28,44 @@ class (Functor t, Foldable t) <= Traversable t where
 instance traversableArray :: Traversable [] where
   traverse _ []     = pure []
   traverse f (x:xs) = (:) <$> (f x) <*> traverse f xs
-
   sequence []     = pure []
   sequence (x:xs) = (:) <$> x <*> sequence xs
 
 instance traversableEither :: Traversable (Either a) where
   traverse _ (Left x)  = pure (Left x)
   traverse f (Right x) = Right <$> f x
-
   sequence (Left x) = pure (Left x)
   sequence (Right x)  = Right <$> x
 
 instance traversableMaybe :: Traversable Maybe where
   traverse _ Nothing  = pure Nothing
   traverse f (Just x) = Just <$> f x
-
   sequence Nothing  = pure Nothing
   sequence (Just x) = Just <$> x
 
 instance traversableTuple :: Traversable (Tuple a) where
   traverse f (Tuple x y) = Tuple x <$> f y
-
   sequence (Tuple x y) = Tuple x <$> y
+
+instance traversableAdditive :: Traversable Additive where
+  traverse f (Additive x) = Additive <$> f x
+  sequence (Additive x) = Additive <$> x
+
+instance traversableDual :: Traversable Dual where
+  traverse f (Dual x) = Dual <$> f x
+  sequence (Dual x) = Dual <$> x
+
+instance traversableFirst :: Traversable First where
+  traverse f (First x) = First <$> traverse f x
+  sequence (First x) = First <$> sequence x
+
+instance traversableLast :: Traversable Last where
+  traverse f (Last x) = Last <$> traverse f x
+  sequence (Last x) = Last <$> sequence x
+
+instance traversableMultiplicative :: Traversable Multiplicative where
+  traverse f (Multiplicative x) = Multiplicative <$> f x
+  sequence (Multiplicative x) = Multiplicative <$> x
 
 for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 for x f = traverse f x
@@ -97,4 +118,3 @@ scanr f b0 xs = snd $ mapAccumR (\b a -> let b' = f a b in Tuple b' b') b0 xs
 
 mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 mapAccumR f s0 xs = stateR (traverse (\a -> StateR $ \s -> f s a) xs) s0
-
