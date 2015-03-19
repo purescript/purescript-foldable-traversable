@@ -161,12 +161,12 @@ all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 all p = and <<< foldMap (\x -> [p x])
 
 -- | Find the sum of the numeric values in a data structure.
-sum :: forall f. (Foldable f) => f Number -> Number
-sum = foldl (+) 0
+sum :: forall a f. (Foldable f, Semiring a) => f a -> a
+sum = foldl (+) zero
 
 -- | Find the product of the numeric values in a data structure.
-product :: forall f. (Foldable f) => f Number -> Number
-product = foldl (*) 1
+product :: forall a f. (Foldable f, Semiring a) => f a -> a
+product = foldl (*) one
 
 -- | Test whether a value is an element of a data structure.
 elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean

@@ -190,7 +190,7 @@ Test whether a predicate holds for all elements in a data structure.
 #### `sum`
 
 ``` purescript
-sum :: forall f. (Foldable f) => f Number -> Number
+sum :: forall a f. (Foldable f, Semiring a) => f a -> a
 ```
 
 Find the sum of the numeric values in a data structure.
@@ -198,7 +198,7 @@ Find the sum of the numeric values in a data structure.
 #### `product`
 
 ``` purescript
-product :: forall f. (Foldable f) => f Number -> Number
+product :: forall a f. (Foldable f, Semiring a) => f a -> a
 ```
 
 Find the product of the numeric values in a data structure.
