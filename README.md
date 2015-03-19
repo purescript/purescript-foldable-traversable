@@ -206,7 +206,7 @@ Find the product of the numeric values in a data structure.
 #### `elem`
 
 ``` purescript
-elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+elem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 ```
 
 Test whether a value is an element of a data structure.
@@ -214,7 +214,7 @@ Test whether a value is an element of a data structure.
 #### `notElem`
 
 ``` purescript
-notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 ```
 
 Test whether a value is not an element of a data structure.

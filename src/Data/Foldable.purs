@@ -169,11 +169,11 @@ product :: forall a f. (Foldable f, Semiring a) => f a -> a
 product = foldl (*) one
 
 -- | Test whether a value is an element of a data structure.
-elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+elem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 elem = any <<< (==)
 
 -- | Test whether a value is not an element of a data structure.
-notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
@@ -183,7 +183,7 @@ find p f = case foldMap (\x -> if p x then [x] else []) f of
   []    -> Nothing
 
 -- | Lookup a value in a data structure of `Tuple`s, generalizing association lists.
-lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
+lookup :: forall a b f. (Foldable f, Eq a) => a -> f (Tuple a b) -> Maybe b
 lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
 
 foreign import foldrArray
