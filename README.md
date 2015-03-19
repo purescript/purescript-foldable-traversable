@@ -153,7 +153,7 @@ intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 ```
 
 Fold a data structure, accumulating values in some `Monoid`,
-combining adjacent elements using the specified separator. 
+combining adjacent elements using the specified separator.
 
 #### `and`
 
@@ -234,20 +234,6 @@ lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
 ```
 
 Lookup a value in a data structure of `Tuple`s, generalizing association lists.
-
-#### `foldrArray`
-
-``` purescript
-foldrArray :: forall a b. (a -> b -> b) -> b -> [a] -> b
-```
-
-
-#### `foldlArray`
-
-``` purescript
-foldlArray :: forall a b. (b -> a -> b) -> b -> [a] -> b
-```
-
 
 
 ## Module Data.Traversable

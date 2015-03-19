@@ -1,4 +1,22 @@
-module Data.Foldable where
+module Data.Foldable
+  ( Foldable, foldr, foldl, foldMap
+  , fold
+  , traverse_
+  , for_
+  , sequence_
+  , mconcat
+  , intercalate
+  , and
+  , or
+  , any
+  , all
+  , sum
+  , product
+  , elem
+  , notElem
+  , find
+  , lookup
+  ) where
 
 import Control.Apply
 import Data.Either
@@ -119,7 +137,7 @@ mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 mconcat = foldl (<>) mempty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
--- | combining adjacent elements using the specified separator. 
+-- | combining adjacent elements using the specified separator.
 intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
