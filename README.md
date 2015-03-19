@@ -11,6 +11,11 @@ class Foldable f where
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 ```
 
+`Foldable` represents data structures which can be _folded_.
+
+- `foldr` folds a structure from the right
+- `foldl` folds a structure from the left
+- `foldMap` folds a structure by accumulating values in a `Monoid`
 
 #### `foldableArray`
 
@@ -81,6 +86,7 @@ instance foldableMultiplicative :: Foldable Multiplicative
 fold :: forall f m. (Foldable f, Monoid m) => f m -> m
 ```
 
+Fold a data structure, accumulating values in some `Monoid`.
 
 #### `traverse_`
 
@@ -88,6 +94,14 @@ fold :: forall f m. (Foldable f, Monoid m) => f m -> m
 traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m Unit
 ```
 
+Traverse a data structure, performing some effects encoded by an
+`Applicative` functor at each value, ignoring the final result.
+
+For example:
+
+```purescript
+traverse_ print [1, 2, 3]
+```
 
 #### `for_`
 
@@ -95,6 +109,19 @@ traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a ->
 for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m Unit
 ```
 
+A version of `traverse_` with its arguments flipped.
+
+This can be useful when running an action written using do notation
+for every element in a data structure:
+
+For example:
+
+```purescript
+for_ [1, 2, 3] \n -> do
+  print n
+  trace "squared is"
+  print (n * n)
+```
 
 #### `sequence_`
 
@@ -102,6 +129,14 @@ for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m Un
 sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 ```
 
+Perform all of the effects in some data structure in the order
+given by the `Foldable` instance, ignoring the final result.
+
+For example:
+
+```purescript
+sequence_ [ trace "Hello, ", trace " world!" ]
+```
 
 #### `mconcat`
 
@@ -109,6 +144,7 @@ sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 ```
 
+Fold a data structure, accumulating values in some `Monoid`.
 
 #### `intercalate`
 
@@ -116,6 +152,8 @@ mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 ```
 
+Fold a data structure, accumulating values in some `Monoid`,
+combining adjacent elements using the specified separator. 
 
 #### `and`
 
@@ -123,6 +161,7 @@ intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 and :: forall f. (Foldable f) => f Boolean -> Boolean
 ```
 
+Test whether all `Boolean` values in a data structure are `true`.
 
 #### `or`
 
@@ -130,6 +169,7 @@ and :: forall f. (Foldable f) => f Boolean -> Boolean
 or :: forall f. (Foldable f) => f Boolean -> Boolean
 ```
 
+Test whether any `Boolean` value in a data structure is `true`.
 
 #### `any`
 
@@ -137,6 +177,7 @@ or :: forall f. (Foldable f) => f Boolean -> Boolean
 any :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 ```
 
+Test whether a predicate holds for any element in a data structure.
 
 #### `all`
 
@@ -144,6 +185,7 @@ any :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 ```
 
+Test whether a predicate holds for all elements in a data structure.
 
 #### `sum`
 
@@ -151,6 +193,7 @@ all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 sum :: forall f. (Foldable f) => f Number -> Number
 ```
 
+Find the sum of the numeric values in a data structure.
 
 #### `product`
 
@@ -158,6 +201,7 @@ sum :: forall f. (Foldable f) => f Number -> Number
 product :: forall f. (Foldable f) => f Number -> Number
 ```
 
+Find the product of the numeric values in a data structure.
 
 #### `elem`
 
@@ -165,6 +209,7 @@ product :: forall f. (Foldable f) => f Number -> Number
 elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 ```
 
+Test whether a value is an element of a data structure.
 
 #### `notElem`
 
@@ -172,6 +217,7 @@ elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 ```
 
+Test whether a value is not an element of a data structure.
 
 #### `find`
 
@@ -179,6 +225,7 @@ notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
 find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 ```
 
+Try to find an element in a data structure which satisfies a predicate.
 
 #### `lookup`
 
@@ -186,6 +233,7 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
 ```
 
+Lookup a value in a data structure of `Tuple`s, generalizing association lists.
 
 #### `foldrArray`
 
@@ -212,6 +260,24 @@ class (Functor t, Foldable t) <= Traversable t where
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 ```
 
+`Traversable` represents data structures which can be _traversed_,
+accumulating results and effects in some `Applicative` functor.
+
+- `traverse` runs an action for every element in a data structure,
+  and accumulates the results.
+- `sequence` runs the actions _contained_ in a data structure,
+  and accumulates the results.
+
+The `traverse` and `sequence` functions should be compatible in the
+following sense:
+
+- `traverse f xs = sequence (f <$> xs)`
+- `sequence = traverse id` 
+
+`Traversable` instances should also be compatible with the corresponding
+`Foldable` instances, in the following sense:
+
+- `foldMap f = runConst <<< traverse (Const <<< f)`
 
 #### `traversableArray`
 
@@ -282,6 +348,19 @@ instance traversableMultiplicative :: Traversable Multiplicative
 for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 ```
 
+A version of `traverse` with its arguments flipped.
+
+
+This can be useful when running an action written using do notation
+for every element in a data structure:
+
+For example:
+
+```purescript
+for [1, 2, 3] \n -> do
+  print n
+  return (n * n)
+```
 
 #### `zipWithA`
 
@@ -289,6 +368,8 @@ for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m 
 zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
 ```
 
+A generalization of `zipWith` which accumulates results in some `Applicative`
+functor.
 
 #### `functorStateL`
 
@@ -317,6 +398,8 @@ instance applicativeStateL :: Applicative (StateL s)
 scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
 ```
 
+Fold a data structure from the left, keeping all intermediate results
+instead of only the final result.
 
 #### `mapAccumL`
 
@@ -324,6 +407,11 @@ scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
 mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 ```
 
+Fold a data structure from the left, keeping all intermediate results
+instead of only the final result.
+
+Unlike `scanl`, `mapAccumL` allows the type of accumulator to differ
+from the element type of the final data structure.
 
 #### `functorStateR`
 
@@ -352,9 +440,17 @@ instance applicativeStateR :: Applicative (StateR s)
 scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
 ```
 
+Fold a data structure from the right, keeping all intermediate results
+instead of only the final result.
 
 #### `mapAccumR`
 
 ``` purescript
 mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 ```
+
+Fold a data structure from the right, keeping all intermediate results
+instead of only the final result.
+
+Unlike `scanr`, `mapAccumR` allows the type of accumulator to differ
+from the element type of the final data structure.

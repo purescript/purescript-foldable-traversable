@@ -21,6 +21,24 @@ import Data.Monoid.Last
 import Data.Monoid.Multiplicative
 import Data.Tuple
 
+-- | `Traversable` represents data structures which can be _traversed_,
+-- | accumulating results and effects in some `Applicative` functor.
+-- |
+-- | - `traverse` runs an action for every element in a data structure,
+-- |   and accumulates the results.
+-- | - `sequence` runs the actions _contained_ in a data structure,
+-- |   and accumulates the results.
+-- |
+-- | The `traverse` and `sequence` functions should be compatible in the
+-- | following sense:
+-- |
+-- | - `traverse f xs = sequence (f <$> xs)`
+-- | - `sequence = traverse id` 
+-- | 
+-- | `Traversable` instances should also be compatible with the corresponding
+-- | `Foldable` instances, in the following sense:
+-- |
+-- | - `foldMap f = runConst <<< traverse (Const <<< f)`
 class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
@@ -67,9 +85,24 @@ instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
   sequence (Multiplicative x) = Multiplicative <$> x
 
+-- | A version of `traverse` with its arguments flipped.
+-- |
+-- | 
+-- | This can be useful when running an action written using do notation
+-- | for every element in a data structure:
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | for [1, 2, 3] \n -> do
+-- |   print n
+-- |   return (n * n)
+-- | ```
 for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
 for x f = traverse f x
 
+-- | A generalization of `zipWith` which accumulates results in some `Applicative`
+-- | functor.
 zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
 zipWithA f xs ys = sequence (zipWith f xs ys)
 
@@ -90,9 +123,16 @@ instance applyStateL :: Apply (StateL s) where
 instance applicativeStateL :: Applicative (StateL s) where
   pure a = StateL $ \s -> Tuple s a
 
+-- | Fold a data structure from the left, keeping all intermediate results
+-- | instead of only the final result.
 scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
 scanl f b0 xs = snd $ mapAccumL (\b a -> let b' = f b a in Tuple b' b') b0 xs
 
+-- | Fold a data structure from the left, keeping all intermediate results
+-- | instead of only the final result.
+-- |
+-- | Unlike `scanl`, `mapAccumL` allows the type of accumulator to differ
+-- | from the element type of the final data structure.
 mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 mapAccumL f s0 xs = stateL (traverse (\a -> StateL $ \s -> f s a) xs) s0
 
@@ -113,8 +153,15 @@ instance applyStateR :: Apply (StateR s) where
 instance applicativeStateR :: Applicative (StateR s) where
   pure a = StateR $ \s -> Tuple s a
 
+-- | Fold a data structure from the right, keeping all intermediate results
+-- | instead of only the final result.
 scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
 scanr f b0 xs = snd $ mapAccumR (\b a -> let b' = f a b in Tuple b' b') b0 xs
 
+-- | Fold a data structure from the right, keeping all intermediate results
+-- | instead of only the final result.
+-- |
+-- | Unlike `scanr`, `mapAccumR` allows the type of accumulator to differ
+-- | from the element type of the final data structure.
 mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
 mapAccumR f s0 xs = stateR (traverse (\a -> StateR $ \s -> f s a) xs) s0
