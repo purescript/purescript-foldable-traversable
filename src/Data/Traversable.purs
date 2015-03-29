@@ -43,11 +43,19 @@ class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
+foreign import apush """
+function apush(a) {
+  return function(x) {
+    a.push(x);
+    return a;
+  };
+}""" :: forall a. [a] -> a -> [a]
+
 instance traversableArray :: Traversable [] where
-  traverse _ []     = pure []
-  traverse f (x:xs) = (:) <$> (f x) <*> traverse f xs
-  sequence []     = pure []
-  sequence (x:xs) = (:) <$> x <*> sequence xs
+  traverse f xs = sequence (f <$> xs)
+  sequence = foldl step (pure [])
+    where step :: m [a] -> m a -> m [a]
+          step sofar x = apush <$> sofar <*> x
 
 instance traversableEither :: Traversable (Either a) where
   traverse _ (Left x)  = pure (Left x)
