@@ -250,6 +250,89 @@ foldlArray :: forall a b. (b -> a -> b) -> b -> [a] -> b
 
 
 
+## Module Data.Foldable1
+
+#### `Foldable1`
+
+``` purescript
+class (Foldable t) <= Foldable1 t where
+  foldMap1 :: forall a m. (Semigroup m) => (a -> m) -> t a -> m
+  fold1 :: forall m. (Semigroup m) => t m -> m
+```
+
+
+#### `derivedFold1`
+
+``` purescript
+derivedFold1 :: forall t m. (Foldable1 t, Semigroup m) => t m -> m
+```
+
+
+#### `foldable1Tuple`
+
+``` purescript
+instance foldable1Tuple :: Foldable1 (Tuple a)
+```
+
+
+#### `foldableDual`
+
+``` purescript
+instance foldableDual :: Foldable1 Dual
+```
+
+
+#### `foldableMultiplicative`
+
+``` purescript
+instance foldableMultiplicative :: Foldable1 Multiplicative
+```
+
+
+#### `Act`
+
+``` purescript
+newtype Act f a
+  = Act (f a)
+```
+
+
+#### `getAct`
+
+``` purescript
+getAct :: forall f a. Act f a -> f a
+```
+
+
+#### `semigroupAct`
+
+``` purescript
+instance semigroupAct :: (Apply f) => Semigroup (Act f a)
+```
+
+
+#### `traverse1_`
+
+``` purescript
+traverse1_ :: forall t f a b. (Foldable1 t, Apply f) => (a -> f b) -> t a -> f Unit
+```
+
+
+#### `for1_`
+
+``` purescript
+for1_ :: forall t f a b. (Foldable1 t, Apply f) => t a -> (a -> f b) -> f Unit
+```
+
+
+#### `sequence1_`
+
+``` purescript
+sequence1_ :: forall t f a. (Foldable1 t, Apply f) => t (f a) -> f Unit
+```
+
+
+
 ## Module Data.Traversable
 
 #### `Traversable`
