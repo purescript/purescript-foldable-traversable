@@ -18,16 +18,18 @@ module Data.Foldable
   , lookup
   ) where
 
-import Control.Apply
-import Data.Either
-import Data.Maybe
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Monoid.Dual
-import Data.Monoid.First
-import Data.Monoid.Last
-import Data.Monoid.Multiplicative
-import Data.Tuple
+import Control.Apply ((*>))
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
+import Data.Monoid (Monoid, mempty)
+import Data.Monoid.Additive (Additive(..))
+import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.First (First(..), runFirst)
+import Data.Monoid.Inf (Inf(..))
+import Data.Monoid.Last (Last(..))
+import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Monoid.Sup (Sup(..))
+import Data.Tuple (Tuple(..))
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -80,6 +82,11 @@ instance foldableFirst :: Foldable First where
   foldl f z (First x) = foldl f z x
   foldMap f (First x) = foldMap f x
 
+instance foldableInf :: Foldable Inf where
+  foldr f z (Inf x) = f x z
+  foldl f z (Inf x) = f z x
+  foldMap f (Inf x) = f x
+
 instance foldableLast :: Foldable Last where
   foldr f z (Last x) = foldr f z x
   foldl f z (Last x) = foldl f z x
@@ -89,6 +96,11 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
+
+instance foldableSup :: Foldable Sup where
+  foldr f z (Sup x) = f x z
+  foldl f z (Sup x) = f z x
+  foldMap f (Sup x) = f x
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. (Foldable f, Monoid m) => f m -> m
