@@ -17,8 +17,10 @@ import Data.Maybe (Maybe (..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.First (First(..))
+import Data.Monoid.Inf (Inf(..))
 import Data.Monoid.Last (Last(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Monoid.Sup (Sup(..))
 import Data.Tuple (Tuple(..), fst, snd)
 
 -- | `Traversable` represents data structures which can be _traversed_,
@@ -78,8 +80,8 @@ instance traversableFirst :: Traversable First where
   sequence (First x) = First <$> sequence x
 
 instance traversableInf :: Traversable Inf where
-  traverse f (Inf x) = Inf <$> traverse f x
-  sequence (Inf x) = Inf <$> sequence x
+  traverse f (Inf x) = Inf <$> f x
+  sequence (Inf x) = Inf <$> x
 
 instance traversableLast :: Traversable Last where
   traverse f (Last x) = Last <$> traverse f x
@@ -90,8 +92,8 @@ instance traversableMultiplicative :: Traversable Multiplicative where
   sequence (Multiplicative x) = Multiplicative <$> x
 
 instance traversableSup :: Traversable Sup where
-  traverse f (Sup x) = Sup <$> traverse f x
-  sequence (Sup x) = Sup <$> sequence x
+  traverse f (Sup x) = Sup <$> f x
+  sequence (Sup x) = Sup <$> x
 
 -- | A version of `traverse` with its arguments flipped.
 -- |

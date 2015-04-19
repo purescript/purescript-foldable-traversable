@@ -66,20 +66,6 @@ instance foldableFirst :: Foldable First
 ```
 
 
-#### `foldableLast`
-
-``` purescript
-instance foldableLast :: Foldable Last
-```
-
-
-#### `foldableSup`
-
-``` purescript
-instance foldableSup :: Foldable Sup
-```
-
-
 #### `foldableInf`
 
 ``` purescript
@@ -87,10 +73,24 @@ instance foldableInf :: Foldable Inf
 ```
 
 
+#### `foldableLast`
+
+``` purescript
+instance foldableLast :: Foldable Last
+```
+
+
 #### `foldableMultiplicative`
 
 ``` purescript
 instance foldableMultiplicative :: Foldable Multiplicative
+```
+
+
+#### `foldableSup`
+
+``` purescript
+instance foldableSup :: Foldable Sup
 ```
 
 

@@ -78,6 +78,13 @@ instance traversableFirst :: Traversable First
 ```
 
 
+#### `traversableInf`
+
+``` purescript
+instance traversableInf :: Traversable Inf
+```
+
+
 #### `traversableLast`
 
 ``` purescript
@@ -89,6 +96,13 @@ instance traversableLast :: Traversable Last
 
 ``` purescript
 instance traversableMultiplicative :: Traversable Multiplicative
+```
+
+
+#### `traversableSup`
+
+``` purescript
+instance traversableSup :: Traversable Sup
 ```
 
 
