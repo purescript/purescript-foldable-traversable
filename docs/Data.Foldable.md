@@ -172,7 +172,7 @@ combining adjacent elements using the specified separator.
 #### `and`
 
 ``` purescript
-and :: forall f. (Foldable f) => f Boolean -> Boolean
+and :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
 ```
 
 Test whether all `Boolean` values in a data structure are `true`.
@@ -180,7 +180,7 @@ Test whether all `Boolean` values in a data structure are `true`.
 #### `or`
 
 ``` purescript
-or :: forall f. (Foldable f) => f Boolean -> Boolean
+or :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
 ```
 
 Test whether any `Boolean` value in a data structure is `true`.
@@ -188,7 +188,7 @@ Test whether any `Boolean` value in a data structure is `true`.
 #### `any`
 
 ``` purescript
-any :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
+any :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
 ```
 
 Test whether a predicate holds for any element in a data structure.
@@ -196,7 +196,7 @@ Test whether a predicate holds for any element in a data structure.
 #### `all`
 
 ``` purescript
-all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
+all :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
 ```
 
 Test whether a predicate holds for all elements in a data structure.

@@ -157,19 +157,19 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   go { acc = acc } x   = { init: false, acc: acc <> sep <> x }
 
 -- | Test whether all `Boolean` values in a data structure are `true`.
-and :: forall f. (Foldable f) => f Boolean -> Boolean
-and = foldl (&&) true
+and :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
+and = foldl (&&) top
 
 -- | Test whether any `Boolean` value in a data structure is `true`.
-or :: forall f. (Foldable f) => f Boolean -> Boolean
-or = foldl (||) false
+or :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
+or = foldl (||) bottom
 
 -- | Test whether a predicate holds for any element in a data structure.
-any :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
+any :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
 any p = or <<< foldMap (\x -> [p x])
 
 -- | Test whether a predicate holds for all elements in a data structure.
-all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
+all :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
 all p = and <<< foldMap (\x -> [p x])
 
 -- | Find the sum of the numeric values in a data structure.
