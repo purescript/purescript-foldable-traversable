@@ -1,8 +1,8 @@
-module Main where
+module Example.Traversable where
 
-  import Prelude
-  import Data.Array
-  import Data.Maybe
-  import Data.Traversable
+import Prelude
+import Data.Array
+import Data.Maybe
+import Data.Traversable
 
-  main = Debug.Trace.print (sequence (Just [1,2,3]))
+main = Console.print $ sequence $ Just [1,2,3]

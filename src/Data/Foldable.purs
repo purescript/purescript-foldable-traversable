@@ -1,15 +1,35 @@
-module Data.Foldable where
+module Data.Foldable
+  ( Foldable, foldr, foldl, foldMap
+  , fold
+  , traverse_
+  , for_
+  , sequence_
+  , mconcat
+  , intercalate
+  , and
+  , or
+  , any
+  , all
+  , sum
+  , product
+  , elem
+  , notElem
+  , find
+  , lookup
+  ) where
 
-import Control.Apply
-import Data.Either
-import Data.Maybe
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Monoid.Dual
-import Data.Monoid.First
-import Data.Monoid.Last
-import Data.Monoid.Multiplicative
-import Data.Tuple
+import Control.Apply ((*>))
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
+import Data.Monoid (Monoid, mempty)
+import Data.Monoid.Additive (Additive(..))
+import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.First (First(..), runFirst)
+import Data.Monoid.Inf (Inf(..))
+import Data.Monoid.Last (Last(..))
+import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Monoid.Sup (Sup(..))
+import Data.Tuple (Tuple(..))
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -62,6 +82,11 @@ instance foldableFirst :: Foldable First where
   foldl f z (First x) = foldl f z x
   foldMap f (First x) = foldMap f x
 
+instance foldableInf :: Foldable Inf where
+  foldr f z (Inf x) = f x z
+  foldl f z (Inf x) = f z x
+  foldMap f (Inf x) = f x
+
 instance foldableLast :: Foldable Last where
   foldr f z (Last x) = foldr f z x
   foldl f z (Last x) = foldl f z x
@@ -71,6 +96,11 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
+
+instance foldableSup :: Foldable Sup where
+  foldr f z (Sup x) = f x z
+  foldl f z (Sup x) = f z x
+  foldMap f (Sup x) = f x
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. (Foldable f, Monoid m) => f m -> m
@@ -119,7 +149,7 @@ mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
 mconcat = foldl (<>) mempty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
--- | combining adjacent elements using the specified separator. 
+-- | combining adjacent elements using the specified separator.
 intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
@@ -143,19 +173,19 @@ all :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Boolean
 all p = and <<< foldMap (\x -> [p x])
 
 -- | Find the sum of the numeric values in a data structure.
-sum :: forall f. (Foldable f) => f Number -> Number
-sum = foldl (+) 0
+sum :: forall a f. (Foldable f, Semiring a) => f a -> a
+sum = foldl (+) zero
 
 -- | Find the product of the numeric values in a data structure.
-product :: forall f. (Foldable f) => f Number -> Number
-product = foldl (*) 1
+product :: forall a f. (Foldable f, Semiring a) => f a -> a
+product = foldl (*) one
 
 -- | Test whether a value is an element of a data structure.
-elem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+elem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 elem = any <<< (==)
 
 -- | Test whether a value is not an element of a data structure.
-notElem :: forall a f. (Eq a, Foldable f) => a -> f a -> Boolean
+notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
@@ -165,7 +195,7 @@ find p f = case foldMap (\x -> if p x then [x] else []) f of
   []    -> Nothing
 
 -- | Lookup a value in a data structure of `Tuple`s, generalizing association lists.
-lookup :: forall a b f. (Eq a, Foldable f) => a -> f (Tuple a b) -> Maybe b
+lookup :: forall a b f. (Foldable f, Eq a) => a -> f (Tuple a b) -> Maybe b
 lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
 
 foreign import foldrArray

@@ -11,15 +11,17 @@ module Data.Traversable
   ) where
 
 import Data.Array (zipWith)
-import Data.Either
+import Data.Either (Either(..))
 import Data.Foldable
-import Data.Maybe
-import Data.Monoid.Additive
-import Data.Monoid.Dual
-import Data.Monoid.First
-import Data.Monoid.Last
-import Data.Monoid.Multiplicative
-import Data.Tuple
+import Data.Maybe (Maybe (..))
+import Data.Monoid.Additive (Additive(..))
+import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.First (First(..))
+import Data.Monoid.Inf (Inf(..))
+import Data.Monoid.Last (Last(..))
+import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Monoid.Sup (Sup(..))
+import Data.Tuple (Tuple(..), fst, snd)
 
 -- | `Traversable` represents data structures which can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -33,8 +35,8 @@ import Data.Tuple
 -- | following sense:
 -- |
 -- | - `traverse f xs = sequence (f <$> xs)`
--- | - `sequence = traverse id` 
--- | 
+-- | - `sequence = traverse id`
+-- |
 -- | `Traversable` instances should also be compatible with the corresponding
 -- | `Foldable` instances, in the following sense:
 -- |
@@ -77,6 +79,10 @@ instance traversableFirst :: Traversable First where
   traverse f (First x) = First <$> traverse f x
   sequence (First x) = First <$> sequence x
 
+instance traversableInf :: Traversable Inf where
+  traverse f (Inf x) = Inf <$> f x
+  sequence (Inf x) = Inf <$> x
+
 instance traversableLast :: Traversable Last where
   traverse f (Last x) = Last <$> traverse f x
   sequence (Last x) = Last <$> sequence x
@@ -85,9 +91,13 @@ instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
   sequence (Multiplicative x) = Multiplicative <$> x
 
+instance traversableSup :: Traversable Sup where
+  traverse f (Sup x) = Sup <$> f x
+  sequence (Sup x) = Sup <$> x
+
 -- | A version of `traverse` with its arguments flipped.
 -- |
--- | 
+-- |
 -- | This can be useful when running an action written using do notation
 -- | for every element in a data structure:
 -- |
