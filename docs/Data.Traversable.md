@@ -50,10 +50,17 @@ instance traversableMaybe :: Traversable Maybe
 ```
 
 
-#### `traversableTuple`
+#### `traversableFirst`
 
 ``` purescript
-instance traversableTuple :: Traversable (Tuple a)
+instance traversableFirst :: Traversable First
+```
+
+
+#### `traversableLast`
+
+``` purescript
+instance traversableLast :: Traversable Last
 ```
 
 
@@ -71,24 +78,10 @@ instance traversableDual :: Traversable Dual
 ```
 
 
-#### `traversableFirst`
-
-``` purescript
-instance traversableFirst :: Traversable First
-```
-
-
 #### `traversableInf`
 
 ``` purescript
 instance traversableInf :: Traversable Inf
-```
-
-
-#### `traversableLast`
-
-``` purescript
-instance traversableLast :: Traversable Last
 ```
 
 
@@ -103,6 +96,13 @@ instance traversableMultiplicative :: Traversable Multiplicative
 
 ``` purescript
 instance traversableSup :: Traversable Sup
+```
+
+
+#### `traversableTuple`
+
+``` purescript
+instance traversableTuple :: Traversable (Tuple a)
 ```
 
 

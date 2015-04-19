@@ -21,12 +21,12 @@ module Data.Foldable
 import Control.Apply ((*>))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Maybe.First (First(..), runFirst)
+import Data.Maybe.Last (Last(..))
 import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
-import Data.Monoid.First (First(..), runFirst)
 import Data.Monoid.Inf (Inf(..))
-import Data.Monoid.Last (Last(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Monoid.Sup (Sup(..))
 import Data.Tuple (Tuple(..))
@@ -62,10 +62,15 @@ instance foldableMaybe :: Foldable Maybe where
   foldMap f Nothing  = mempty
   foldMap f (Just x) = f x
 
-instance foldableTuple :: Foldable (Tuple a) where
-  foldr f z (Tuple _ x) = x `f` z
-  foldl f z (Tuple _ x) = z `f` x
-  foldMap f (Tuple _ x) = f x
+instance foldableFirst :: Foldable First where
+  foldr f z (First x) = foldr f z x
+  foldl f z (First x) = foldl f z x
+  foldMap f (First x) = foldMap f x
+
+instance foldableLast :: Foldable Last where
+  foldr f z (Last x) = foldr f z x
+  foldl f z (Last x) = foldl f z x
+  foldMap f (Last x) = foldMap f x
 
 instance foldableAdditive :: Foldable Additive where
   foldr f z (Additive x) = x `f` z
@@ -77,25 +82,20 @@ instance foldableDual :: Foldable Dual where
   foldl f z (Dual x) = z `f` x
   foldMap f (Dual x) = f x
 
-instance foldableFirst :: Foldable First where
-  foldr f z (First x) = foldr f z x
-  foldl f z (First x) = foldl f z x
-  foldMap f (First x) = foldMap f x
-
 instance foldableInf :: Foldable Inf where
   foldr f z (Inf x) = f x z
   foldl f z (Inf x) = f z x
   foldMap f (Inf x) = f x
 
-instance foldableLast :: Foldable Last where
-  foldr f z (Last x) = foldr f z x
-  foldl f z (Last x) = foldl f z x
-  foldMap f (Last x) = foldMap f x
-
 instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
+
+instance foldableTuple :: Foldable (Tuple a) where
+  foldr f z (Tuple _ x) = x `f` z
+  foldl f z (Tuple _ x) = z `f` x
+  foldMap f (Tuple _ x) = f x
 
 instance foldableSup :: Foldable Sup where
   foldr f z (Sup x) = f x z

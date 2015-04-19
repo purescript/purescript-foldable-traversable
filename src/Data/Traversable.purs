@@ -14,11 +14,11 @@ import Data.Array (zipWith)
 import Data.Either (Either(..))
 import Data.Foldable
 import Data.Maybe (Maybe (..))
+import Data.Maybe.First (First(..))
+import Data.Maybe.Last (Last(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
-import Data.Monoid.First (First(..))
 import Data.Monoid.Inf (Inf(..))
-import Data.Monoid.Last (Last(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Monoid.Sup (Sup(..))
 import Data.Tuple (Tuple(..), fst, snd)
@@ -63,9 +63,13 @@ instance traversableMaybe :: Traversable Maybe where
   sequence Nothing  = pure Nothing
   sequence (Just x) = Just <$> x
 
-instance traversableTuple :: Traversable (Tuple a) where
-  traverse f (Tuple x y) = Tuple x <$> f y
-  sequence (Tuple x y) = Tuple x <$> y
+instance traversableFirst :: Traversable First where
+  traverse f (First x) = First <$> traverse f x
+  sequence (First x) = First <$> sequence x
+
+instance traversableLast :: Traversable Last where
+  traverse f (Last x) = Last <$> traverse f x
+  sequence (Last x) = Last <$> sequence x
 
 instance traversableAdditive :: Traversable Additive where
   traverse f (Additive x) = Additive <$> f x
@@ -75,17 +79,9 @@ instance traversableDual :: Traversable Dual where
   traverse f (Dual x) = Dual <$> f x
   sequence (Dual x) = Dual <$> x
 
-instance traversableFirst :: Traversable First where
-  traverse f (First x) = First <$> traverse f x
-  sequence (First x) = First <$> sequence x
-
 instance traversableInf :: Traversable Inf where
   traverse f (Inf x) = Inf <$> f x
   sequence (Inf x) = Inf <$> x
-
-instance traversableLast :: Traversable Last where
-  traverse f (Last x) = Last <$> traverse f x
-  sequence (Last x) = Last <$> sequence x
 
 instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
@@ -94,6 +90,10 @@ instance traversableMultiplicative :: Traversable Multiplicative where
 instance traversableSup :: Traversable Sup where
   traverse f (Sup x) = Sup <$> f x
   sequence (Sup x) = Sup <$> x
+
+instance traversableTuple :: Traversable (Tuple a) where
+  traverse f (Tuple x y) = Tuple x <$> f y
+  sequence (Tuple x y) = Tuple x <$> y
 
 -- | A version of `traverse` with its arguments flipped.
 -- |

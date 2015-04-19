@@ -38,10 +38,17 @@ instance foldableMaybe :: Foldable Maybe
 ```
 
 
-#### `foldableTuple`
+#### `foldableFirst`
 
 ``` purescript
-instance foldableTuple :: Foldable (Tuple a)
+instance foldableFirst :: Foldable First
+```
+
+
+#### `foldableLast`
+
+``` purescript
+instance foldableLast :: Foldable Last
 ```
 
 
@@ -59,13 +66,6 @@ instance foldableDual :: Foldable Dual
 ```
 
 
-#### `foldableFirst`
-
-``` purescript
-instance foldableFirst :: Foldable First
-```
-
-
 #### `foldableInf`
 
 ``` purescript
@@ -73,17 +73,17 @@ instance foldableInf :: Foldable Inf
 ```
 
 
-#### `foldableLast`
-
-``` purescript
-instance foldableLast :: Foldable Last
-```
-
-
 #### `foldableMultiplicative`
 
 ``` purescript
 instance foldableMultiplicative :: Foldable Multiplicative
+```
+
+
+#### `foldableTuple`
+
+``` purescript
+instance foldableTuple :: Foldable (Tuple a)
 ```
 
 
