@@ -37,7 +37,7 @@ var docTask = function(name) {
   docTasks.push(taskName);
 };
 
-["Data.Foldable", "Data.Traversable"].forEach(docTask);
+["Data.Foldable", "Data.Traversable", "Data.Bifoldable", "Data.Bitraversable"].forEach(docTask);
 
 gulp.task("docs", docTasks);
 
