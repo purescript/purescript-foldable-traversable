@@ -1,11 +1,9 @@
 module Data.Bifoldable where
 
 import Control.Apply ((*>))
-import Data.Either (Either(..))
 import Data.Monoid (Monoid)
 import Data.Monoid.Inf (Inf(..), runInf)
 import Data.Monoid.Sup (Sup(..), runSup)
-import Data.Tuple (Tuple(..))
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -18,19 +16,6 @@ class Bifoldable p where
   bifoldr :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
   bifoldl :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
   bifoldMap :: forall m a b. (Monoid m) => (a -> m) -> (b -> m) -> p a b -> m
-
-instance bifoldableTuple :: Bifoldable Tuple where
-  bifoldMap f g (Tuple a b) = f a <> g b
-  bifoldr f g z (Tuple a b) = f a (g b z)
-  bifoldl f g z (Tuple a b) = g (f z a) b
-
-instance bifoldableEither :: Bifoldable Either where
-  bifoldMap f _ (Left a) = f a
-  bifoldMap _ g (Right b) = g b
-  bifoldr f _ z (Left a) = f a z
-  bifoldr _ g z (Right b) = g b z
-  bifoldl f _ z (Left a) = f z a
-  bifoldl _ g z (Right b) = g z b
 
 -- | Fold a data structure, accumulating values in a monoidal type.
 bifold :: forall t m. (Bifoldable t, Monoid m) => t m m -> m

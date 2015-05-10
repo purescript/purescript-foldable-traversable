@@ -1,7 +1,5 @@
 module Example.Traversable where
 
-import Prelude
-import Data.Array
 import Data.Maybe
 import Data.Traversable
 

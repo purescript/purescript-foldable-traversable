@@ -1,5 +1,3 @@
-# Module Documentation
-
 ## Module Data.Traversable
 
 #### `Traversable`
@@ -8,6 +6,18 @@
 class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
+```
+
+##### Instances
+``` purescript
+instance traversableMaybe :: Traversable Maybe
+instance traversableFirst :: Traversable First
+instance traversableLast :: Traversable Last
+instance traversableAdditive :: Traversable Additive
+instance traversableDual :: Traversable Dual
+instance traversableInf :: Traversable Inf
+instance traversableMultiplicative :: Traversable Multiplicative
+instance traversableSup :: Traversable Sup
 ```
 
 `Traversable` represents data structures which can be _traversed_,
@@ -29,83 +39,6 @@ following sense:
 
 - `foldMap f = runConst <<< traverse (Const <<< f)`
 
-#### `traversableArray`
-
-``` purescript
-instance traversableArray :: Traversable Prim.Array
-```
-
-
-#### `traversableEither`
-
-``` purescript
-instance traversableEither :: Traversable (Either a)
-```
-
-
-#### `traversableMaybe`
-
-``` purescript
-instance traversableMaybe :: Traversable Maybe
-```
-
-
-#### `traversableFirst`
-
-``` purescript
-instance traversableFirst :: Traversable First
-```
-
-
-#### `traversableLast`
-
-``` purescript
-instance traversableLast :: Traversable Last
-```
-
-
-#### `traversableAdditive`
-
-``` purescript
-instance traversableAdditive :: Traversable Additive
-```
-
-
-#### `traversableDual`
-
-``` purescript
-instance traversableDual :: Traversable Dual
-```
-
-
-#### `traversableInf`
-
-``` purescript
-instance traversableInf :: Traversable Inf
-```
-
-
-#### `traversableMultiplicative`
-
-``` purescript
-instance traversableMultiplicative :: Traversable Multiplicative
-```
-
-
-#### `traversableSup`
-
-``` purescript
-instance traversableSup :: Traversable Sup
-```
-
-
-#### `traversableTuple`
-
-``` purescript
-instance traversableTuple :: Traversable (Tuple a)
-```
-
-
 #### `for`
 
 ``` purescript
@@ -126,35 +59,11 @@ for [1, 2, 3] \n -> do
   return (n * n)
 ```
 
-#### `zipWithA`
+#### `Accum`
 
 ``` purescript
-zipWithA :: forall m a b c. (Applicative m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
+type Accum s a = { accum :: s, value :: a }
 ```
-
-A generalization of `zipWith` which accumulates results in some `Applicative`
-functor.
-
-#### `functorStateL`
-
-``` purescript
-instance functorStateL :: Functor (StateL s)
-```
-
-
-#### `applyStateL`
-
-``` purescript
-instance applyStateL :: Apply (StateL s)
-```
-
-
-#### `applicativeStateL`
-
-``` purescript
-instance applicativeStateL :: Applicative (StateL s)
-```
-
 
 #### `scanl`
 
@@ -168,7 +77,7 @@ instead of only the final result.
 #### `mapAccumL`
 
 ``` purescript
-mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
+mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Accum s b) -> s -> f a -> Accum s (f b)
 ```
 
 Fold a data structure from the left, keeping all intermediate results
@@ -176,27 +85,6 @@ instead of only the final result.
 
 Unlike `scanl`, `mapAccumL` allows the type of accumulator to differ
 from the element type of the final data structure.
-
-#### `functorStateR`
-
-``` purescript
-instance functorStateR :: Functor (StateR s)
-```
-
-
-#### `applyStateR`
-
-``` purescript
-instance applyStateR :: Apply (StateR s)
-```
-
-
-#### `applicativeStateR`
-
-``` purescript
-instance applicativeStateR :: Applicative (StateR s)
-```
-
 
 #### `scanr`
 
@@ -210,7 +98,7 @@ instead of only the final result.
 #### `mapAccumR`
 
 ``` purescript
-mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Tuple s b) -> s -> f a -> Tuple s (f b)
+mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Accum s b) -> s -> f a -> Accum s (f b)
 ```
 
 Fold a data structure from the right, keeping all intermediate results
@@ -218,6 +106,5 @@ instead of only the final result.
 
 Unlike `scanr`, `mapAccumR` allows the type of accumulator to differ
 from the element type of the final data structure.
-
 
 

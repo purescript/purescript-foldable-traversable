@@ -1,5 +1,3 @@
-# Module Documentation
-
 ## Module Data.Bifoldable
 
 #### `Bifoldable`
@@ -17,20 +15,6 @@ folded.
 A fold for such a structure requires two step functions, one for each type
 argument. Type class instances should choose the appropriate step function based
 on the type of the element encountered at each point of the fold.
-
-
-#### `bifoldableTuple`
-
-``` purescript
-instance bifoldableTuple :: Bifoldable Tuple
-```
-
-
-#### `bifoldableEither`
-
-``` purescript
-instance bifoldableEither :: Bifoldable Either
-```
 
 
 #### `bifold`
@@ -80,6 +64,5 @@ Test whether a predicate holds at any position in a data structure.
 ``` purescript
 biall :: forall t a b c. (Bifoldable t, BoundedLattice c) => (a -> c) -> (b -> c) -> t a b -> c
 ```
-
 
 

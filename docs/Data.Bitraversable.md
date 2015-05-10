@@ -1,5 +1,3 @@
-# Module Documentation
-
 ## Module Data.Bitraversable
 
 #### `Bitraversable`
@@ -18,20 +16,6 @@ argument. Type class instances should choose the appropriate function based
 on the type of the element encountered at each point of the traversal.
 
 
-#### `bitraversableTuple`
-
-``` purescript
-instance bitraversableTuple :: Bitraversable Tuple
-```
-
-
-#### `bitraversableEither`
-
-``` purescript
-instance bitraversableEither :: Bitraversable Either
-```
-
-
 #### `bifor`
 
 ``` purescript
@@ -39,6 +23,5 @@ bifor :: forall t f a b c d. (Bitraversable t, Applicative f) => t a b -> (a -> 
 ```
 
 Traverse a data structure, accumulating effects and results using an `Applicative` functor.
-
 
 

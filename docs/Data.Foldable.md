@@ -1,5 +1,3 @@
-# Module Documentation
-
 ## Module Data.Foldable
 
 #### `Foldable`
@@ -11,88 +9,23 @@ class Foldable f where
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 ```
 
+##### Instances
+``` purescript
+instance foldableMaybe :: Foldable Maybe
+instance foldableFirst :: Foldable First
+instance foldableLast :: Foldable Last
+instance foldableAdditive :: Foldable Additive
+instance foldableDual :: Foldable Dual
+instance foldableInf :: Foldable Inf
+instance foldableMultiplicative :: Foldable Multiplicative
+instance foldableSup :: Foldable Sup
+```
+
 `Foldable` represents data structures which can be _folded_.
 
 - `foldr` folds a structure from the right
 - `foldl` folds a structure from the left
 - `foldMap` folds a structure by accumulating values in a `Monoid`
-
-#### `foldableArray`
-
-``` purescript
-instance foldableArray :: Foldable Prim.Array
-```
-
-
-#### `foldableEither`
-
-``` purescript
-instance foldableEither :: Foldable (Either a)
-```
-
-
-#### `foldableMaybe`
-
-``` purescript
-instance foldableMaybe :: Foldable Maybe
-```
-
-
-#### `foldableFirst`
-
-``` purescript
-instance foldableFirst :: Foldable First
-```
-
-
-#### `foldableLast`
-
-``` purescript
-instance foldableLast :: Foldable Last
-```
-
-
-#### `foldableAdditive`
-
-``` purescript
-instance foldableAdditive :: Foldable Additive
-```
-
-
-#### `foldableDual`
-
-``` purescript
-instance foldableDual :: Foldable Dual
-```
-
-
-#### `foldableInf`
-
-``` purescript
-instance foldableInf :: Foldable Inf
-```
-
-
-#### `foldableMultiplicative`
-
-``` purescript
-instance foldableMultiplicative :: Foldable Multiplicative
-```
-
-
-#### `foldableTuple`
-
-``` purescript
-instance foldableTuple :: Foldable (Tuple a)
-```
-
-
-#### `foldableSup`
-
-``` purescript
-instance foldableSup :: Foldable Sup
-```
-
 
 #### `fold`
 
@@ -240,14 +173,5 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 ```
 
 Try to find an element in a data structure which satisfies a predicate.
-
-#### `lookup`
-
-``` purescript
-lookup :: forall a b f. (Foldable f, Eq a) => a -> f (Tuple a b) -> Maybe b
-```
-
-Lookup a value in a data structure of `Tuple`s, generalizing association lists.
-
 
 

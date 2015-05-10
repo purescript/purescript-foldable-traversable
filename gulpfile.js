@@ -1,61 +1,42 @@
+/* jshint node: true */
 "use strict";
 
 var gulp = require("gulp");
 var plumber = require("gulp-plumber");
 var purescript = require("gulp-purescript");
-var jsvalidate = require("gulp-jsvalidate");
-var run = require("gulp-run");
 
-var paths = [
+var sources = [
   "src/**/*.purs",
-  "bower_components/purescript-*/src/**/*.purs",
-  "test/**/*.purs"
+  "bower_components/purescript-*/src/**/*.purs"
+];
+
+var foreigns = [
+  "bower_components/purescript-*/src/**/*.js"
 ];
 
 gulp.task("make", function() {
-  return gulp.src(paths)
+  return gulp.src(sources)
     .pipe(plumber())
-    .pipe(purescript.pscMake());
+    .pipe(purescript.pscMake({ ffi: foreigns }));
 });
 
-gulp.task("jsvalidate", ["make"], function () {
-  return gulp.src("output/**/*.js")
+gulp.task("docs", function () {
+  return gulp.src(sources)
     .pipe(plumber())
-    .pipe(jsvalidate());
+    .pipe(purescript.pscDocs({
+      docgen: {
+        "Data.Bifoldable": "docs/Data.Bifoldable.md",
+        "Data.Bitraversable": "docs/Data.Bitraversable.md",
+        "Data.Foldable": "docs/Data.Foldable.md",
+        "Data.Traversable": "docs/Data.Traversable.md",
+      }
+    }));
 });
 
-var docTasks = [];
+gulp.task("dotpsci", function () {
+  return gulp.src(sources)
+    .pipe(plumber())
+    .pipe(purescript.dotPsci());
+});
 
-var docTask = function(name) {
-  var taskName = "docs-" + name.toLowerCase();
-  gulp.task(taskName, function () {
-    return gulp.src("src/" + name.replace(/\./g, "/") + ".purs")
-      .pipe(plumber())
-      .pipe(purescript.pscDocs())
-      .pipe(gulp.dest("docs/" + name + ".md"));
-  });
-  docTasks.push(taskName);
-};
-
-["Data.Foldable", "Data.Traversable", "Data.Bifoldable", "Data.Bitraversable"].forEach(docTask);
-
-gulp.task("docs", docTasks);
-
-var exampleTasks = [];
-
-var exampleTask = function(name) {
-  var taskName = "example-" + name.toLowerCase();
-  gulp.task(taskName, function() {
-    return gulp.src(["examples/" + name + ".purs"].concat(paths))
-      .pipe(plumber())
-      .pipe(purescript.psc({ main: "Example." + name }))
-      .pipe(run("node"));
-  });
-  exampleTasks.push(taskName);
-};
-
-["Traversable", "Tree"].forEach(exampleTask);
-
-gulp.task("examples", exampleTasks);
-
-gulp.task("default", ["jsvalidate", "docs", "examples"]);
+gulp.task("default", ["make", "docs", "dotpsci"]);

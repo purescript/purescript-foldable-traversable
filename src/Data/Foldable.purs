@@ -15,11 +15,9 @@ module Data.Foldable
   , elem
   , notElem
   , find
-  , lookup
   ) where
 
 import Control.Apply ((*>))
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..), runFirst)
 import Data.Maybe.Last (Last(..))
@@ -29,7 +27,6 @@ import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Inf (Inf(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Monoid.Sup (Sup(..))
-import Data.Tuple (Tuple(..))
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -40,19 +37,6 @@ class Foldable f where
   foldr :: forall a b. (a -> b -> b) -> b -> f a -> b
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
-
-instance foldableArray :: Foldable [] where
-  foldr f z xs = foldrArray f z xs
-  foldl f z xs = foldlArray f z xs
-  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
-
-instance foldableEither :: Foldable (Either a) where
-  foldr _ z (Left _)  = z
-  foldr f z (Right x) = x `f` z
-  foldl _ z (Left _)  = z
-  foldl f z (Right x) = z `f` x
-  foldMap f (Left _)  = mempty
-  foldMap f (Right x) = f x
 
 instance foldableMaybe :: Foldable Maybe where
   foldr _ z Nothing  = z
@@ -91,11 +75,6 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
-
-instance foldableTuple :: Foldable (Tuple a) where
-  foldr f z (Tuple _ x) = x `f` z
-  foldl f z (Tuple _ x) = z `f` x
-  foldMap f (Tuple _ x) = f x
 
 instance foldableSup :: Foldable Sup where
   foldr f z (Sup x) = f x z
@@ -154,7 +133,7 @@ intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
   go { init = true } x = { init: false, acc: x }
-  go { acc = acc } x   = { init: false, acc: acc <> sep <> x }
+  go { acc = acc }   x = { init: false, acc: acc <> sep <> x }
 
 -- | Test whether all `Boolean` values in a data structure are `true`.
 and :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
@@ -166,11 +145,11 @@ or = foldl (||) bottom
 
 -- | Test whether a predicate holds for any element in a data structure.
 any :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
-any p = or <<< foldMap (\x -> [p x])
+any p = foldl (\r x -> r || p x) bottom
 
 -- | Test whether a predicate holds for all elements in a data structure.
 all :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
-all p = and <<< foldMap (\x -> [p x])
+all p = foldl (\r x -> r && p x) top
 
 -- | Find the sum of the numeric values in a data structure.
 sum :: forall a f. (Foldable f, Semiring a) => f a -> a
@@ -190,40 +169,4 @@ notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
-find p f = case foldMap (\x -> if p x then [x] else []) f of
-  (x:_) -> Just x
-  []    -> Nothing
-
--- | Lookup a value in a data structure of `Tuple`s, generalizing association lists.
-lookup :: forall a b f. (Foldable f, Eq a) => a -> f (Tuple a b) -> Maybe b
-lookup a f = runFirst $ foldMap (\(Tuple a' b) -> First (if a == a' then Just b else Nothing)) f
-
-foreign import foldrArray
-  """
-  function foldrArray(f) {
-    return function(z) {
-      return function(xs) {
-        var acc = z;
-        for (var i = xs.length - 1; i >= 0; --i) {
-          acc = f(xs[i])(acc);
-        }
-        return acc;
-      };
-    };
-  }
-  """ :: forall a b. (a -> b -> b) -> b -> [a] -> b
-
-foreign import foldlArray
-  """
-  function foldlArray(f) {
-    return function(z) {
-      return function(xs) {
-        var acc = z;
-        for (var i = 0, len = xs.length; i < len; ++i) {
-          acc = f(acc)(xs[i]);
-        }
-        return acc;
-      };
-    };
-  }
-  """ :: forall a b. (b -> a -> b) -> b -> [a] -> b
+find p = foldl (\r x -> if p x then Just x else r) Nothing

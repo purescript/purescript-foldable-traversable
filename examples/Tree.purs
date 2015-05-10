@@ -1,7 +1,6 @@
 module Example.Tree where
 
 import Data.Foldable (Foldable, foldr, foldl, foldMap, sum)
--- import Data.Monoid (sum)
 
 data Tree a
   = Node a
