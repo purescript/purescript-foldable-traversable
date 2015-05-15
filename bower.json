@@ -28,6 +28,7 @@
     "purescript-maybe": "~0.3.0"
   },
   "devDependencies": {
-    "purescript-console": "~0.1.0"
+    "purescript-console": "~0.1.0",
+    "purescript-assert": "~0.1.0"
   }
 }

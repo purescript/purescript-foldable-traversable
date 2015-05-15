@@ -42,6 +42,18 @@ class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
+foreign import traverseArrayImpl
+  :: forall m a b. (m (a -> b) -> m a -> m b) ->
+                   ((a -> b) -> m a -> m b) ->
+                   (a -> m a) ->
+                   (a -> m b) ->
+                   Array a ->
+                   m (Array b)
+
+instance traversableArray :: Traversable Array where
+  traverse = traverseArrayImpl apply map pure
+  sequence = traverse id
+
 instance traversableMaybe :: Traversable Maybe where
   traverse _ Nothing  = pure Nothing
   traverse f (Just x) = Just <$> f x

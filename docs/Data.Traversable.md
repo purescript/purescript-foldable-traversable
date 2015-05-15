@@ -10,6 +10,7 @@ class (Functor t, Foldable t) <= Traversable t where
 
 ##### Instances
 ``` purescript
+instance traversableArray :: Traversable Array
 instance traversableMaybe :: Traversable Maybe
 instance traversableFirst :: Traversable First
 instance traversableLast :: Traversable Last
