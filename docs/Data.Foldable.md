@@ -11,6 +11,7 @@ class Foldable f where
 
 ##### Instances
 ``` purescript
+instance foldableArray :: Foldable Array
 instance foldableMaybe :: Foldable Maybe
 instance foldableFirst :: Foldable First
 instance foldableLast :: Foldable Last

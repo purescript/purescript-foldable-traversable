@@ -38,6 +38,14 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 
+instance foldableArray :: Foldable Array where
+  foldr = foldrArray
+  foldl = foldlArray
+  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
+
+foreign import foldrArray :: forall a b. (a -> b -> b) -> b -> Array a -> b
+foreign import foldlArray :: forall a b. (b -> a -> b) -> b -> Array a -> b
+
 instance foldableMaybe :: Foldable Maybe where
   foldr _ z Nothing  = z
   foldr f z (Just x) = x `f` z
