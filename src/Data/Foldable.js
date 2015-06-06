@@ -8,7 +8,7 @@ exports.foldrArray = function (f) {
     return function (xs) {
       var acc = init;
       var len = xs.length;
-      for (var i = 0; i < len; i++) {
+      for (var i = len - 1; i >= 0; i--) {
         acc = f(xs[i])(acc);
       }
       return acc;
