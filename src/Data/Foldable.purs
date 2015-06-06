@@ -17,6 +17,8 @@ module Data.Foldable
   , find
   ) where
 
+import Prelude
+
 import Control.Apply ((*>))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..), runFirst)
@@ -24,9 +26,9 @@ import Data.Maybe.Last (Last(..))
 import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
-import Data.Monoid.Inf (Inf(..))
+import Data.Monoid.Disj (Disj(..), runDisj)
+import Data.Monoid.Conj (Conj(..), runConj)
 import Data.Monoid.Multiplicative (Multiplicative(..))
-import Data.Monoid.Sup (Sup(..))
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -74,20 +76,20 @@ instance foldableDual :: Foldable Dual where
   foldl f z (Dual x) = z `f` x
   foldMap f (Dual x) = f x
 
-instance foldableInf :: Foldable Inf where
-  foldr f z (Inf x) = f x z
-  foldl f z (Inf x) = f z x
-  foldMap f (Inf x) = f x
+instance foldableDisj :: Foldable Disj where
+  foldr f z (Disj x) = f x z
+  foldl f z (Disj x) = f z x
+  foldMap f (Disj x) = f x
+
+instance foldableConj :: Foldable Conj where
+  foldr f z (Conj x) = f x z
+  foldl f z (Conj x) = f z x
+  foldMap f (Conj x) = f x
 
 instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
-
-instance foldableSup :: Foldable Sup where
-  foldr f z (Sup x) = f x z
-  foldl f z (Sup x) = f z x
-  foldMap f (Sup x) = f x
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. (Foldable f, Monoid m) => f m -> m
@@ -144,20 +146,20 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   go { acc = acc }   x = { init: false, acc: acc <> sep <> x }
 
 -- | Test whether all `Boolean` values in a data structure are `true`.
-and :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
-and = foldl (&&) top
+and :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
+and = all id
 
 -- | Test whether any `Boolean` value in a data structure is `true`.
-or :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
-or = foldl (||) bottom
+or :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
+or = any id
 
 -- | Test whether a predicate holds for any element in a data structure.
-any :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
-any p = foldl (\r x -> r || p x) bottom
+any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
+any p = runDisj <<< foldMap (Disj <<< p)
 
 -- | Test whether a predicate holds for all elements in a data structure.
-all :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
-all p = foldl (\r x -> r && p x) top
+all :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
+all p = runConj <<< foldMap (Conj <<< p)
 
 -- | Find the sum of the numeric values in a data structure.
 sum :: forall a f. (Foldable f, Semiring a) => f a -> a

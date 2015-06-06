@@ -10,15 +10,17 @@ module Data.Traversable
   , mapAccumR
   ) where
 
+import Prelude
+
 import Data.Foldable
 import Data.Maybe (Maybe (..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
-import Data.Monoid.Inf (Inf(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
-import Data.Monoid.Sup (Sup(..))
+import Data.Monoid.Disj (Disj(..), runDisj)
+import Data.Monoid.Conj (Conj(..), runConj)
 
 -- | `Traversable` represents data structures which can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -76,17 +78,17 @@ instance traversableDual :: Traversable Dual where
   traverse f (Dual x) = Dual <$> f x
   sequence (Dual x) = Dual <$> x
 
-instance traversableInf :: Traversable Inf where
-  traverse f (Inf x) = Inf <$> f x
-  sequence (Inf x) = Inf <$> x
+instance traversableConj :: Traversable Conj where
+  traverse f (Conj x) = Conj <$> f x
+  sequence (Conj x) = Conj <$> x
+
+instance traversableDisj :: Traversable Disj where
+  traverse f (Disj x) = Disj <$> f x
+  sequence (Disj x) = Disj <$> x
 
 instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
   sequence (Multiplicative x) = Multiplicative <$> x
-
-instance traversableSup :: Traversable Sup where
-  traverse f (Sup x) = Sup <$> f x
-  sequence (Sup x) = Sup <$> x
 
 -- | A version of `traverse` with its arguments flipped.
 -- |

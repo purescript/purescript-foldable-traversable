@@ -1,5 +1,7 @@
 module Example.Tree where
 
+import Prelude
+
 import Data.Foldable (Foldable, foldr, foldl, foldMap, sum)
 
 data Tree a

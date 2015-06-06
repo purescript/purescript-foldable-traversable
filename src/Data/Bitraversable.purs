@@ -1,5 +1,7 @@
 module Data.Bitraversable where
 
+import Prelude
+
 import Data.Bifoldable
 import Data.Bifunctor (Bifunctor)
 

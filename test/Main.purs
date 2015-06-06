@@ -1,6 +1,8 @@
 
 module Test.Main where
 
+import Prelude
+
 import Data.Maybe
 import Data.Monoid.Additive
 import Data.Foldable

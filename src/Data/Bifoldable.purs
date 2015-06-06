@@ -1,9 +1,11 @@
 module Data.Bifoldable where
 
+import Prelude
+
 import Control.Apply ((*>))
 import Data.Monoid (Monoid)
-import Data.Monoid.Inf (Inf(..), runInf)
-import Data.Monoid.Sup (Sup(..), runSup)
+import Data.Monoid.Disj (Disj(..), runDisj)
+import Data.Monoid.Conj (Conj(..), runConj)
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -36,9 +38,9 @@ bisequence_ :: forall t f a b. (Bifoldable t, Applicative f) => t (f a) (f b) ->
 bisequence_ = bitraverse_ id id
 
 -- | Test whether a predicate holds at any position in a data structure.
-biany :: forall t a b c. (Bifoldable t, BoundedLattice c) => (a -> c) -> (b -> c) -> t a b -> c
-biany p q = runSup <<< bifoldMap (Sup <<< p) (Sup <<< q)
+biany :: forall t a b c. (Bifoldable t, BooleanAlgebra c) => (a -> c) -> (b -> c) -> t a b -> c
+biany p q = runDisj <<< bifoldMap (Disj <<< p) (Disj <<< q)
 
 -- -- | Test whether a predicate holds at all positions in a data structure.
-biall :: forall t a b c. (Bifoldable t, BoundedLattice c) => (a -> c) -> (b -> c) -> t a b -> c
-biall p q = runInf <<< bifoldMap (Inf <<< p) (Inf <<< q)
+biall :: forall t a b c. (Bifoldable t, BooleanAlgebra c) => (a -> c) -> (b -> c) -> t a b -> c
+biall p q = runConj <<< bifoldMap (Conj <<< p) (Conj <<< q)
