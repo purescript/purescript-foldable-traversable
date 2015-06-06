@@ -8,10 +8,21 @@ exports.traverseArrayImpl = function () {
     this.fn = fn;
   }
 
-  function consArray(x) {
+  var emptyList = {};
+
+  function consList (x) {
     return function (xs) {
-      return [x].concat(xs);
+      return { head: x, tail: xs };
     };
+  }
+
+  function listToArray (list) {
+    var arr = [];
+    while (list !== emptyList) {
+      arr.push(list.head);
+      list = list.tail;
+    }
+    return arr;
   }
 
   return function (apply) {
@@ -20,7 +31,7 @@ exports.traverseArrayImpl = function () {
         return function (f) {
           /* jshint maxparams: 2 */
           var buildFrom = function (x, ys) {
-            return apply(map(consArray)(f(x)))(ys);
+            return apply(map(consList)(f(x)))(ys);
           };
 
           /* jshint maxparams: 3 */
@@ -36,12 +47,12 @@ exports.traverseArrayImpl = function () {
           };
 
           return function (array) {
-            var result = go(pure([]), array.length, array);
+            var result = go(pure(emptyList), array.length, array);
             while (result instanceof Cont) {
               result = result.fn();
             }
 
-            return result;
+            return map(listToArray)(result);
           };
         };
       };
