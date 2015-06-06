@@ -7,16 +7,29 @@ var jshint = require("gulp-jshint");
 var jscs = require("gulp-jscs");
 var purescript = require("gulp-purescript");
 var run = require("gulp-run");
+var rimraf = require("rimraf");
 
 var sources = [
   "src/**/*.purs",
-  "bower_components/purescript-*/src/**/*.purs"
+  "bower_components/purescript-*/src/**/*.purs",
+  "bower_components/purescript-*/test/**/*.purs"
 ];
 
 var foreigns = [
   "src/**/*.js",
-  "bower_components/purescript-*/src/**/*.js"
+  "bower_components/purescript-*/src/**/*.js",
+  "bower_components/purescript-*/test/**/*.js"
 ];
+
+gulp.task("clean-docs", function (cb) {
+  rimraf("docs", cb);
+});
+
+gulp.task("clean-output", function (cb) {
+  rimraf("output", cb);
+});
+
+gulp.task("clean", ["clean-docs", "clean-output"]);
 
 gulp.task("lint", function() {
   return gulp.src("src/**/*.js")
@@ -31,7 +44,7 @@ gulp.task("make", ["lint"], function() {
     .pipe(purescript.pscMake({ ffi: foreigns }));
 });
 
-gulp.task("docs", function () {
+gulp.task("docs", ["clean-docs"], function () {
   return gulp.src(sources)
     .pipe(plumber())
     .pipe(purescript.pscDocs({
@@ -53,10 +66,11 @@ gulp.task("dotpsci", function () {
 gulp.task("test", ["make"], function() {
   return gulp.src(sources.concat(["test/Main.purs"]))
     .pipe(plumber())
-    .pipe(purescript.psc({ main: "Test.Main"
-                         , ffi: foreigns.concat(["test/Main.js"])
-                         }))
+    .pipe(purescript.psc({
+        main: "Test.Main",
+        ffi: foreigns.concat(["test/Main.js"])
+    }))
     .pipe(run("node"));
 });
 
-gulp.task("default", ["make", "docs", "dotpsci"]);
+gulp.task("default", ["make", "docs", "dotpsci", "test"]);

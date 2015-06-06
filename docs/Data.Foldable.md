@@ -9,6 +9,12 @@ class Foldable f where
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 ```
 
+`Foldable` represents data structures which can be _folded_.
+
+- `foldr` folds a structure from the right
+- `foldl` folds a structure from the left
+- `foldMap` folds a structure by accumulating values in a `Monoid`
+
 ##### Instances
 ``` purescript
 instance foldableArray :: Foldable Array
@@ -17,16 +23,10 @@ instance foldableFirst :: Foldable First
 instance foldableLast :: Foldable Last
 instance foldableAdditive :: Foldable Additive
 instance foldableDual :: Foldable Dual
-instance foldableInf :: Foldable Inf
+instance foldableDisj :: Foldable Disj
+instance foldableConj :: Foldable Conj
 instance foldableMultiplicative :: Foldable Multiplicative
-instance foldableSup :: Foldable Sup
 ```
-
-`Foldable` represents data structures which can be _folded_.
-
-- `foldr` folds a structure from the right
-- `foldl` folds a structure from the left
-- `foldMap` folds a structure by accumulating values in a `Monoid`
 
 #### `fold`
 
@@ -106,7 +106,7 @@ combining adjacent elements using the specified separator.
 #### `and`
 
 ``` purescript
-and :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
+and :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 ```
 
 Test whether all `Boolean` values in a data structure are `true`.
@@ -114,7 +114,7 @@ Test whether all `Boolean` values in a data structure are `true`.
 #### `or`
 
 ``` purescript
-or :: forall a f. (Foldable f, BoundedLattice a) => f a -> a
+or :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 ```
 
 Test whether any `Boolean` value in a data structure is `true`.
@@ -122,7 +122,7 @@ Test whether any `Boolean` value in a data structure is `true`.
 #### `any`
 
 ``` purescript
-any :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
+any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
 ```
 
 Test whether a predicate holds for any element in a data structure.
@@ -130,7 +130,7 @@ Test whether a predicate holds for any element in a data structure.
 #### `all`
 
 ``` purescript
-all :: forall a b f. (Foldable f, BoundedLattice b) => (a -> b) -> f a -> b
+all :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
 ```
 
 Test whether a predicate holds for all elements in a data structure.

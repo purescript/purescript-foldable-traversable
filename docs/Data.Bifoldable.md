@@ -54,7 +54,7 @@ ignoring the final result.
 #### `biany`
 
 ``` purescript
-biany :: forall t a b c. (Bifoldable t, BoundedLattice c) => (a -> c) -> (b -> c) -> t a b -> c
+biany :: forall t a b c. (Bifoldable t, BooleanAlgebra c) => (a -> c) -> (b -> c) -> t a b -> c
 ```
 
 Test whether a predicate holds at any position in a data structure.
@@ -62,7 +62,7 @@ Test whether a predicate holds at any position in a data structure.
 #### `biall`
 
 ``` purescript
-biall :: forall t a b c. (Bifoldable t, BoundedLattice c) => (a -> c) -> (b -> c) -> t a b -> c
+biall :: forall t a b c. (Bifoldable t, BooleanAlgebra c) => (a -> c) -> (b -> c) -> t a b -> c
 ```
 
 

@@ -8,19 +8,6 @@ class (Functor t, Foldable t) <= Traversable t where
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 ```
 
-##### Instances
-``` purescript
-instance traversableArray :: Traversable Array
-instance traversableMaybe :: Traversable Maybe
-instance traversableFirst :: Traversable First
-instance traversableLast :: Traversable Last
-instance traversableAdditive :: Traversable Additive
-instance traversableDual :: Traversable Dual
-instance traversableInf :: Traversable Inf
-instance traversableMultiplicative :: Traversable Multiplicative
-instance traversableSup :: Traversable Sup
-```
-
 `Traversable` represents data structures which can be _traversed_,
 accumulating results and effects in some `Applicative` functor.
 
@@ -39,6 +26,19 @@ following sense:
 `Foldable` instances, in the following sense:
 
 - `foldMap f = runConst <<< traverse (Const <<< f)`
+
+##### Instances
+``` purescript
+instance traversableArray :: Traversable Array
+instance traversableMaybe :: Traversable Maybe
+instance traversableFirst :: Traversable First
+instance traversableLast :: Traversable Last
+instance traversableAdditive :: Traversable Additive
+instance traversableDual :: Traversable Dual
+instance traversableConj :: Traversable Conj
+instance traversableDisj :: Traversable Disj
+instance traversableMultiplicative :: Traversable Multiplicative
+```
 
 #### `for`
 

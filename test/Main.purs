@@ -3,11 +3,11 @@ module Test.Main where
 
 import Prelude
 
+import Control.Monad.Eff.Console
+import Data.Foldable
 import Data.Maybe
 import Data.Monoid.Additive
-import Data.Foldable
 import Data.Traversable
-import Console
 import Test.Assert
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
