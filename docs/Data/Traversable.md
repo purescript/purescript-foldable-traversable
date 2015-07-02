@@ -51,7 +51,7 @@ instance traversableMultiplicative :: Traversable Multiplicative
 traverseDefault :: forall t a b m. (Traversable t, Applicative m) => (a -> m b) -> t a -> m (t b)
 ```
 
-A default implementation of `traverse` using `sequence` and `map`
+A default implementation of `traverse` using `sequence` and `map`.
 
 #### `sequenceDefault`
 
@@ -59,7 +59,7 @@ A default implementation of `traverse` using `sequence` and `map`
 sequenceDefault :: forall t a m. (Traversable t, Applicative m) => t (m a) -> m (t a)
 ```
 
-A default implementation of `sequence` using `traverse`
+A default implementation of `sequence` using `traverse`.
 
 #### `for`
 

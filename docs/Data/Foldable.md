@@ -19,10 +19,10 @@ Default implementations are provided by the following functions:
 
 - `foldrDefault`
 - `foldlDefault`
-- `foldMapDefaultL`
 - `foldMapDefaultR`
+- `foldMapDefaultL`
 
-Note: that some combinations of the default implementations are unsafe to
+Note: some combinations of the default implementations are unsafe to
 use together - causing a non-terminating mutually recursive cycle.
 These combinations are documented per function.
 
@@ -45,7 +45,7 @@ instance foldableMultiplicative :: Foldable Multiplicative
 foldrDefault :: forall f a b. (Foldable f) => (a -> b -> b) -> b -> f a -> b
 ```
 
-A default implementation of `foldr` using `foldMap`
+A default implementation of `foldr` using `foldMap`.
 
 Note: when defining a `Foldable` instance, this function is unsafe to use
 in combination with `foldMapDefaultR`.
@@ -56,21 +56,10 @@ in combination with `foldMapDefaultR`.
 foldlDefault :: forall f a b. (Foldable f) => (b -> a -> b) -> b -> f a -> b
 ```
 
-A default implementation of `foldl` using `foldMap`
+A default implementation of `foldl` using `foldMap`.
 
 Note: when defining a `Foldable` instance, this function is unsafe to use
 in combination with `foldMapDefaultL`.
-
-#### `foldMapDefaultL`
-
-``` purescript
-foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
-```
-
-A default implementation of `foldMap` using `foldl`
-
-Note: when defining a `Foldable` instance, this function is unsafe to use
-in combination with `foldlDefault`.
 
 #### `foldMapDefaultR`
 
@@ -78,10 +67,21 @@ in combination with `foldlDefault`.
 foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
 ```
 
-A default implementation of `foldMap` using `foldr`
+A default implementation of `foldMap` using `foldr`.
 
 Note: when defining a `Foldable` instance, this function is unsafe to use
 in combination with `foldrDefault`.
+
+#### `foldMapDefaultL`
+
+``` purescript
+foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
+```
+
+A default implementation of `foldMap` using `foldl`.
+
+Note: when defining a `Foldable` instance, this function is unsafe to use
+in combination with `foldlDefault`.
 
 #### `fold`
 

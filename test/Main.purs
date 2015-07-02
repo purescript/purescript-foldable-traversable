@@ -46,7 +46,8 @@ main = do
   log "All done!"
 
 
-testFoldableFWith :: forall f e. (Foldable f, Eq (f Int)) => (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+testFoldableFWith :: forall f e. (Foldable f, Eq (f Int)) =>
+                     (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
 testFoldableFWith f n = do
   let arr = f n
   let expectedSum = (n / 2) * (n + 1)
@@ -58,7 +59,8 @@ testFoldableFWith f n = do
 testFoldableArrayWith = testFoldableFWith arrayFrom1UpTo
 
 
-testTraversableFWith :: forall f e. (Traversable f, Eq (f Int)) => (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+testTraversableFWith :: forall f e. (Traversable f, Eq (f Int)) =>
+                        (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
 testTraversableFWith f n = do
   let arr = f n
 

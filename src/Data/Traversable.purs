@@ -49,12 +49,14 @@ class (Functor t, Foldable t) <= Traversable t where
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
 
 
--- | A default implementation of `traverse` using `sequence` and `map`
-traverseDefault :: forall t a b m. (Traversable t, Applicative m) => (a -> m b) -> t a -> m (t b)
+-- | A default implementation of `traverse` using `sequence` and `map`.
+traverseDefault :: forall t a b m. (Traversable t, Applicative m) =>
+                   (a -> m b) -> t a -> m (t b)
 traverseDefault f ta = sequence (map f ta)
 
--- | A default implementation of `sequence` using `traverse`
-sequenceDefault :: forall t a m. (Traversable t, Applicative m) => t (m a) -> m (t a)
+-- | A default implementation of `sequence` using `traverse`.
+sequenceDefault :: forall t a m. (Traversable t, Applicative m) =>
+                   t (m a) -> m (t a)
 sequenceDefault tma = traverse id tma
 
 
