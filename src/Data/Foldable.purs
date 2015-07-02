@@ -1,5 +1,6 @@
 module Data.Foldable
   ( Foldable, foldr, foldl, foldMap
+  , foldrDefault, foldlDefault, foldMapDefaultL, foldMapDefaultR
   , fold
   , traverse_
   , for_
@@ -25,7 +26,8 @@ import Data.Maybe.First (First(..), runFirst)
 import Data.Maybe.Last (Last(..))
 import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
-import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.Dual (Dual(..), runDual)
+import Data.Monoid.Endo (Endo(..), runEndo)
 import Data.Monoid.Disj (Disj(..), runDisj)
 import Data.Monoid.Conj (Conj(..), runConj)
 import Data.Monoid.Multiplicative (Multiplicative(..))
@@ -40,10 +42,32 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
 
+
+-- | A default implementation of `foldr` using `foldMap`
+foldrDefault :: forall f a b. (Foldable f) =>
+                (a -> b -> b) -> b -> f a -> b
+foldrDefault c u xs = runEndo (foldMap (Endo <<< c) xs) u
+
+-- | A default implementation of `foldl` using `foldMap`
+foldlDefault :: forall f a b. (Foldable f) =>
+                (b -> a -> b) -> b -> f a -> b
+foldlDefault c u xs = runEndo (runDual (foldMap (Dual <<< Endo <<< flip c) xs)) u
+
+-- | A default implementation of `foldMap` using `foldl`
+foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) =>
+                   (a -> m) -> f a -> m
+foldMapDefaultL f xs = foldl (\acc x -> f x <> acc) mempty xs
+
+-- | A default implementation of `foldMap` using `foldr`
+foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) =>
+                   (a -> m) -> f a -> m
+foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs
+
+
 instance foldableArray :: Foldable Array where
-  foldr = foldrArray
-  foldl = foldlArray
-  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
+  foldr   = foldrArray
+  foldl   = foldlArray
+  foldMap = foldMapDefaultR
 
 foreign import foldrArray :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foreign import foldlArray :: forall a b. (b -> a -> b) -> b -> Array a -> b

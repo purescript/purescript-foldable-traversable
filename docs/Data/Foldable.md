@@ -28,6 +28,38 @@ instance foldableConj :: Foldable Conj
 instance foldableMultiplicative :: Foldable Multiplicative
 ```
 
+#### `foldrDefault`
+
+``` purescript
+foldrDefault :: forall f a b. (Foldable f) => (a -> b -> b) -> b -> f a -> b
+```
+
+A default implementation of `foldr` using `foldMap`
+
+#### `foldlDefault`
+
+``` purescript
+foldlDefault :: forall f a b. (Foldable f) => (b -> a -> b) -> b -> f a -> b
+```
+
+A default implementation of `foldl` using `foldMap`
+
+#### `foldMapDefaultL`
+
+``` purescript
+foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
+```
+
+A default implementation of `foldMap` using `foldl`
+
+#### `foldMapDefaultR`
+
+``` purescript
+foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
+```
+
+A default implementation of `foldMap` using `foldr`
+
 #### `fold`
 
 ``` purescript
