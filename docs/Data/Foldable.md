@@ -15,6 +15,17 @@ class Foldable f where
 - `foldl` folds a structure from the left
 - `foldMap` folds a structure by accumulating values in a `Monoid`
 
+Default implementations are provided by the following functions:
+
+- `foldrDefault`
+- `foldlDefault`
+- `foldMapDefaultL`
+- `foldMapDefaultR`
+
+Note: that some combinations of the default implementations are unsafe to
+use together - causing a non-terminating mutually recursive cycle.
+These combinations are documented per function.
+
 ##### Instances
 ``` purescript
 instance foldableArray :: Foldable Array
@@ -36,6 +47,9 @@ foldrDefault :: forall f a b. (Foldable f) => (a -> b -> b) -> b -> f a -> b
 
 A default implementation of `foldr` using `foldMap`
 
+Note: when defining a `Foldable` instance, this function is unsafe to use
+in combination with `foldMapDefaultR`.
+
 #### `foldlDefault`
 
 ``` purescript
@@ -43,6 +57,9 @@ foldlDefault :: forall f a b. (Foldable f) => (b -> a -> b) -> b -> f a -> b
 ```
 
 A default implementation of `foldl` using `foldMap`
+
+Note: when defining a `Foldable` instance, this function is unsafe to use
+in combination with `foldMapDefaultL`.
 
 #### `foldMapDefaultL`
 
@@ -52,6 +69,9 @@ foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
 
 A default implementation of `foldMap` using `foldl`
 
+Note: when defining a `Foldable` instance, this function is unsafe to use
+in combination with `foldlDefault`.
+
 #### `foldMapDefaultR`
 
 ``` purescript
@@ -59,6 +79,9 @@ foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) => (a -> m) -> f a -> m
 ```
 
 A default implementation of `foldMap` using `foldr`
+
+Note: when defining a `Foldable` instance, this function is unsafe to use
+in combination with `foldrDefault`.
 
 #### `fold`
 

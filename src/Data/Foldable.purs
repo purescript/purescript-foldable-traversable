@@ -37,6 +37,17 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 -- | - `foldr` folds a structure from the right
 -- | - `foldl` folds a structure from the left
 -- | - `foldMap` folds a structure by accumulating values in a `Monoid`
+-- |
+-- | Default implementations are provided by the following functions:
+-- |
+-- | - `foldrDefault`
+-- | - `foldlDefault`
+-- | - `foldMapDefaultL`
+-- | - `foldMapDefaultR`
+-- |
+-- | Note: that some combinations of the default implementations are unsafe to
+-- | use together - causing a non-terminating mutually recursive cycle.
+-- | These combinations are documented per function.
 class Foldable f where
   foldr :: forall a b. (a -> b -> b) -> b -> f a -> b
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
@@ -44,21 +55,33 @@ class Foldable f where
 
 
 -- | A default implementation of `foldr` using `foldMap`
+-- |
+-- | Note: when defining a `Foldable` instance, this function is unsafe to use
+-- | in combination with `foldMapDefaultR`.
 foldrDefault :: forall f a b. (Foldable f) =>
                 (a -> b -> b) -> b -> f a -> b
 foldrDefault c u xs = runEndo (foldMap (Endo <<< c) xs) u
 
 -- | A default implementation of `foldl` using `foldMap`
+-- |
+-- | Note: when defining a `Foldable` instance, this function is unsafe to use
+-- | in combination with `foldMapDefaultL`.
 foldlDefault :: forall f a b. (Foldable f) =>
                 (b -> a -> b) -> b -> f a -> b
 foldlDefault c u xs = runEndo (runDual (foldMap (Dual <<< Endo <<< flip c) xs)) u
 
 -- | A default implementation of `foldMap` using `foldl`
+-- |
+-- | Note: when defining a `Foldable` instance, this function is unsafe to use
+-- | in combination with `foldlDefault`.
 foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) =>
                    (a -> m) -> f a -> m
 foldMapDefaultL f xs = foldl (\acc x -> f x <> acc) mempty xs
 
 -- | A default implementation of `foldMap` using `foldr`
+-- |
+-- | Note: when defining a `Foldable` instance, this function is unsafe to use
+-- | in combination with `foldrDefault`.
 foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) =>
                    (a -> m) -> f a -> m
 foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs

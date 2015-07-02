@@ -27,6 +27,11 @@ following sense:
 
 - `foldMap f = runConst <<< traverse (Const <<< f)`
 
+Default implementations are provided by the following functions:
+
+- `traverseDefault`
+- `sequenceDefault`
+
 ##### Instances
 ``` purescript
 instance traversableArray :: Traversable Array

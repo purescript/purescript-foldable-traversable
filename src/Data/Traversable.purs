@@ -39,6 +39,11 @@ import Data.Monoid.Conj (Conj(..), runConj)
 -- | `Foldable` instances, in the following sense:
 -- |
 -- | - `foldMap f = runConst <<< traverse (Const <<< f)`
+-- |
+-- | Default implementations are provided by the following functions:
+-- |
+-- | - `traverseDefault`
+-- | - `sequenceDefault`
 class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
