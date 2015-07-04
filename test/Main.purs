@@ -50,7 +50,13 @@ main = do
   testBifoldableIOrWith 10 100 42
 
   log "Test Bitraversable on `inclusive or`"
-  testBitraversableIOr
+  testBitraversableIOrWith id
+
+  log "Test bitraverseDefault"
+  testBitraversableIOrWith BTD
+
+  log "Test bisequenceDefault"
+  testBitraversableIOrWith BSD
 
   log "All done!"
 
@@ -207,12 +213,45 @@ testBifoldableIOrWith fst snd u = do
   assert $ bifoldMap Additive Additive (Fst fst)      == Additive fst
   assert $ bifoldMap Additive Additive (Snd snd)      == Additive snd
 
-testBitraversableIOr :: forall e. Eff (assert :: ASSERT | e) Unit
-testBitraversableIOr = do
-  assert $ bisequence (Both (Just true) (Just false)) == Just (Both true false)
-  assert $ bisequence (Fst (Just true))               == Just (Fst true  :: IOr Boolean Boolean)
-  assert $ bisequence (Snd (Just false))              == Just (Snd false :: IOr Boolean Boolean)
-  assert $ bitraverse Just Just (Both true false)     == Just (Both true false)
-  assert $ bitraverse Just Just (Fst true)            == Just (Fst true  :: IOr Boolean Boolean)
-  assert $ bitraverse Just Just (Snd false)           == Just (Snd false :: IOr Boolean Boolean)
+testBitraversableIOrWith :: forall t e. (Bitraversable t, Eq (t Boolean Boolean)) =>
+                        (forall l r. IOr l r -> t l r) ->
+                        Eff (assert :: ASSERT | e) Unit
+testBitraversableIOrWith lift = do
+  let just a = Just (lift a)
+  assert $ bisequence (lift (Both (Just true) (Just false))) == just (Both true false)
+  assert $ bisequence (lift (Fst (Just true)))               == just (Fst true  :: IOr Boolean Boolean)
+  assert $ bisequence (lift (Snd (Just false)))              == just (Snd false :: IOr Boolean Boolean)
+  assert $ bitraverse Just Just (lift (Both true false))     == just (Both true false)
+  assert $ bitraverse Just Just (lift (Fst true))            == just (Fst true  :: IOr Boolean Boolean)
+  assert $ bitraverse Just Just (lift (Snd false))           == just (Snd false :: IOr Boolean Boolean)
+
+
+-- structures for testing default `Bitraversable` implementations
+
+newtype BitraverseDefault l r = BTD (IOr l r)
+newtype BisequenceDefault l r = BSD (IOr l r)
+
+instance eqBTD :: (Eq l, Eq r) => Eq (BitraverseDefault l r) where eq (BTD l) (BTD r) = l == r
+instance eqBSD :: (Eq l, Eq r) => Eq (BisequenceDefault l r) where eq (BSD l) (BSD r) = l == r
+
+instance bifunctorBTD :: Bifunctor BitraverseDefault where bimap f g (BTD m) = BTD (bimap f g m)
+instance bifunctorBSD :: Bifunctor BisequenceDefault where bimap f g (BSD m) = BSD (bimap f g m)
+
+instance bifoldableBTD :: Bifoldable BitraverseDefault where
+  bifoldMap f g (BTD m) = bifoldMap f g m
+  bifoldr f g u (BTD m) = bifoldr f g u m
+  bifoldl f g u (BTD m) = bifoldl f g u m
+
+instance bifoldableBSD :: Bifoldable BisequenceDefault where
+  bifoldMap f g (BSD m) = bifoldMap f g m
+  bifoldr f g u (BSD m) = bifoldr f g u m
+  bifoldl f g u (BSD m) = bifoldl f g u m
+
+instance bitraversableBTD :: Bitraversable BitraverseDefault where
+  bitraverse f g     = bitraverseDefault f g
+  bisequence (BTD m) = map BTD (bisequence m)
+
+instance bitraversableBSD :: Bitraversable BisequenceDefault where
+  bitraverse f g (BSD m) = map BSD (bitraverse f g m)
+  bisequence m           = bisequenceDefault m
 
