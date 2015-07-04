@@ -14,10 +14,10 @@ bower install purescript-foldable-traversable
 
 ## Module documentation
 
-- [Data.Foldable](docs/Data.Foldable.md)
-- [Data.Traversable](docs/Data.Traversable.md)
+- [Data.Foldable](docs/Data/Foldable.md)
+- [Data.Traversable](docs/Data/Traversable.md)
 
 ## Bifunctors
 
-- [Data.Bifoldable](docs/Data.Bifoldable.md)
-- [Data.Bitraversable](docs/Data.Bitraversable.md)
+- [Data.Bifoldable](docs/Data/Bifoldable.md)
+- [Data.Bitraversable](docs/Data/Bitraversable.md)
