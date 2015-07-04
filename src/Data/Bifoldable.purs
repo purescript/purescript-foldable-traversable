@@ -3,9 +3,11 @@ module Data.Bifoldable where
 import Prelude
 
 import Control.Apply ((*>))
-import Data.Monoid (Monoid)
+import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Disj (Disj(..), runDisj)
 import Data.Monoid.Conj (Conj(..), runConj)
+import Data.Monoid.Endo (Endo(..), runEndo)
+import Data.Monoid.Dual (Dual(..), runDual)
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -14,10 +16,59 @@ import Data.Monoid.Conj (Conj(..), runConj)
 -- | argument. Type class instances should choose the appropriate step function based
 -- | on the type of the element encountered at each point of the fold.
 -- |
+-- | Default implementations are provided by the following functions:
+-- |
+-- | - `bifoldrDefault`
+-- | - `bifoldlDefault`
+-- | - `bifoldMapDefaultR`
+-- | - `bifoldMapDefaultL`
+-- |
+-- | Note: some combinations of the default implementations are unsafe to
+-- | use together - causing a non-terminating mutually recursive cycle.
+-- | These combinations are documented per function.
 class Bifoldable p where
   bifoldr :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
   bifoldl :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
   bifoldMap :: forall m a b. (Monoid m) => (a -> m) -> (b -> m) -> p a b -> m
+
+
+-- | A default implementation of `bifoldr` using `bifoldMap`.
+-- |
+-- | Note: when defining a `Bifoldable` instance, this function is unsafe to
+-- | use in combination with `bifoldMapDefaultR`.
+bifoldrDefault :: forall p a b c. (Bifoldable p) =>
+                  (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
+bifoldrDefault f g z p = runEndo (bifoldMap (Endo <<< f)
+                                            (Endo <<< g) p) z
+
+-- | A default implementation of `bifoldl` using `bifoldMap`.
+-- |
+-- | Note: when defining a `Bifoldable` instance, this function is unsafe to
+-- | use in combination with `bifoldMapDefaultL`.
+bifoldlDefault :: forall p a b c. (Bifoldable p) =>
+                  (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
+bifoldlDefault f g z p = runEndo (runDual
+  (bifoldMap (Dual <<< Endo <<< flip f)
+             (Dual <<< Endo <<< flip g) p)) z
+
+-- | A default implementation of `bifoldMap` using `bifoldr`.
+-- |
+-- | Note: when defining a `Bifoldable` instance, this function is unsafe to
+-- | use in combination with `bifoldrDefault`.
+bifoldMapDefaultR :: forall p m a b. (Bifoldable p, Monoid m) =>
+                     (a -> m) -> (b -> m) -> p a b -> m
+bifoldMapDefaultR f g p = bifoldr ((<>) <<< f)
+                                  ((<>) <<< g) mempty p
+
+-- | A default implementation of `bifoldMap` using `bifoldl`.
+-- |
+-- | Note: when defining a `Bifoldable` instance, this function is unsafe to
+-- | use in combination with `bifoldlDefault`.
+bifoldMapDefaultL :: forall p m a b. (Bifoldable p, Monoid m) =>
+                     (a -> m) -> (b -> m) -> p a b -> m
+bifoldMapDefaultL f g p = bifoldl (\m a -> m <> f a)
+                                  (\m b -> m <> g b) mempty p
+
 
 -- | Fold a data structure, accumulating values in a monoidal type.
 bifold :: forall t m. (Bifoldable t, Monoid m) => t m m -> m

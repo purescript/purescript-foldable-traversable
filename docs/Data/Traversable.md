@@ -27,6 +27,11 @@ following sense:
 
 - `foldMap f = runConst <<< traverse (Const <<< f)`
 
+Default implementations are provided by the following functions:
+
+- `traverseDefault`
+- `sequenceDefault`
+
 ##### Instances
 ``` purescript
 instance traversableArray :: Traversable Array
@@ -39,6 +44,22 @@ instance traversableConj :: Traversable Conj
 instance traversableDisj :: Traversable Disj
 instance traversableMultiplicative :: Traversable Multiplicative
 ```
+
+#### `traverseDefault`
+
+``` purescript
+traverseDefault :: forall t a b m. (Traversable t, Applicative m) => (a -> m b) -> t a -> m (t b)
+```
+
+A default implementation of `traverse` using `sequence` and `map`.
+
+#### `sequenceDefault`
+
+``` purescript
+sequenceDefault :: forall t a m. (Traversable t, Applicative m) => t (m a) -> m (t a)
+```
+
+A default implementation of `sequence` using `traverse`.
 
 #### `for`
 

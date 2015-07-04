@@ -1,7 +1,6 @@
 module Data.Traversable
-  ( Traversable
-  , traverse
-  , sequence
+  ( Traversable, traverse, sequence
+  , traverseDefault, sequenceDefault
   , for
   , Accum()
   , scanl
@@ -40,9 +39,26 @@ import Data.Monoid.Conj (Conj(..), runConj)
 -- | `Foldable` instances, in the following sense:
 -- |
 -- | - `foldMap f = runConst <<< traverse (Const <<< f)`
+-- |
+-- | Default implementations are provided by the following functions:
+-- |
+-- | - `traverseDefault`
+-- | - `sequenceDefault`
 class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
+
+
+-- | A default implementation of `traverse` using `sequence` and `map`.
+traverseDefault :: forall t a b m. (Traversable t, Applicative m) =>
+                   (a -> m b) -> t a -> m (t b)
+traverseDefault f ta = sequence (map f ta)
+
+-- | A default implementation of `sequence` using `traverse`.
+sequenceDefault :: forall t a m. (Traversable t, Applicative m) =>
+                   t (m a) -> m (t a)
+sequenceDefault tma = traverse id tma
+
 
 foreign import traverseArrayImpl
   :: forall m a b. (m (a -> b) -> m a -> m b) ->
@@ -54,7 +70,7 @@ foreign import traverseArrayImpl
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
-  sequence = traverse id
+  sequence = sequenceDefault
 
 instance traversableMaybe :: Traversable Maybe where
   traverse _ Nothing  = pure Nothing
