@@ -47,7 +47,19 @@ main = do
   testSequenceDefault 20
 
   log "Test Bifoldable on `inclusive or`"
-  testBifoldableIOrWith 10 100 42
+  testBifoldableIOrWith id 10 100 42
+
+  log "Test bifoldMapDefaultL"
+  testBifoldableIOrWith BFML 10 100 42
+
+  log "Test bifoldMapDefaultR"
+  testBifoldableIOrWith BFMR 10 100 42
+
+  log "Test bifoldlDefault"
+  testBifoldableIOrWith BFLD 10 100 42
+
+  log "Test bifoldrDefault"
+  testBifoldableIOrWith BFRD 10 100 42
 
   log "Test Bitraversable on `inclusive or`"
   testBitraversableIOrWith id
@@ -199,19 +211,22 @@ instance bitraversableIOr :: Bitraversable IOr where
   bisequence (Fst fst)      = Fst <$> fst
   bisequence (Snd snd)      = Snd <$> snd
 
-testBifoldableIOrWith :: forall e. Int -> Int -> Int -> Eff (assert :: ASSERT | e) Unit
-testBifoldableIOrWith fst snd u = do
-  assert $ bifoldr (+) (*) u (Both fst snd) == fst + (snd * u)
-  assert $ bifoldr (+) (*) u (Fst fst)      == fst + u
-  assert $ bifoldr (+) (*) u (Snd snd)      == snd * u
+testBifoldableIOrWith :: forall t e. (Bifoldable t, Eq (t Int Int)) =>
+                         (forall l r. IOr l r -> t l r) ->
+                         Int -> Int -> Int ->
+                         Eff (assert :: ASSERT | e) Unit
+testBifoldableIOrWith lift fst snd u = do
+  assert $ bifoldr (+) (*) u (lift $ Both fst snd) == fst + (snd * u)
+  assert $ bifoldr (+) (*) u (lift $ Fst fst)      == fst + u
+  assert $ bifoldr (+) (*) u (lift $ Snd snd)      == snd * u
 
-  assert $ bifoldl (+) (*) u (Both fst snd) == (u + fst) * snd
-  assert $ bifoldl (+) (*) u (Fst fst)      == u + fst
-  assert $ bifoldl (+) (*) u (Snd snd)      == u * snd
+  assert $ bifoldl (+) (*) u (lift $ Both fst snd) == (u + fst) * snd
+  assert $ bifoldl (+) (*) u (lift $ Fst fst)      == u + fst
+  assert $ bifoldl (+) (*) u (lift $ Snd snd)      == u * snd
 
-  assert $ bifoldMap Additive Additive (Both fst snd) == Additive (fst + snd)
-  assert $ bifoldMap Additive Additive (Fst fst)      == Additive fst
-  assert $ bifoldMap Additive Additive (Snd snd)      == Additive snd
+  assert $ bifoldMap Additive Additive (lift $ Both fst snd) == Additive (fst + snd)
+  assert $ bifoldMap Additive Additive (lift $ Fst fst)      == Additive fst
+  assert $ bifoldMap Additive Additive (lift $ Snd snd)      == Additive snd
 
 testBitraversableIOrWith :: forall t e. (Bitraversable t, Eq (t Boolean Boolean)) =>
                         (forall l r. IOr l r -> t l r) ->
@@ -224,6 +239,39 @@ testBitraversableIOrWith lift = do
   assert $ bitraverse Just Just (lift (Both true false))     == just (Both true false)
   assert $ bitraverse Just Just (lift (Fst true))            == just (Fst true  :: IOr Boolean Boolean)
   assert $ bitraverse Just Just (lift (Snd false))           == just (Snd false :: IOr Boolean Boolean)
+
+
+-- structures for testing default `Bifoldable` implementations
+
+newtype BifoldMapDefaultL l r = BFML (IOr l r)
+newtype BifoldMapDefaultR l r = BFMR (IOr l r)
+newtype BifoldlDefault    l r = BFLD (IOr l r)
+newtype BifoldrDefault    l r = BFRD (IOr l r)
+
+instance eqBFML :: (Eq l, Eq r) => Eq (BifoldMapDefaultL l r) where eq (BFML l) (BFML r) = l == r
+instance eqBFMR :: (Eq l, Eq r) => Eq (BifoldMapDefaultR l r) where eq (BFMR l) (BFMR r) = l == r
+instance eqBFLD :: (Eq l, Eq r) => Eq (BifoldlDefault l r)    where eq (BFLD l) (BFLD r) = l == r
+instance eqBFRD :: (Eq l, Eq r) => Eq (BifoldrDefault l r)    where eq (BFRD l) (BFRD r) = l == r
+
+instance bifoldableBFML :: Bifoldable BifoldMapDefaultL where
+  bifoldMap f g m        = bifoldMapDefaultL f g m
+  bifoldr f g u (BFML m) = bifoldr f g u m
+  bifoldl f g u (BFML m) = bifoldl f g u m
+
+instance bifoldableBFMR :: Bifoldable BifoldMapDefaultR where
+  bifoldMap f g m        = bifoldMapDefaultR f g m
+  bifoldr f g u (BFMR m) = bifoldr f g u m
+  bifoldl f g u (BFMR m) = bifoldl f g u m
+
+instance bifoldableBFLD :: Bifoldable BifoldlDefault where
+  bifoldMap f g (BFLD m) = bifoldMap f g m
+  bifoldr f g u (BFLD m) = bifoldr f g u m
+  bifoldl f g u m        = bifoldlDefault f g u m
+
+instance bifoldableBFRD :: Bifoldable BifoldrDefault where
+  bifoldMap f g (BFRD m) = bifoldMap f g m
+  bifoldr f g u m        = bifoldrDefault f g u m
+  bifoldl f g u (BFRD m) = bifoldl f g u m
 
 
 -- structures for testing default `Bitraversable` implementations
