@@ -36,6 +36,23 @@ bisequenceDefault :: forall t f a b. (Bitraversable t, Applicative f) => t (f a)
 
 A default implementation of `bisequence` using `bitraverse`.
 
+#### `bimapDefault`
+
+``` purescript
+bimapDefault :: forall t a b c d. (Bitraversable t) => (a -> c) -> (b -> d) -> t a b -> t c d
+```
+
+A default implementation of `bimap` using `bitraverse`.
+Note: it is unsafe to use both `bimapDefault` and `bitraverseDefault`.
+
+#### `bifoldMapDefaultT`
+
+``` purescript
+bifoldMapDefaultT :: forall t a b m. (Bitraversable t, Monoid m) => (a -> m) -> (b -> m) -> t a b -> m
+```
+
+A default implementation of `bifoldMap` using `bitraverse`.
+
 #### `bifor`
 
 ``` purescript
