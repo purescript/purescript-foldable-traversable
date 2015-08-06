@@ -61,6 +61,22 @@ sequenceDefault :: forall t a m. (Traversable t, Applicative m) => t (m a) -> m 
 
 A default implementation of `sequence` using `traverse`.
 
+#### `mapDefault`
+
+``` purescript
+mapDefault :: forall t a b. (Traversable t) => (a -> b) -> t a -> t b
+```
+
+A default implementation of `map` using `traverse`
+
+#### `foldMapDefaultT`
+
+``` purescript
+foldMapDefaultT :: forall t a m. (Traversable t, Monoid m) => (a -> m) -> t a -> m
+```
+
+A default implementation of `foldMap` using `traverse`.
+
 #### `for`
 
 ``` purescript

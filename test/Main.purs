@@ -28,6 +28,9 @@ main = do
   log "Test foldMapDefaultR"
   testFoldableFoldMapDefaultR 20
 
+  log "Test foldMapDefaultT"
+  testFoldableFoldMapDefaultT 20
+
   log "Test foldlDefault"
   testFoldableFoldlDefault 20
 
@@ -46,6 +49,9 @@ main = do
   log "Test sequenceDefault"
   testSequenceDefault 20
 
+  log "Test mapDefault"
+  testMapDefault
+
   log "Test Bifoldable on `inclusive or`"
   testBifoldableIOrWith id 10 100 42
 
@@ -54,6 +60,9 @@ main = do
 
   log "Test bifoldMapDefaultR"
   testBifoldableIOrWith BFMR 10 100 42
+
+  log "Test bifoldMapDefaultT"
+  testBifoldableIOrWith BFMT 10 100 42
 
   log "Test bifoldlDefault"
   testBifoldableIOrWith BFLD 10 100 42
@@ -69,6 +78,9 @@ main = do
 
   log "Test bisequenceDefault"
   testBitraversableIOrWith BSD
+
+  log "Test bimapDefault"
+  testBimapDefault
 
   log "All done!"
 
@@ -103,40 +115,56 @@ testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
 newtype FoldMapDefaultL a = FML (Array a)
 newtype FoldMapDefaultR a = FMR (Array a)
+newtype FoldMapDefaultT a = FMT (Array a)
 newtype FoldlDefault    a = FLD (Array a)
 newtype FoldrDefault    a = FRD (Array a)
 
 instance eqFML :: (Eq a) => Eq (FoldMapDefaultL a) where eq (FML l) (FML r) = l == r
 instance eqFMR :: (Eq a) => Eq (FoldMapDefaultR a) where eq (FMR l) (FMR r) = l == r
+instance eqFMT :: (Eq a) => Eq (FoldMapDefaultT a) where eq (FMT l) (FMT r) = l == r
 instance eqFLD :: (Eq a) => Eq (FoldlDefault a)    where eq (FLD l) (FLD r) = l == r
 instance eqFRD :: (Eq a) => Eq (FoldrDefault a)    where eq (FRD l) (FRD r) = l == r
 
 -- implemented `foldl` and `foldr`, but default `foldMap` using `foldl`
 instance foldableFML :: Foldable FoldMapDefaultL where
-  foldMap f         = foldMapDefaultL f
+  foldMap f a       = foldMapDefaultL f a
   foldl f u (FML a) = foldl f u a
   foldr f u (FML a) = foldr f u a
 
 -- implemented `foldl` and `foldr`, but default `foldMap`, using `foldr`
 instance foldableFMR :: Foldable FoldMapDefaultR where
-  foldMap f         = foldMapDefaultR f
+  foldMap f a       = foldMapDefaultR f a
   foldl f u (FMR a) = foldl f u a
   foldr f u (FMR a) = foldr f u a
+
+-- implemented `foldl` and `foldr`, but default `foldMap`, using `traverse`
+instance foldableFMT :: Foldable FoldMapDefaultT where
+  foldMap f a       = foldMapDefaultT f a
+  foldl f u (FMT a) = foldl f u a
+  foldr f u (FMT a) = foldr f u a
 
 -- implemented `foldMap` and `foldr`, but default `foldMap`
 instance foldableDFL :: Foldable FoldlDefault where
   foldMap f (FLD a) = foldMap f a
-  foldl f u         = foldlDefault f u
+  foldl f u a       = foldlDefault f u a
   foldr f u (FLD a) = foldr f u a
 
 -- implemented `foldMap` and `foldl`, but default `foldr`
 instance foldableDFR :: Foldable FoldrDefault where
   foldMap f (FRD a) = foldMap f a
   foldl f u (FRD a) = foldl f u a
-  foldr f u         = foldrDefault f u
+  foldr f u a       = foldrDefault f u a
+
+instance functorFMT :: Functor FoldMapDefaultT where
+  map f (FMT a) = FMT (map f a)
+
+instance traversableFMT :: Traversable FoldMapDefaultT where
+  traverse f (FMT a) = FMT <$> traverse f a
+  sequence (FMT a)   = FMT <$> sequence a
 
 testFoldableFoldMapDefaultL = testFoldableFWith (FML <<< arrayFrom1UpTo)
 testFoldableFoldMapDefaultR = testFoldableFWith (FMR <<< arrayFrom1UpTo)
+testFoldableFoldMapDefaultT = testFoldableFWith (FMT <<< arrayFrom1UpTo)
 testFoldableFoldlDefault    = testFoldableFWith (FLD <<< arrayFrom1UpTo)
 testFoldableFoldrDefault    = testFoldableFWith (FRD <<< arrayFrom1UpTo)
 
@@ -163,7 +191,7 @@ instance foldableSD :: Foldable SequenceDefault where
   foldl f u (SD a) = foldl f u a
 
 instance traversableTD :: Traversable TraverseDefault where
-  traverse f      = traverseDefault f
+  traverse f a    = traverseDefault f a
   sequence (TD a) = map TD (sequence a)
 
 instance traversableSD :: Traversable SequenceDefault where
@@ -172,6 +200,24 @@ instance traversableSD :: Traversable SequenceDefault where
 
 testTraverseDefault = testTraversableFWith (TD <<< arrayFrom1UpTo)
 testSequenceDefault = testTraversableFWith (SD <<< arrayFrom1UpTo)
+
+
+-- structure for testing default `Functor` implementations
+
+newtype MapDefault a = MD (Array a)
+instance eqMD :: (Eq a) => Eq (MapDefault a) where eq (MD l) (MD r) = l == r
+instance functorMD :: Functor MapDefault     where map f m = mapDefault f m
+
+instance foldableMD :: Foldable MapDefault where
+  foldMap f (MD a) = foldMap f a
+  foldr f u (MD a) = foldr f u a
+  foldl f u (MD a) = foldl f u a
+
+instance traversableMD :: Traversable MapDefault where
+  traverse f (MD a) = map MD (traverse f a)
+  sequence (MD a)   = map MD (sequence a)
+
+testMapDefault = assert $ map Just (MD [1, 2]) == MD [Just 1, Just 2]
 
 
 -- structure for testing bifoldable, picked `inclusive or` as it has both products and sums
@@ -245,11 +291,13 @@ testBitraversableIOrWith lift = do
 
 newtype BifoldMapDefaultL l r = BFML (IOr l r)
 newtype BifoldMapDefaultR l r = BFMR (IOr l r)
+newtype BifoldMapDefaultT l r = BFMT (IOr l r)
 newtype BifoldlDefault    l r = BFLD (IOr l r)
 newtype BifoldrDefault    l r = BFRD (IOr l r)
 
 instance eqBFML :: (Eq l, Eq r) => Eq (BifoldMapDefaultL l r) where eq (BFML l) (BFML r) = l == r
 instance eqBFMR :: (Eq l, Eq r) => Eq (BifoldMapDefaultR l r) where eq (BFMR l) (BFMR r) = l == r
+instance eqBFMT :: (Eq l, Eq r) => Eq (BifoldMapDefaultT l r) where eq (BFMT l) (BFMT r) = l == r
 instance eqBFLD :: (Eq l, Eq r) => Eq (BifoldlDefault l r)    where eq (BFLD l) (BFLD r) = l == r
 instance eqBFRD :: (Eq l, Eq r) => Eq (BifoldrDefault l r)    where eq (BFRD l) (BFRD r) = l == r
 
@@ -263,6 +311,11 @@ instance bifoldableBFMR :: Bifoldable BifoldMapDefaultR where
   bifoldr f g u (BFMR m) = bifoldr f g u m
   bifoldl f g u (BFMR m) = bifoldl f g u m
 
+instance bifoldableBFMT :: Bifoldable BifoldMapDefaultT where
+  bifoldMap f g m        = bifoldMapDefaultT f g m
+  bifoldr f g u (BFMT m) = bifoldr f g u m
+  bifoldl f g u (BFMT m) = bifoldl f g u m
+
 instance bifoldableBFLD :: Bifoldable BifoldlDefault where
   bifoldMap f g (BFLD m) = bifoldMap f g m
   bifoldr f g u (BFLD m) = bifoldr f g u m
@@ -272,6 +325,13 @@ instance bifoldableBFRD :: Bifoldable BifoldrDefault where
   bifoldMap f g (BFRD m) = bifoldMap f g m
   bifoldr f g u m        = bifoldrDefault f g u m
   bifoldl f g u (BFRD m) = bifoldl f g u m
+
+instance bifunctorBFMT :: Bifunctor BifoldMapDefaultT where
+  bimap f g (BFMT a) = BFMT (bimap f g a)
+
+instance bitraversableBFMT :: Bitraversable BifoldMapDefaultT where
+  bitraverse f g (BFMT a) = BFMT <$> bitraverse f g a
+  bisequence (BFMT a)     = BFMT <$> bisequence a
 
 
 -- structures for testing default `Bitraversable` implementations
@@ -296,10 +356,31 @@ instance bifoldableBSD :: Bifoldable BisequenceDefault where
   bifoldl f g u (BSD m) = bifoldl f g u m
 
 instance bitraversableBTD :: Bitraversable BitraverseDefault where
-  bitraverse f g     = bitraverseDefault f g
+  bitraverse f g m   = bitraverseDefault f g m
   bisequence (BTD m) = map BTD (bisequence m)
 
 instance bitraversableBSD :: Bitraversable BisequenceDefault where
   bitraverse f g (BSD m) = map BSD (bitraverse f g m)
   bisequence m           = bisequenceDefault m
 
+
+-- structure for testing default `Bifunctor` implementation
+
+newtype BimapDefault l r = BMD (IOr l r)
+
+instance eqBMD :: (Eq l, Eq r) => Eq (BimapDefault l r) where
+  eq (BMD l) (BMD r) = l == r
+
+instance bifunctorMD :: Bifunctor BimapDefault where
+  bimap f g m = bimapDefault f g m
+
+instance bifoldableMD :: Bifoldable BimapDefault where
+  bifoldMap f g (BMD a) = bifoldMap f g a
+  bifoldr f g u (BMD a) = bifoldr f g u a
+  bifoldl f g u (BMD a) = bifoldl f g u a
+
+instance bitraversableBMD :: Bitraversable BimapDefault where
+  bitraverse f g (BMD a) = map BMD (bitraverse f g a)
+  bisequence (BMD a)     = map BMD (bisequence a)
+
+testBimapDefault = assert $ bimap Just Just (BMD $ Both 1 2) == BMD (Both (Just 1) (Just 2))

@@ -1,6 +1,7 @@
 module Data.Traversable
   ( Traversable, traverse, sequence
   , traverseDefault, sequenceDefault
+  , foldMapDefaultT, mapDefault
   , for
   , Accum()
   , scanl
@@ -15,6 +16,7 @@ import Data.Foldable
 import Data.Maybe (Maybe (..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
+import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
@@ -58,6 +60,30 @@ traverseDefault f ta = sequence (map f ta)
 sequenceDefault :: forall t a m. (Traversable t, Applicative m) =>
                    t (m a) -> m (t a)
 sequenceDefault tma = traverse id tma
+
+
+-- | A default implementation of `map` using `traverse`
+mapDefault :: forall t a b. (Traversable t) => (a -> b) -> t a -> t b
+mapDefault f m = traverse (const <<< f) m unit
+
+
+newtype Const a b = Const a
+
+runConst :: forall a b. Const a b -> a
+runConst (Const a) = a
+
+instance functorConst :: Functor (Const m) where
+  map f (Const a) = Const a
+
+instance applyConst :: (Monoid m) => Apply (Const m) where
+  apply (Const l) (Const r) = Const (l <> r)
+
+instance applicativeConst :: (Monoid m) => Applicative (Const m) where
+  pure _ = Const mempty
+
+-- | A default implementation of `foldMap` using `traverse`.
+foldMapDefaultT :: forall t a m. (Traversable t, Monoid m) => (a -> m) -> t a -> m
+foldMapDefaultT f t = runConst $ traverse (Const <<< f) t
 
 
 foreign import traverseArrayImpl
