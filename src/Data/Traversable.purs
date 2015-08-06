@@ -62,18 +62,9 @@ sequenceDefault :: forall t a m. (Traversable t, Applicative m) =>
 sequenceDefault tma = traverse id tma
 
 
-newtype Id a = Id a
-
-runId :: forall a. Id a -> a
-runId (Id a) = a
-
-instance functorId     :: Functor Id     where map f (Id a) = Id (f a)
-instance applyId       :: Apply Id       where apply (Id f) (Id a) = Id (f a)
-instance applicativeId :: Applicative Id where pure = Id
-
 -- | A default implementation of `map` using `traverse`
 mapDefault :: forall t a b. (Traversable t) => (a -> b) -> t a -> t b
-mapDefault f m = runId $ traverse (Id <<< f) m
+mapDefault f m = traverse (const <<< f) m unit
 
 
 newtype Const a b = Const a

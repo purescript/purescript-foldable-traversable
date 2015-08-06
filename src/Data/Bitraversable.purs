@@ -38,20 +38,11 @@ bisequenceDefault :: forall t f a b. (Bitraversable t, Applicative f) =>
 bisequenceDefault t = bitraverse id id t
 
 
-newtype Id a = Id a
-
-runId :: forall a. Id a -> a
-runId (Id a) = a
-
-instance functorId     :: Functor Id     where map f (Id a) = Id (f a)
-instance applyId       :: Apply Id       where apply (Id f) (Id a) = Id (f a)
-instance applicativeId :: Applicative Id where pure = Id
-
 -- | A default implementation of `bimap` using `bitraverse`.
 -- | Note: it is unsafe to use both `bimapDefault` and `bitraverseDefault`.
 bimapDefault :: forall t a b c d. (Bitraversable t) =>
                 (a -> c) -> (b -> d) -> t a b -> t c d
-bimapDefault f g m = runId $ bitraverse (Id <<< f) (Id <<< g) m
+bimapDefault f g m = bitraverse (const <<< f) (const <<< g) m unit
 
 
 newtype Const a b = Const a
