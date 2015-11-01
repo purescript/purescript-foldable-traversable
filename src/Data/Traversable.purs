@@ -11,15 +11,16 @@ module Data.Traversable
 
 import Prelude
 
-import Data.Foldable
+import Data.Foldable (Foldable)
+
 import Data.Maybe (Maybe (..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
 import Data.Monoid.Additive (Additive(..))
+import Data.Monoid.Conj (Conj(..))
+import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
-import Data.Monoid.Disj (Disj(..), runDisj)
-import Data.Monoid.Conj (Conj(..), runConj)
 
 -- | `Traversable` represents data structures which can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.

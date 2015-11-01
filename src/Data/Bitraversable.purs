@@ -2,7 +2,7 @@ module Data.Bitraversable where
 
 import Prelude
 
-import Data.Bifoldable
+import Data.Bifoldable (Bifoldable)
 import Data.Bifunctor (Bifunctor, bimap)
 
 -- | `Bitraversable` represents data structures with two type arguments which can be
