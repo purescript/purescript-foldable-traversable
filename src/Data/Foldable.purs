@@ -21,15 +21,16 @@ module Data.Foldable
 import Prelude
 
 import Control.Apply ((*>))
+
 import Data.Maybe (Maybe(..))
-import Data.Maybe.First (First(..), runFirst)
+import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
 import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
+import Data.Monoid.Conj (Conj(..), runConj)
+import Data.Monoid.Disj (Disj(..), runDisj)
 import Data.Monoid.Dual (Dual(..), runDual)
 import Data.Monoid.Endo (Endo(..), runEndo)
-import Data.Monoid.Disj (Disj(..), runDisj)
-import Data.Monoid.Conj (Conj(..), runConj)
 import Data.Monoid.Multiplicative (Multiplicative(..))
 
 -- | `Foldable` represents data structures which can be _folded_.
