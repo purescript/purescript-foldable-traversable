@@ -16,6 +16,10 @@ module Data.Foldable
   , elem
   , notElem
   , find
+  , maximum
+  , maximumBy
+  , minimum
+  , minimumBy
   ) where
 
 import Prelude
@@ -228,3 +232,33 @@ notElem x = not <<< elem x
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 find p = foldl (\r x -> if p x then Just x else r) Nothing
+
+-- | Find the largest element of a structure, according to its `Ord` instance.
+maximum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+maximum = maximumBy compare
+
+-- | Find the largest element of a structure, according to a given comparison
+-- | function. The comparison function should represent a total ordering (see
+-- | the `Ord` type class laws); if it does not, the behaviour is undefined.
+maximumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+maximumBy cmp = foldl max' Nothing
+  where
+  max' Nothing x  = Just x
+  max' (Just x) y = Just (case cmp x y of
+                            GT -> x
+                            _  -> y)
+
+-- | Find the smallest element of a structure, according to its `Ord` instance.
+minimum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+minimum = minimumBy compare
+
+-- | Find the smallest element of a structure, according to a given comparison
+-- | function. The comparison function should represent a total ordering (see
+-- | the `Ord` type class laws); if it does not, the behaviour is undefined.
+minimumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+minimumBy cmp = foldl min' Nothing
+  where
+  min' Nothing x  = Just x
+  min' (Just x) y = Just (case cmp x y of
+                            LT -> x
+                            _  -> y)
