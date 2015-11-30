@@ -4,6 +4,9 @@ import Prelude
 
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Console
+import Data.Int (toNumber)
+import Data.Function (on)
+import Math (abs)
 import Data.Maybe
 import Data.Monoid.Additive
 import Data.Foldable
@@ -69,6 +72,24 @@ main = do
 
   log "Test bisequenceDefault"
   testBitraversableIOrWith BSD
+
+  log "Test maximum"
+  assert $ maximum (arrayFrom1UpTo 10) == Just 10
+
+  log "Test maximumBy"
+  assert $
+    maximumBy (compare `on` abs)
+              (map (negate <<< toNumber) (arrayFrom1UpTo 10))
+      == Just (-10.0)
+
+  log "Test minimum"
+  assert $ minimum (arrayFrom1UpTo 10) == Just 1
+
+  log "Test minimumBy"
+  assert $
+    minimumBy (compare `on` abs)
+              (map (negate <<< toNumber) (arrayFrom1UpTo 10))
+      == Just (-1.0)
 
   log "All done!"
 
