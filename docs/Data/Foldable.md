@@ -28,15 +28,15 @@ These combinations are documented per function.
 
 ##### Instances
 ``` purescript
-instance foldableArray :: Foldable Array
-instance foldableMaybe :: Foldable Maybe
-instance foldableFirst :: Foldable First
-instance foldableLast :: Foldable Last
-instance foldableAdditive :: Foldable Additive
-instance foldableDual :: Foldable Dual
-instance foldableDisj :: Foldable Disj
-instance foldableConj :: Foldable Conj
-instance foldableMultiplicative :: Foldable Multiplicative
+Foldable Array
+Foldable Maybe
+Foldable First
+Foldable Last
+Foldable Additive
+Foldable Dual
+Foldable Disj
+Foldable Conj
+Foldable Multiplicative
 ```
 
 #### `foldrDefault`
@@ -164,7 +164,9 @@ combining adjacent elements using the specified separator.
 and :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 ```
 
-Test whether all `Boolean` values in a data structure are `true`.
+The conjunction of all the values in a data structure. When specialized
+to `Boolean`, this function will test whether all of the values in a data
+structure are `true`.
 
 #### `or`
 
@@ -172,7 +174,9 @@ Test whether all `Boolean` values in a data structure are `true`.
 or :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 ```
 
-Test whether any `Boolean` value in a data structure is `true`.
+The disjunction of all the values in a data structure. When specialized
+to `Boolean`, this function will test whether any of the values in a data
+structure is `true`.
 
 #### `any`
 
@@ -229,5 +233,41 @@ find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
 ```
 
 Try to find an element in a data structure which satisfies a predicate.
+
+#### `maximum`
+
+``` purescript
+maximum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+```
+
+Find the largest element of a structure, according to its `Ord` instance.
+
+#### `maximumBy`
+
+``` purescript
+maximumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+```
+
+Find the largest element of a structure, according to a given comparison
+function. The comparison function should represent a total ordering (see
+the `Ord` type class laws); if it does not, the behaviour is undefined.
+
+#### `minimum`
+
+``` purescript
+minimum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+```
+
+Find the smallest element of a structure, according to its `Ord` instance.
+
+#### `minimumBy`
+
+``` purescript
+minimumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+```
+
+Find the smallest element of a structure, according to a given comparison
+function. The comparison function should represent a total ordering (see
+the `Ord` type class laws); if it does not, the behaviour is undefined.
 
 
