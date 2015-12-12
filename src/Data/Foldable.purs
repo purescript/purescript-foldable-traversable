@@ -197,11 +197,15 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   go { init = true } x = { init: false, acc: x }
   go { acc = acc }   x = { init: false, acc: acc <> sep <> x }
 
--- | Test whether all `Boolean` values in a data structure are `true`.
+-- | The conjunction of all the values in a data structure. When specialized
+-- | to `Boolean`, this function will test whether all of the values in a data
+-- | structure are `true`.
 and :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 and = all id
 
--- | Test whether any `Boolean` value in a data structure is `true`.
+-- | The disjunction of all the values in a data structure. When specialized
+-- | to `Boolean`, this function will test whether any of the values in a data
+-- | structure is `true`.
 or :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 or = any id
 

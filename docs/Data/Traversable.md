@@ -34,15 +34,15 @@ Default implementations are provided by the following functions:
 
 ##### Instances
 ``` purescript
-instance traversableArray :: Traversable Array
-instance traversableMaybe :: Traversable Maybe
-instance traversableFirst :: Traversable First
-instance traversableLast :: Traversable Last
-instance traversableAdditive :: Traversable Additive
-instance traversableDual :: Traversable Dual
-instance traversableConj :: Traversable Conj
-instance traversableDisj :: Traversable Disj
-instance traversableMultiplicative :: Traversable Multiplicative
+Traversable Array
+Traversable Maybe
+Traversable First
+Traversable Last
+Traversable Additive
+Traversable Dual
+Traversable Conj
+Traversable Disj
+Traversable Multiplicative
 ```
 
 #### `traverseDefault`
