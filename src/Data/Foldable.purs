@@ -9,8 +9,8 @@ module Data.Foldable
   , intercalate
   , and
   , or
-  , any
   , all
+  , any
   , sum
   , product
   , elem
@@ -209,13 +209,15 @@ and = all id
 or :: forall a f. (Foldable f, BooleanAlgebra a) => f a -> a
 or = any id
 
--- | Test whether a predicate holds for any element in a data structure.
-any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
-any p = runDisj <<< foldMap (Disj <<< p)
-
--- | Test whether a predicate holds for all elements in a data structure.
+-- | `all f` is the same as `and <<< map f`; map a function over the structure,
+-- | and then get the conjunction of the results.
 all :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
 all p = runConj <<< foldMap (Conj <<< p)
+
+-- | `any f` is the same as `or <<< map f`; map a function over the structure,
+-- | and then get the disjunction of the results.
+any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
+any p = runDisj <<< foldMap (Disj <<< p)
 
 -- | Find the sum of the numeric values in a data structure.
 sum :: forall a f. (Foldable f, Semiring a) => f a -> a
