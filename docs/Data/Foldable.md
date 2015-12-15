@@ -178,21 +178,23 @@ The disjunction of all the values in a data structure. When specialized
 to `Boolean`, this function will test whether any of the values in a data
 structure is `true`.
 
-#### `any`
-
-``` purescript
-any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
-```
-
-Test whether a predicate holds for any element in a data structure.
-
 #### `all`
 
 ``` purescript
 all :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
 ```
 
-Test whether a predicate holds for all elements in a data structure.
+`all f` is the same as `and <<< map f`; map a function over the structure,
+and then get the conjunction of the results.
+
+#### `any`
+
+``` purescript
+any :: forall a b f. (Foldable f, BooleanAlgebra b) => (a -> b) -> f a -> b
+```
+
+`any f` is the same as `or <<< map f`; map a function over the structure,
+and then get the disjunction of the results.
 
 #### `sum`
 
