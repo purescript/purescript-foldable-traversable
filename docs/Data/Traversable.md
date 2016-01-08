@@ -94,7 +94,13 @@ scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
 ```
 
 Fold a data structure from the left, keeping all intermediate results
-instead of only the final result.
+instead of only the final result. Note that the initial value does not
+appear in the result (unlike Haskell's `Prelude.scanl`).
+
+```purescript
+scanl (+) 0  [1,2,3] = [1,3,6]
+scanl (-) 10 [1,2,3] = [9,7,4]
+```
 
 #### `mapAccumL`
 
@@ -115,7 +121,13 @@ scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
 ```
 
 Fold a data structure from the right, keeping all intermediate results
-instead of only the final result.
+instead of only the final result. Note that the initial value does not
+appear in the result (unlike Haskell's `Prelude.scanr`).
+
+```purescript
+scanr (+) 0  [1,2,3] = [1,3,6]
+scanr (flip (-)) 10 [1,2,3] = [4,5,7]
+```
 
 #### `mapAccumR`
 
