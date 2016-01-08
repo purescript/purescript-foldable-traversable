@@ -143,7 +143,13 @@ instance applicativeStateL :: Applicative (StateL s) where
   pure a = StateL \s -> { accum: s, value: a }
 
 -- | Fold a data structure from the left, keeping all intermediate results
--- | instead of only the final result.
+-- | instead of only the final result. Note that the initial value does not
+-- | appear in the result (unlike Haskell's `Prelude.scanl`).
+-- |
+-- | ```purescript
+-- | scanl (+) 0  [1,2,3] = [1,3,6]
+-- | scanl (-) 10 [1,2,3] = [9,7,4]
+-- | ```
 scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
 scanl f b0 xs = (mapAccumL (\b a -> let b' = f b a in { accum: b', value: b' }) b0 xs).value
 
@@ -173,7 +179,13 @@ instance applicativeStateR :: Applicative (StateR s) where
   pure a = StateR \s -> { accum: s, value: a }
 
 -- | Fold a data structure from the right, keeping all intermediate results
--- | instead of only the final result.
+-- | instead of only the final result. Note that the initial value does not
+-- | appear in the result (unlike Haskell's `Prelude.scanr`).
+-- |
+-- | ```purescript
+-- | scanr (+) 0  [1,2,3] = [1,3,6]
+-- | scanr (flip (-)) 10 [1,2,3] = [4,5,7]
+-- | ```
 scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
 scanr f b0 xs = (mapAccumR (\b a -> let b' = f a b in { accum: b', value: b' }) b0 xs).value
 
