@@ -5,7 +5,6 @@ module Data.Foldable
   , traverse_
   , for_
   , sequence_
-  , mconcat
   , intercalate
   , and
   , or
@@ -184,10 +183,6 @@ for_ = flip traverse_
 -- | ```
 sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 sequence_ = traverse_ id
-
--- | Fold a data structure, accumulating values in some `Monoid`.
-mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
-mconcat = foldl (<>) mempty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
