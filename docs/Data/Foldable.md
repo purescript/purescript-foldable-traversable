@@ -141,14 +141,6 @@ For example:
 sequence_ [ trace "Hello, ", trace " world!" ]
 ```
 
-#### `mconcat`
-
-``` purescript
-mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
-```
-
-Fold a data structure, accumulating values in some `Monoid`.
-
 #### `intercalate`
 
 ``` purescript
