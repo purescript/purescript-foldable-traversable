@@ -2,22 +2,26 @@ module Test.Main where
 
 import Prelude
 
-import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.Console
-import Data.Int (toNumber)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Console (CONSOLE, log)
+
+import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
+import Data.Bifunctor (class Bifunctor, bimap)
+import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
+import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum)
 import Data.Function (on)
+import Data.Int (toNumber)
+import Data.Maybe (Maybe(..))
+import Data.Monoid.Additive (Additive(..))
+import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
+
 import Math (abs)
-import Data.Maybe
-import Data.Monoid.Additive
-import Data.Foldable
-import Data.Traversable
-import Data.Bifoldable
-import Data.Bifunctor
-import Data.Bitraversable
-import Test.Assert
+
+import Test.Assert (ASSERT, assert)
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
 
+main :: Eff (console :: CONSOLE, assert :: ASSERT) Unit
 main = do
   log "Test foldableArray instance"
   testFoldableArrayWith 20
@@ -104,6 +108,7 @@ testFoldableFWith f n = do
   assert $ foldl (+) 0 dat == expectedSum
   assert $ foldMap Additive dat == Additive expectedSum
 
+testFoldableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableArrayWith = testFoldableFWith arrayFrom1UpTo
 
 
@@ -113,10 +118,11 @@ testTraversableFWith f n = do
   let dat = f n
 
   assert $ traverse Just dat == Just dat
-  assert $ traverse return dat == [dat]
+  assert $ traverse pure dat == [dat]
   assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
   assert $ sequence (map Just dat) == traverse Just dat
 
+testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
 
@@ -156,10 +162,17 @@ instance foldableDFR :: Foldable FoldrDefault where
   foldl f u (FRD a) = foldl f u a
   foldr f u         = foldrDefault f u
 
+testFoldableFoldMapDefaultL :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableFoldMapDefaultL = testFoldableFWith (FML <<< arrayFrom1UpTo)
+
+testFoldableFoldMapDefaultR :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableFoldMapDefaultR = testFoldableFWith (FMR <<< arrayFrom1UpTo)
-testFoldableFoldlDefault    = testFoldableFWith (FLD <<< arrayFrom1UpTo)
-testFoldableFoldrDefault    = testFoldableFWith (FRD <<< arrayFrom1UpTo)
+
+testFoldableFoldlDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldlDefault = testFoldableFWith (FLD <<< arrayFrom1UpTo)
+
+testFoldableFoldrDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldrDefault = testFoldableFWith (FRD <<< arrayFrom1UpTo)
 
 
 -- structures for testing default `Traversable` implementations
@@ -191,7 +204,10 @@ instance traversableSD :: Traversable SequenceDefault where
   traverse f (SD a) = map SD (traverse f a)
   sequence m        = sequenceDefault m
 
+testTraverseDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraverseDefault = testTraversableFWith (TD <<< arrayFrom1UpTo)
+
+testSequenceDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testSequenceDefault = testTraversableFWith (SD <<< arrayFrom1UpTo)
 
 

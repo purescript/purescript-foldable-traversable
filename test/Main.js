@@ -1,3 +1,5 @@
+"use strict";
+
 // module Test.Main
 
 exports.arrayFrom1UpTo = function (n) {
@@ -6,4 +8,4 @@ exports.arrayFrom1UpTo = function (n) {
     result.push(i);
   }
   return result;
-}
+};

@@ -1,4 +1,3 @@
-/* global exports */
 "use strict";
 
 // module Data.Traversable
@@ -6,7 +5,7 @@
 // jshint maxparams: 3
 
 exports.traverseArrayImpl = function () {
-  function Cont (fn) {
+  function Cont(fn) {
     this.fn = fn;
   }
 
@@ -17,13 +16,13 @@ exports.traverseArrayImpl = function () {
     this.tail = tail;
   };
 
-  function consList (x) {
+  function consList(x) {
     return function (xs) {
       return new ConsCell(x, xs);
     };
   }
 
-  function listToArray (list) {
+  function listToArray(list) {
     var arr = [];
     while (list !== emptyList) {
       arr.push(list.head);

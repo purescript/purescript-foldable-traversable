@@ -1,19 +1,22 @@
 module Data.Traversable
-  ( Traversable, traverse, sequence
+  ( class Traversable, traverse, sequence
   , traverseDefault, sequenceDefault
   , for
-  , Accum()
+  , Accum
   , scanl
   , scanr
   , mapAccumL
   , mapAccumR
+  , module Data.Foldable
   ) where
 
-import Prelude
+import Control.Applicative (class Applicative, pure)
+import Control.Apply (class Apply, apply)
+import Control.Category (id)
 
-import Data.Foldable (Foldable)
-
-import Data.Maybe (Maybe (..))
+import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, product, sequence_, sum, traverse_)
+import Data.Functor (class Functor, map, (<$>))
+import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
 import Data.Monoid.Additive (Additive(..))
@@ -46,32 +49,38 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 -- | - `traverseDefault`
 -- | - `sequenceDefault`
 class (Functor t, Foldable t) <= Traversable t where
-  traverse :: forall a b m. (Applicative m) => (a -> m b) -> t a -> m (t b)
-  sequence :: forall a m. (Applicative m) => t (m a) -> m (t a)
-
+  traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b)
+  sequence :: forall a m. Applicative m => t (m a) -> m (t a)
 
 -- | A default implementation of `traverse` using `sequence` and `map`.
-traverseDefault :: forall t a b m. (Traversable t, Applicative m) =>
-                   (a -> m b) -> t a -> m (t b)
-traverseDefault f ta = sequence (map f ta)
+traverseDefault
+  :: forall t a b m
+   . (Traversable t, Applicative m)
+  => (a -> m b)
+  -> t a
+  -> m (t b)
+traverseDefault f ta = sequence (f <$> ta)
 
 -- | A default implementation of `sequence` using `traverse`.
-sequenceDefault :: forall t a m. (Traversable t, Applicative m) =>
-                   t (m a) -> m (t a)
+sequenceDefault
+  :: forall t a m
+   . (Traversable t, Applicative m)
+  => t (m a)
+  -> m (t a)
 sequenceDefault tma = traverse id tma
-
-
-foreign import traverseArrayImpl
-  :: forall m a b. (m (a -> b) -> m a -> m b) ->
-                   ((a -> b) -> m a -> m b) ->
-                   (a -> m a) ->
-                   (a -> m b) ->
-                   Array a ->
-                   m (Array b)
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
   sequence = sequenceDefault
+
+foreign import traverseArrayImpl
+  :: forall m a b
+   . (m (a -> b) -> m a -> m b)
+  -> ((a -> b) -> m a -> m b)
+  -> (a -> m a)
+  -> (a -> m b)
+  -> Array a
+  -> m (Array b)
 
 instance traversableMaybe :: Traversable Maybe where
   traverse _ Nothing  = pure Nothing
@@ -120,7 +129,12 @@ instance traversableMultiplicative :: Traversable Multiplicative where
 -- |   print n
 -- |   return (n * n)
 -- | ```
-for :: forall a b m t. (Applicative m, Traversable t) => t a -> (a -> m b) -> m (t b)
+for
+  :: forall a b m t
+   . (Applicative m, Traversable t)
+  => t a
+  -> (a -> m b)
+  -> m (t b)
 for x f = traverse f x
 
 type Accum s a = { accum :: s, value :: a }
@@ -150,7 +164,7 @@ instance applicativeStateL :: Applicative (StateL s) where
 -- | scanl (+) 0  [1,2,3] = [1,3,6]
 -- | scanl (-) 10 [1,2,3] = [9,7,4]
 -- | ```
-scanl :: forall a b f. (Traversable f) => (b -> a -> b) -> b -> f a -> f b
+scanl :: forall a b f. Traversable f => (b -> a -> b) -> b -> f a -> f b
 scanl f b0 xs = (mapAccumL (\b a -> let b' = f b a in { accum: b', value: b' }) b0 xs).value
 
 -- | Fold a data structure from the left, keeping all intermediate results
@@ -158,7 +172,13 @@ scanl f b0 xs = (mapAccumL (\b a -> let b' = f b a in { accum: b', value: b' }) 
 -- |
 -- | Unlike `scanl`, `mapAccumL` allows the type of accumulator to differ
 -- | from the element type of the final data structure.
-mapAccumL :: forall a b s f. (Traversable f) => (s -> a -> Accum s b) -> s -> f a -> Accum s (f b)
+mapAccumL
+  :: forall a b s f
+   . (Traversable f)
+  => (s -> a -> Accum s b)
+  -> s
+  -> f a
+  -> Accum s (f b)
 mapAccumL f s0 xs = stateL (traverse (\a -> StateL \s -> f s a) xs) s0
 
 newtype StateR s a = StateR (s -> Accum s a)
@@ -186,7 +206,7 @@ instance applicativeStateR :: Applicative (StateR s) where
 -- | scanr (+) 0  [1,2,3] = [1,3,6]
 -- | scanr (flip (-)) 10 [1,2,3] = [4,5,7]
 -- | ```
-scanr :: forall a b f. (Traversable f) => (a -> b -> b) -> b -> f a -> f b
+scanr :: forall a b f. Traversable f => (a -> b -> b) -> b -> f a -> f b
 scanr f b0 xs = (mapAccumR (\b a -> let b' = f a b in { accum: b', value: b' }) b0 xs).value
 
 -- | Fold a data structure from the right, keeping all intermediate results
@@ -194,5 +214,11 @@ scanr f b0 xs = (mapAccumR (\b a -> let b' = f a b in { accum: b', value: b' }) 
 -- |
 -- | Unlike `scanr`, `mapAccumR` allows the type of accumulator to differ
 -- | from the element type of the final data structure.
-mapAccumR :: forall a b s f. (Traversable f) => (s -> a -> Accum s b) -> s -> f a -> Accum s (f b)
+mapAccumR
+  :: forall a b s f
+   . Traversable f
+  => (s -> a -> Accum s b)
+  -> s
+  -> f a
+  -> Accum s (f b)
 mapAccumR f s0 xs = stateR (traverse (\a -> StateR \s -> f s a) xs) s0
