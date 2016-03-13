@@ -1,11 +1,11 @@
 module Data.Foldable
-  ( Foldable, foldr, foldl, foldMap
+  ( class Foldable, foldr, foldl, foldMap
   , foldrDefault, foldlDefault, foldMapDefaultL, foldMapDefaultR
   , fold
   , traverse_
   , for_
   , sequence_
-  , mconcat
+  , oneOf
   , intercalate
   , and
   , or
@@ -22,20 +22,27 @@ module Data.Foldable
   , minimumBy
   ) where
 
-import Prelude
-
+import Control.Applicative (class Applicative, pure)
 import Control.Apply ((*>))
+import Control.Plus (class Plus, alt, empty)
 
+import Data.BooleanAlgebra (class BooleanAlgebra, not)
+import Data.Eq (class Eq, (==))
+import Data.Function (id, flip, (<<<))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
-import Data.Monoid (Monoid, mempty)
+import Data.Monoid (class Monoid, mempty, (<>))
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Conj (Conj(..), runConj)
 import Data.Monoid.Disj (Disj(..), runDisj)
 import Data.Monoid.Dual (Dual(..), runDual)
 import Data.Monoid.Endo (Endo(..), runEndo)
 import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Ord (class Ord, compare)
+import Data.Ordering (Ordering(..))
+import Data.Semiring (class Semiring, one, (*), zero, (+))
+import Data.Unit (Unit, unit)
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -56,45 +63,62 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 class Foldable f where
   foldr :: forall a b. (a -> b -> b) -> b -> f a -> b
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
-  foldMap :: forall a m. (Monoid m) => (a -> m) -> f a -> m
-
+  foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 
 -- | A default implementation of `foldr` using `foldMap`.
 -- |
 -- | Note: when defining a `Foldable` instance, this function is unsafe to use
 -- | in combination with `foldMapDefaultR`.
-foldrDefault :: forall f a b. (Foldable f) =>
-                (a -> b -> b) -> b -> f a -> b
+foldrDefault
+  :: forall f a b
+   . Foldable f
+  => (a -> b -> b)
+  -> b
+  -> f a
+  -> b
 foldrDefault c u xs = runEndo (foldMap (Endo <<< c) xs) u
 
 -- | A default implementation of `foldl` using `foldMap`.
 -- |
 -- | Note: when defining a `Foldable` instance, this function is unsafe to use
 -- | in combination with `foldMapDefaultL`.
-foldlDefault :: forall f a b. (Foldable f) =>
-                (b -> a -> b) -> b -> f a -> b
-foldlDefault c u xs = runEndo (runDual (foldMap (Dual <<< Endo <<< flip c) xs)) u
+foldlDefault
+  :: forall f a b
+   . Foldable f
+   => (b -> a -> b)
+   -> b
+   -> f a
+   -> b
+foldlDefault c u xs =
+  runEndo (runDual (foldMap (Dual <<< Endo <<< flip c) xs)) u
 
 -- | A default implementation of `foldMap` using `foldr`.
 -- |
 -- | Note: when defining a `Foldable` instance, this function is unsafe to use
 -- | in combination with `foldrDefault`.
-foldMapDefaultR :: forall f a m. (Foldable f, Monoid m) =>
-                   (a -> m) -> f a -> m
+foldMapDefaultR
+  :: forall f a m
+   . (Foldable f, Monoid m)
+   => (a -> m)
+   -> f a
+   -> m
 foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 -- | A default implementation of `foldMap` using `foldl`.
 -- |
 -- | Note: when defining a `Foldable` instance, this function is unsafe to use
 -- | in combination with `foldlDefault`.
-foldMapDefaultL :: forall f a m. (Foldable f, Monoid m) =>
-                   (a -> m) -> f a -> m
+foldMapDefaultL
+  :: forall f a m
+   . (Foldable f, Monoid m)
+   => (a -> m)
+   -> f a
+   -> m
 foldMapDefaultL f xs = foldl (\acc x -> f x <> acc) mempty xs
 
-
 instance foldableArray :: Foldable Array where
-  foldr   = foldrArray
-  foldl   = foldlArray
+  foldr = foldrArray
+  foldl = foldlArray
   foldMap = foldMapDefaultR
 
 foreign import foldrArray :: forall a b. (a -> b -> b) -> b -> Array a -> b
@@ -155,7 +179,12 @@ fold = foldMap id
 -- | ```purescript
 -- | traverse_ print [1, 2, 3]
 -- | ```
-traverse_ :: forall a b f m. (Applicative m, Foldable f) => (a -> m b) -> f a -> m Unit
+traverse_
+  :: forall a b f m
+   . (Applicative m, Foldable f)
+  => (a -> m b)
+  -> f a
+  -> m Unit
 traverse_ f = foldr ((*>) <<< f) (pure unit)
 
 -- | A version of `traverse_` with its arguments flipped.
@@ -171,7 +200,12 @@ traverse_ f = foldr ((*>) <<< f) (pure unit)
 -- |   trace "squared is"
 -- |   print (n * n)
 -- | ```
-for_ :: forall a b f m. (Applicative m, Foldable f) => f a -> (a -> m b) -> m Unit
+for_
+  :: forall a b f m
+   . (Applicative m, Foldable f)
+  => f a
+  -> (a -> m b)
+  -> m Unit
 for_ = flip traverse_
 
 -- | Perform all of the effects in some data structure in the order
@@ -185,9 +219,9 @@ for_ = flip traverse_
 sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
 sequence_ = traverse_ id
 
--- | Fold a data structure, accumulating values in some `Monoid`.
-mconcat :: forall f m. (Foldable f, Monoid m) => f m -> m
-mconcat = foldl (<>) mempty
+-- | Combines a collection of elements using the `Alt` operation.
+oneOf :: forall f g a. (Foldable f, Plus g) => f (g a) -> g a
+oneOf = foldr alt empty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
@@ -236,7 +270,7 @@ notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
 notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
-find :: forall a f. (Foldable f) => (a -> Boolean) -> f a -> Maybe a
+find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
 find p = foldl (\r x -> if p x then Just x else r) Nothing
 
 -- | Find the largest element of a structure, according to its `Ord` instance.
@@ -246,13 +280,11 @@ maximum = maximumBy compare
 -- | Find the largest element of a structure, according to a given comparison
 -- | function. The comparison function should represent a total ordering (see
 -- | the `Ord` type class laws); if it does not, the behaviour is undefined.
-maximumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+maximumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
 maximumBy cmp = foldl max' Nothing
   where
   max' Nothing x  = Just x
-  max' (Just x) y = Just (case cmp x y of
-                            GT -> x
-                            _  -> y)
+  max' (Just x) y = Just (if cmp x y == GT then x else y)
 
 -- | Find the smallest element of a structure, according to its `Ord` instance.
 minimum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
@@ -261,10 +293,8 @@ minimum = minimumBy compare
 -- | Find the smallest element of a structure, according to a given comparison
 -- | function. The comparison function should represent a total ordering (see
 -- | the `Ord` type class laws); if it does not, the behaviour is undefined.
-minimumBy :: forall a f. (Foldable f) => (a -> a -> Ordering) -> f a -> Maybe a
+minimumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
 minimumBy cmp = foldl min' Nothing
   where
   min' Nothing x  = Just x
-  min' (Just x) y = Just (case cmp x y of
-                            LT -> x
-                            _  -> y)
+  min' (Just x) y = Just (if cmp x y == LT then x else y)

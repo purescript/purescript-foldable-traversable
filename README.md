@@ -12,12 +12,6 @@ Classes for foldable and traversable data structures.
 bower install purescript-foldable-traversable
 ```
 
-## Module documentation
+## Documentation
 
-- [Data.Foldable](docs/Data/Foldable.md)
-- [Data.Traversable](docs/Data/Traversable.md)
-
-## Bifunctors
-
-- [Data.Bifoldable](docs/Data/Bifoldable.md)
-- [Data.Bitraversable](docs/Data/Bitraversable.md)
+Module documentation is [published on Pursuit](http://pursuit.purescript.org/packages/purescript-foldable-traversable).
