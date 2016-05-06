@@ -271,7 +271,10 @@ notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
-find p = foldl (\r x -> if p x then Just x else r) Nothing
+find p = foldl go Nothing
+  where
+  go Nothing x | p x = Just x
+  go r _ = r
 
 -- | Find the largest element of a structure, according to its `Ord` instance.
 maximum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
