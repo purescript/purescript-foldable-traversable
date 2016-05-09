@@ -8,7 +8,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum)
+import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find)
 import Data.Function (on)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
@@ -76,6 +76,10 @@ main = do
 
   log "Test bisequenceDefault"
   testBitraversableIOrWith BSD
+
+  log "Test find"
+  assert $ find (_ == 10) [1, 5, 10] == Just 10
+  assert $ find (\x -> x `mod` 2 == 0) [1, 4, 10] == Just 4
 
   log "Test maximum"
   assert $ maximum (arrayFrom1UpTo 10) == Just 10
@@ -339,4 +343,3 @@ instance bitraversableBTD :: Bitraversable BitraverseDefault where
 instance bitraversableBSD :: Bitraversable BisequenceDefault where
   bitraverse f g (BSD m) = map BSD (bitraverse f g m)
   bisequence m           = bisequenceDefault m
-
