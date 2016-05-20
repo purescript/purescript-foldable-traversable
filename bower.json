@@ -23,7 +23,7 @@
   "devDependencies": {
     "purescript-assert": "^1.0.0-rc.1",
     "purescript-console": "^1.0.0-rc.1",
-    "purescript-integers": "^1.0.0-rc.1",
-    "purescript-math": "^1.0.0-rc.1"
+    "purescript-integers": "^1.0.0-rc.2",
+    "purescript-math": "^2.0.0-rc.1"
   }
 }
