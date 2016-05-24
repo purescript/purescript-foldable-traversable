@@ -228,8 +228,8 @@ oneOf = foldr alt empty
 intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
-  go { init = true } x = { init: false, acc: x }
-  go { acc = acc }   x = { init: false, acc: acc <> sep <> x }
+  go { init: true } x = { init: false, acc: x }
+  go { acc: acc }   x = { init: false, acc: acc <> sep <> x }
 
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data
