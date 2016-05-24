@@ -1,7 +1,5 @@
 "use strict";
 
-// module Data.Foldable
-
 exports.foldrArray = function (f) {
   return function (init) {
     return function (xs) {
