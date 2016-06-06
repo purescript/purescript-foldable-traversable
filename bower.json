@@ -17,8 +17,11 @@
     "package.json"
   ],
   "dependencies": {
+    "purescript-prelude": "^1.0.0",
+    "purescript-control": "^1.0.0",
     "purescript-bifunctors": "^1.0.0",
-    "purescript-maybe": "^1.0.0"
+    "purescript-maybe": "^1.0.0",
+    "purescript-monoid": "^1.0.0"
   },
   "devDependencies": {
     "purescript-assert": "^1.0.0",
