@@ -129,6 +129,7 @@ testTraversableFWith f n = do
   assert $ traverse pure dat == [dat]
   assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
   assert $ sequence (map Just dat) == traverse Just dat
+  assert $ (traverse pure dat :: Unit -> f Int) unit == dat
 
 testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
