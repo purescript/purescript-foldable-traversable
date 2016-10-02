@@ -1,7 +1,5 @@
 "use strict";
 
-// module Data.Traversable
-
 // jshint maxparams: 3
 
 exports.traverseArrayImpl = function () {

@@ -1,16 +1,15 @@
 module Data.Bifoldable where
 
-import Control.Applicative (class Applicative, pure)
+import Prelude
+
 import Control.Apply (applySecond)
 
-import Data.BooleanAlgebra (class BooleanAlgebra)
-import Data.Function (id, flip, (<<<))
-import Data.Monoid (class Monoid, mempty, append, (<>))
-import Data.Monoid.Conj (Conj(..), runConj)
-import Data.Monoid.Disj (Disj(..), runDisj)
-import Data.Monoid.Dual (Dual(..), runDual)
-import Data.Monoid.Endo (Endo(..), runEndo)
-import Data.Unit (Unit, unit)
+import Data.Monoid (class Monoid, mempty)
+import Data.Monoid.Conj (Conj(..))
+import Data.Monoid.Disj (Disj(..))
+import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.Endo (Endo(..))
+import Data.Newtype (unwrap)
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -46,8 +45,7 @@ bifoldrDefault
   -> c
   -> p a b
   -> c
-bifoldrDefault f g z p =
-  runEndo (bifoldMap (Endo <<< f) (Endo <<< g) p) z
+bifoldrDefault f g z p = unwrap (bifoldMap (Endo <<< f) (Endo <<< g) p) z
 
 -- | A default implementation of `bifoldl` using `bifoldMap`.
 -- |
@@ -62,8 +60,8 @@ bifoldlDefault
   -> p a b
   -> c
 bifoldlDefault f g z p =
-  runEndo
-    (runDual
+  unwrap
+    (unwrap
       (bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p))
     z
 
@@ -136,7 +134,7 @@ biany
   -> (b -> c)
   -> t a b
   -> c
-biany p q = runDisj <<< bifoldMap (Disj <<< p) (Disj <<< q)
+biany p q = unwrap <<< bifoldMap (Disj <<< p) (Disj <<< q)
 
 -- | Test whether a predicate holds at all positions in a data structure.
 biall
@@ -146,4 +144,4 @@ biall
   -> (b -> c)
   -> t a b
   -> c
-biall p q = runConj <<< bifoldMap (Conj <<< p) (Conj <<< q)
+biall p q = unwrap <<< bifoldMap (Conj <<< p) (Conj <<< q)

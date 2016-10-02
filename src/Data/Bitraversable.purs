@@ -6,8 +6,7 @@ module Data.Bitraversable
   , module Data.Bifoldable
   ) where
 
-import Control.Applicative (class Applicative)
-import Control.Category (id)
+import Prelude
 
 import Data.Bifoldable (class Bifoldable, biall, biany, bifold, bifoldMap, bifoldMapDefaultL, bifoldMapDefaultR, bifoldl, bifoldlDefault, bifoldr, bifoldrDefault, bifor_, bisequence_, bitraverse_)
 import Data.Bifunctor (class Bifunctor, bimap)
