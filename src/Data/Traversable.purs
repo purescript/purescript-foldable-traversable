@@ -10,12 +10,9 @@ module Data.Traversable
   , module Data.Foldable
   ) where
 
-import Control.Applicative (class Applicative, pure)
-import Control.Apply (class Apply, apply)
-import Control.Category (id)
+import Prelude
 
 import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, product, sequence_, sum, traverse_)
-import Data.Functor (class Functor, map, (<$>))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
