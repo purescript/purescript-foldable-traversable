@@ -16,6 +16,7 @@ module Data.Foldable
   , elem
   , notElem
   , find
+  , findMap
   , maximum
   , maximumBy
   , minimum
@@ -267,6 +268,13 @@ find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
 find p = foldl go Nothing
   where
   go Nothing x | p x = Just x
+  go r _ = r
+
+-- | Try to find an element in a data structure which satisfies a predicate mapping.
+findMap :: forall a b f. Foldable f => (a -> Maybe b) -> f a -> Maybe b
+findMap p = foldl go Nothing
+  where
+  go Nothing x = p x
   go r _ = r
 
 -- | Find the largest element of a structure, according to its `Ord` instance.
