@@ -2,7 +2,7 @@
 
 // jshint maxparams: 3
 
-exports.traverseArrayImpl = function () {
+exports.traverseArrayImpl = (function () {
   function Cont(fn) {
     this.fn = fn;
   }
@@ -60,4 +60,4 @@ exports.traverseArrayImpl = function () {
       };
     };
   };
-}();
+})();
