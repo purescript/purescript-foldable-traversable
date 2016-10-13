@@ -13,7 +13,7 @@ import Data.Function (on)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
-import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
+import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault, foldMapDefault, mapDefault)
 
 import Math (abs)
 
@@ -28,6 +28,9 @@ main = do
 
   log "Test foldableArray instance is stack safe"
   testFoldableArrayWith 20000
+
+  log "Test foldMapDefault"
+  testFoldableFoldMapDefault 20
 
   log "Test foldMapDefaultL"
   testFoldableFoldMapDefaultL 20
@@ -52,6 +55,9 @@ main = do
 
   log "Test sequenceDefault"
   testSequenceDefault 20
+
+  log "Test mapDefault"
+  testMapDefault 20
 
   log "Test Bifoldable on `inclusive or`"
   testBifoldableIOrWith id 10 100 42
@@ -133,18 +139,40 @@ testTraversableFWith f n = do
 testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
+testFunctorFWith :: forall f eff. (Functor f, Eq (f Int)) =>
+                    (Int -> f Int) -> Int -> Eff (assert :: ASSERT | eff) Unit
+testFunctorFWith f n = do
+  let dat = f n
 
--- structures for testing default `Foldable` implementations
+  assert $ map id dat == dat
+  assert $ map (\x -> x+1) (map (\x -> x+2) dat) == map (\x -> x+3) dat
 
+
+-- structures for testing default `Foldable` and `Functor` implementations
+
+newtype FoldMapDefault  a = FMD (Array a)
 newtype FoldMapDefaultL a = FML (Array a)
 newtype FoldMapDefaultR a = FMR (Array a)
 newtype FoldlDefault    a = FLD (Array a)
 newtype FoldrDefault    a = FRD (Array a)
 
+instance eqFMD :: (Eq a) => Eq (FoldMapDefault a)  where eq (FMD l) (FMD r) = l == r
 instance eqFML :: (Eq a) => Eq (FoldMapDefaultL a) where eq (FML l) (FML r) = l == r
 instance eqFMR :: (Eq a) => Eq (FoldMapDefaultR a) where eq (FMR l) (FMR r) = l == r
 instance eqFLD :: (Eq a) => Eq (FoldlDefault a)    where eq (FLD l) (FLD r) = l == r
 instance eqFRD :: (Eq a) => Eq (FoldrDefault a)    where eq (FRD l) (FRD r) = l == r
+
+-- implemented `foldl` and `foldr`, but default `foldMap`
+-- in terms of the Traversable instance using `foldMapDefault`
+instance foldableFMD :: Foldable FoldMapDefault where
+  foldMap = foldMapDefault
+  foldl f z (FMD xs) = foldl f z xs
+  foldr f z (FMD xs) = foldr f z xs
+instance functorFMD :: Functor FoldMapDefault where
+  map f (FMD xs) = FMD (map f xs)
+instance traversableFMD :: Traversable FoldMapDefault where
+  traverse f (FMD xs) = FMD <$> traverse f xs
+  sequence (FMD xs) = FMD <$> sequence xs
 
 -- implemented `foldl` and `foldr`, but default `foldMap` using `foldl`
 instance foldableFML :: Foldable FoldMapDefaultL where
@@ -169,6 +197,9 @@ instance foldableDFR :: Foldable FoldrDefault where
   foldMap f (FRD a) = foldMap f a
   foldl f u (FRD a) = foldl f u a
   foldr f u         = foldrDefault f u
+
+testFoldableFoldMapDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldMapDefault = testFoldableFWith (FMD <<< arrayFrom1UpTo)
 
 testFoldableFoldMapDefaultL :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableFoldMapDefaultL = testFoldableFWith (FML <<< arrayFrom1UpTo)
@@ -217,6 +248,27 @@ testTraverseDefault = testTraversableFWith (TD <<< arrayFrom1UpTo)
 
 testSequenceDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testSequenceDefault = testTraversableFWith (SD <<< arrayFrom1UpTo)
+
+
+-- structure for testing default `Functor` implementation
+
+newtype MapDefault a = MD (Array a)
+
+instance eqMD :: (Eq a) => Eq (MapDefault a) where eq (MD l) (MD r) = l == r
+
+instance foldableMD :: Foldable MapDefault where
+  foldMap f (MD xs) = foldMap f xs
+  foldl f z (MD xs) = foldl f z xs
+  foldr f z (MD xs) = foldr f z xs
+-- implemented in terms of the `Traversable` instance using `mapDefault`
+instance functorMD :: Functor MapDefault where
+  map = mapDefault
+instance traversableMD :: Traversable MapDefault where
+  traverse f (MD xs) = MD <$> traverse f xs
+  sequence (MD xs) = MD <$> sequence xs
+
+testMapDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testMapDefault = testFunctorFWith (MD <<< arrayFrom1UpTo)
 
 
 -- structure for testing bifoldable, picked `inclusive or` as it has both products and sums

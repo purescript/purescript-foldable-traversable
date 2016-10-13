@@ -1,6 +1,7 @@
 module Data.Traversable
   ( class Traversable, traverse, sequence
   , traverseDefault, sequenceDefault
+  , foldMapDefault, mapDefault
   , for
   , Accum
   , scanl
@@ -16,6 +17,7 @@ import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, 
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
+import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
@@ -45,6 +47,8 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 -- |
 -- | - `traverseDefault`
 -- | - `sequenceDefault`
+-- | - `foldMapDefault`
+-- | - `mapDefault`
 class (Functor t, Foldable t) <= Traversable t where
   traverse :: forall a b m. Applicative m => (a -> m b) -> t a -> m (t b)
   sequence :: forall a m. Applicative m => t (m a) -> m (t a)
@@ -65,6 +69,35 @@ sequenceDefault
   => t (m a)
   -> m (t a)
 sequenceDefault tma = traverse id tma
+
+newtype Const a b = Const a
+getConst :: forall a b. Const a b -> a
+getConst (Const x) = x
+instance functorConst :: Functor (Const a) where
+  map _ (Const x) = Const x
+instance applyConst :: Semigroup m => Apply (Const m) where
+  apply (Const x) (Const y) = Const (append x y)
+instance applicativeConst :: Monoid m => Applicative (Const m) where
+  pure _ = Const mempty
+
+-- | a default implementation of `foldMap` using `traverse`
+foldMapDefault :: forall t a m. (Traversable t, Monoid m) => (a -> m) -> t a -> m
+foldMapDefault f = getConst <<< traverse (Const <<< f)
+
+newtype Identity a = Identity a
+getIdentity :: forall a. Identity a -> a
+getIdentity (Identity x) = x
+instance functorIdentity :: Functor Identity where
+  map f (Identity x) = Identity (f x)
+instance applyIdentity :: Apply Identity where
+  apply (Identity f) (Identity x) = Identity (f x)
+instance applicativeIdentity :: Applicative Identity where
+  pure = Identity
+
+-- | a default implementation of `map` using `traverse`
+mapDefault :: forall t a b. Traversable t => (a -> b) -> t a -> t b
+mapDefault f = getIdentity <<< traverse (Identity <<< f)
+
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
