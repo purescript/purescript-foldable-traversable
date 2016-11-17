@@ -24,7 +24,7 @@ exports.traverseArrayImpl = function () {
               case 1: return map(array1)(f(array[bot]));
               case 2: return apply(map(array2)(f(array[bot])))(f(array[bot + 1]));
               default:
-                var pivot = bot + Math.floor((top - bot) / 4) * 2;
+                var pivot = Math.floor((top + bot) / 2);
                 return apply(map(concat2)(go(bot, pivot)))(go(pivot, top));
               }
             }
