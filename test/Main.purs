@@ -2,7 +2,7 @@ module Test.Main where
 
 import Prelude
 
-import Control.Monad.Eff (Eff)
+import Control.Monad.Eff (Eff, foreachE)
 import Control.Monad.Eff.Console (CONSOLE, log)
 
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
@@ -17,7 +17,7 @@ import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence,
 
 import Math (abs)
 
-import Test.Assert (ASSERT, assert)
+import Test.Assert (ASSERT, assert, assert')
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
 
@@ -41,8 +41,9 @@ main = do
   log "Test foldrDefault"
   testFoldableFoldlDefault 20
 
-  log "Test traversableArray instance"
-  testTraversableArrayWith 20
+  foreachE [1,2,3,4,5,10,20] \i -> do
+    log $ "Test traversableArray instance with an array of size: " <> show i
+    testTraversableArrayWith i
 
   log "Test traversableArray instance is stack safe"
   testTraversableArrayWith 20000
@@ -125,11 +126,14 @@ testTraversableFWith :: forall f e. (Traversable f, Eq (f Int)) =>
 testTraversableFWith f n = do
   let dat = f n
 
-  assert $ traverse Just dat == Just dat
-  assert $ traverse pure dat == [dat]
-  assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
-  assert $ sequence (map Just dat) == traverse Just dat
-  assert $ (traverse pure dat :: Unit -> f Int) unit == dat
+  assert' "traverse Just == Just" $ traverse Just dat == Just dat
+  assert' "traverse pure == pure" $ traverse pure dat == [dat]
+  assert' "traverse (const Nothing) == const Nothing" $
+    traverse (const Nothing :: Int -> Maybe Int) dat == Nothing
+  assert' "sequence <<< map f == traverse f" $
+    sequence (map Just dat) == traverse Just dat
+  assert' "underlying applicative" $
+    (traverse pure dat :: Unit -> f Int) unit == dat
 
 testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
