@@ -16,13 +16,15 @@ exports.traverseArrayImpl = function () {
   function array3(a) {
     return function (b) {
       return function (c) {
-        return [a,b,c];
+        return [a, b, c];
       };
     };
   }
 
   function concat2(xs) {
-    return function (ys) {return xs.concat(ys);};
+    return function (ys) {
+      return xs.concat(ys);
+    };
   }
 
   return function (apply) {
