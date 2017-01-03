@@ -10,7 +10,7 @@ import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
 import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap)
 import Data.Function (on)
-import Data.Int (toNumber)
+import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (unwrap)
@@ -23,8 +23,6 @@ import Test.Assert (ASSERT, assert, assert')
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
 foreign import arrayReplicate :: forall a. Int -> a -> Array a
-
-foreign import intPow :: Int -> Int -> Int
 
 foldableLength :: forall f a. Foldable f => f a -> Int
 foldableLength = unwrap <<< foldMap (const (Additive 1))
@@ -106,7 +104,7 @@ main = do
   log "Test maximumBy"
   assert $
     maximumBy (compare `on` abs)
-              (map (negate <<< toNumber) (arrayFrom1UpTo 10))
+              (map (negate <<< Int.toNumber) (arrayFrom1UpTo 10))
       == Just (-10.0)
 
   log "Test minimum"
@@ -115,7 +113,7 @@ main = do
   log "Test minimumBy"
   assert $
     minimumBy (compare `on` abs)
-              (map (negate <<< toNumber) (arrayFrom1UpTo 10))
+              (map (negate <<< Int.toNumber) (arrayFrom1UpTo 10))
       == Just (-1.0)
 
   log "All done!"
@@ -145,7 +143,7 @@ testTraversableFWith f n = do
   assert' "traverse pure == pure (Array)" $ traverse pure dat == [dat]
 
   when (len <= 10) do
-    result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (intPow 2 len) dat
+    result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (Int.pow 2 len) dat
     assert' "traverse with Array as underlying applicative" result
 
   assert' "traverse (const Nothing) == const Nothing" $

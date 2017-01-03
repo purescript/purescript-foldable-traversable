@@ -17,9 +17,3 @@ exports.arrayReplicate = function (n) {
     return result;
   };
 };
-
-exports.intPow = function (x) {
-  return function (y) {
-    return Math.pow(x,y) | 0;
-  };
-};
