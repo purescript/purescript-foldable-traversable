@@ -2,7 +2,11 @@ module Data.Bitraversable
   ( class Bitraversable, bitraverse, bisequence
   , bitraverseDefault
   , bisequenceDefault
+  , ltraverse
+  , rtraverse
   , bifor
+  , lfor
+  , rfor
   , module Data.Bifoldable
   ) where
 
@@ -25,6 +29,22 @@ import Data.Bifunctor (class Bifunctor, bimap)
 class (Bifunctor t, Bifoldable t) <= Bitraversable t where
   bitraverse :: forall f a b c d. Applicative f => (a -> f c) -> (b -> f d) -> t a b -> f (t c d)
   bisequence :: forall f a b. Applicative f => t (f a) (f b) -> f (t a b)
+
+ltraverse
+  :: forall t b c a f
+   . (Bitraversable t, Applicative f)
+  => (a -> f c)
+  -> t a b
+  -> f (t c b)
+ltraverse f = bitraverse f pure
+
+rtraverse
+  :: forall t b c a f
+   . (Bitraversable t, Applicative f)
+  => (b -> f c)
+  -> t a b
+  -> f (t a c)
+rtraverse = bitraverse pure
 
 -- | A default implementation of `bitraverse` using `bisequence` and `bimap`.
 bitraverseDefault
@@ -53,3 +73,19 @@ bifor
   -> (b -> f d)
   -> f (t c d)
 bifor t f g = bitraverse f g t
+
+lfor
+  :: forall t b c a f
+   . (Bitraversable t, Applicative f)
+  => t a b
+  -> (a -> f c)
+  -> f (t c b)
+lfor t f = bitraverse f pure t
+
+rfor
+  :: forall t b c a f
+   . (Bitraversable t, Applicative f)
+  => t a b
+  -> (b -> f c)
+  -> f (t a c)
+rfor t f = bitraverse pure f t
