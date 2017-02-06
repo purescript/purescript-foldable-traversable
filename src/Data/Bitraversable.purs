@@ -13,7 +13,13 @@ module Data.Bitraversable
 import Prelude
 
 import Data.Bifoldable (class Bifoldable, biall, biany, bifold, bifoldMap, bifoldMapDefaultL, bifoldMapDefaultR, bifoldl, bifoldlDefault, bifoldr, bifoldrDefault, bifor_, bisequence_, bitraverse_)
+import Data.Traversable (class Traversable, traverse, sequence)
 import Data.Bifunctor (class Bifunctor, bimap)
+import Data.Bifunctor.Clown (Clown(..))
+import Data.Bifunctor.Joker (Joker(..))
+import Data.Bifunctor.Flip (Flip(..))
+import Data.Bifunctor.Product (Product(..))
+import Data.Bifunctor.Wrap (Wrap(..))
 
 -- | `Bitraversable` represents data structures with two type arguments which can be
 -- | traversed.
@@ -29,6 +35,26 @@ import Data.Bifunctor (class Bifunctor, bimap)
 class (Bifunctor t, Bifoldable t) <= Bitraversable t where
   bitraverse :: forall f a b c d. Applicative f => (a -> f c) -> (b -> f d) -> t a b -> f (t c d)
   bisequence :: forall f a b. Applicative f => t (f a) (f b) -> f (t a b)
+
+instance bitraversableClown :: Traversable f => Bitraversable (Clown f) where
+  bitraverse l _ (Clown f) = Clown <$> traverse l f
+  bisequence (Clown f) = Clown <$> sequence f
+
+instance bitraversableJoker :: Traversable f => Bitraversable (Joker f) where
+  bitraverse _ r (Joker f) = Joker <$> traverse r f
+  bisequence (Joker f) = Joker <$> sequence f
+
+instance bitraversableFlip :: Bitraversable p => Bitraversable (Flip p) where
+  bitraverse r l (Flip p) = Flip <$> bitraverse l r p
+  bisequence (Flip p) = Flip <$> bisequence p
+
+instance bitraversableProduct :: (Bitraversable f, Bitraversable g) => Bitraversable (Product f g) where
+  bitraverse l r (Product f g) = Product <$> bitraverse l r f <*> bitraverse l r g
+  bisequence (Product f g) = Product <$> bisequence f <*> bisequence g
+
+instance bitraversableWrap :: Bitraversable p => Bitraversable (Wrap p) where
+  bitraverse l r (Wrap p) = Wrap <$> bitraverse l r p
+  bisequence (Wrap p) = Wrap <$> bisequence p
 
 ltraverse
   :: forall t b c a f

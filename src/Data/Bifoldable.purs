@@ -10,6 +10,12 @@ import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Endo (Endo(..))
 import Data.Newtype (unwrap)
+import Data.Foldable (class Foldable, foldr, foldl, foldMap)
+import Data.Bifunctor.Clown (Clown(..))
+import Data.Bifunctor.Joker (Joker(..))
+import Data.Bifunctor.Flip (Flip(..))
+import Data.Bifunctor.Product (Product(..))
+import Data.Bifunctor.Wrap (Wrap(..))
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -32,6 +38,31 @@ class Bifoldable p where
   bifoldr :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
   bifoldl :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
   bifoldMap :: forall m a b. Monoid m => (a -> m) -> (b -> m) -> p a b -> m
+
+instance bifoldableClown :: Foldable f => Bifoldable (Clown f) where
+  bifoldr l _ u (Clown f) = foldr l u f
+  bifoldl l _ u (Clown f) = foldl l u f
+  bifoldMap l _ (Clown f) = foldMap l f
+
+instance bifoldableJoker :: Foldable f => Bifoldable (Joker f) where
+  bifoldr _ r u (Joker f) = foldr r u f
+  bifoldl _ r u (Joker f) = foldl r u f
+  bifoldMap _ r (Joker f) = foldMap r f
+
+instance bifoldableFlip :: Bifoldable p => Bifoldable (Flip p) where
+  bifoldr r l u (Flip p) = bifoldr l r u p
+  bifoldl r l u (Flip p) = bifoldl l r u p
+  bifoldMap r l (Flip p) = bifoldMap l r p
+
+instance bifoldableProduct :: (Bifoldable f, Bifoldable g) => Bifoldable (Product f g) where
+  bifoldr l r u m = bifoldrDefault l r u m
+  bifoldl l r u m = bifoldlDefault l r u m
+  bifoldMap l r (Product f g) = bifoldMap l r f <> bifoldMap l r g
+
+instance bifoldableWrap :: Bifoldable p => Bifoldable (Wrap p) where
+  bifoldr l r u (Wrap p) = bifoldr l r u p
+  bifoldl l r u (Wrap p) = bifoldl l r u p
+  bifoldMap l r (Wrap p) = bifoldMap l r p
 
 -- | A default implementation of `bifoldr` using `bifoldMap`.
 -- |
