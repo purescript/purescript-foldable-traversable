@@ -64,7 +64,7 @@ sequenceDefault
    . (Traversable t, Applicative m)
   => t (m a)
   -> m (t a)
-sequenceDefault tma = traverse id tma
+sequenceDefault = traverse id
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
