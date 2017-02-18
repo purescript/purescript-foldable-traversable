@@ -7,6 +7,8 @@ module Data.Foldable
   , sequence_
   , oneOf
   , intercalate
+  , surroundMap
+  , surround
   , and
   , or
   , all
@@ -230,6 +232,47 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
   go { init: true } x = { init: false, acc: x }
   go { acc: acc }   x = { init: false, acc: acc <> sep <> x }
+
+-- | `foldMap` but with each element surrounded by some fixed value.
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | > surroundMap "*" show []
+-- | = "*"
+-- |
+-- | > surroundMap "*" show [1]
+-- | = "*1*"
+-- |
+-- | > surroundMap "*" show [1, 2]
+-- | = "*1*2*"
+-- |
+-- | > surroundMap "*" show [1, 2, 3]
+-- | = "*1*2*3*"
+-- | ```
+surroundMap :: forall f a m. Foldable f => Semigroup m => m -> (a -> m) -> f a -> m
+surroundMap d t f = unwrap (foldMap joined f) d
+  where joined a = Endo \m -> d <> t a <> m
+
+-- | `fold` but with each element surrounded by some fixed value.
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | > surround "*" []
+-- | = "*"
+-- |
+-- | > surround "*" ["1"]
+-- | = "*1*"
+-- |
+-- | > surround "*" ["1", "2"]
+-- | = "*1*2*"
+-- |
+-- | > surround "*" ["1", "2", "3"]
+-- | = "*1*2*3*"
+-- | ```
+surround :: forall f m. Foldable f => Semigroup m => m -> f m -> m
+surround d = surroundMap d id
 
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data

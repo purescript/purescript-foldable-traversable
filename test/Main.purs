@@ -8,7 +8,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap, length, null)
+import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap, length, null, surroundMap)
 import Data.Function (on)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
@@ -116,6 +116,12 @@ main = do
   assert $ length [] == 0
   assert $ length [1] == 1
   assert $ length [1, 2] == 2
+
+  log "Test surroundMap"
+  assert $ "*" == surroundMap "*" show ([] :: Array Int)
+  assert $ "*1*" == surroundMap "*" show [1]
+  assert $ "*1*2*" == surroundMap "*" show [1, 2]
+  assert $ "*1*2*3*" == surroundMap "*" show [1, 2, 3]
 
   log "All done!"
 
