@@ -22,6 +22,7 @@ module Data.Foldable
   , minimum
   , minimumBy
   , null
+  , length
   ) where
 
 import Prelude
@@ -313,3 +314,9 @@ minimumBy cmp = foldl min' Nothing
 -- | is no general way to do better.
 null :: forall a f. Foldable f => f a -> Boolean
 null = foldr (\_ _ -> false) true
+
+-- | Returns the size/length of a finite structure.  The default implementation
+-- | is optimized for structures that are similar to cons-lists, because there
+-- | is no general way to do better.
+length :: forall a b f. (Foldable f, Semiring b) => f a -> b
+length = foldl (\c _ -> add one c) zero
