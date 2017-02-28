@@ -8,7 +8,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap)
+import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap, length)
 import Data.Function (on)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
@@ -102,6 +102,13 @@ main = do
     minimumBy (compare `on` abs)
               (map (negate <<< toNumber) (arrayFrom1UpTo 10))
       == Just (-1.0)
+
+  log "Test length"
+  assert $ length Nothing == 0
+  assert $ length (Just 1) == 1
+  assert $ length [] == 0
+  assert $ length [1] == 1
+  assert $ length [1, 2] == 2
 
   log "All done!"
 
