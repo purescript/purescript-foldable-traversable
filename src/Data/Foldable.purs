@@ -21,6 +21,7 @@ module Data.Foldable
   , maximumBy
   , minimum
   , minimumBy
+  , length
   ) where
 
 import Prelude
@@ -302,3 +303,9 @@ minimumBy cmp = foldl min' Nothing
   where
   min' Nothing x  = Just x
   min' (Just x) y = Just (if cmp x y == LT then x else y)
+
+-- | Returns the size/length of a finite structure.
+-- | Optimized for structures that are similar to cons-lists, because there
+-- | is no general way to do better.
+length :: forall a b f. (Foldable f, Semiring b) => f a -> b
+length = foldl (\c _ -> add one c) zero
