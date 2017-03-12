@@ -52,7 +52,8 @@ class (Functor t, Foldable t) <= Traversable t where
 -- | A default implementation of `traverse` using `sequence` and `map`.
 traverseDefault
   :: forall t a b m
-   . (Traversable t, Applicative m)
+   . Traversable t
+  => Applicative m
   => (a -> m b)
   -> t a
   -> m (t b)
@@ -61,7 +62,8 @@ traverseDefault f ta = sequence (f <$> ta)
 -- | A default implementation of `sequence` using `traverse`.
 sequenceDefault
   :: forall t a m
-   . (Traversable t, Applicative m)
+   . Traversable t
+  => Applicative m
   => t (m a)
   -> m (t a)
 sequenceDefault = traverse id
@@ -128,7 +130,8 @@ instance traversableMultiplicative :: Traversable Multiplicative where
 -- | ```
 for
   :: forall a b m t
-   . (Applicative m, Traversable t)
+   . Applicative m
+  => Traversable t
   => t a
   -> (a -> m b)
   -> m (t b)
@@ -171,7 +174,7 @@ scanl f b0 xs = (mapAccumL (\b a -> let b' = f b a in { accum: b', value: b' }) 
 -- | from the element type of the final data structure.
 mapAccumL
   :: forall a b s f
-   . (Traversable f)
+   . Traversable f
   => (s -> a -> Accum s b)
   -> s
   -> f a

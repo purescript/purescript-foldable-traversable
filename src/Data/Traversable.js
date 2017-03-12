@@ -22,9 +22,10 @@ exports.traverseArrayImpl = function () {
 
   function listToArray(list) {
     var arr = [];
-    while (list !== emptyList) {
-      arr.push(list.head);
-      list = list.tail;
+    var xs = list;
+    while (xs !== emptyList) {
+      arr.push(xs.head);
+      xs = xs.tail;
     }
     return arr;
   }
