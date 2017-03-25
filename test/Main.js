@@ -7,3 +7,13 @@ exports.arrayFrom1UpTo = function (n) {
   }
   return result;
 };
+
+exports.arrayReplicate = function (n) {
+  return function (x) {
+    var result = [];
+    for (var i = 1; i <= n; i++) {
+      result.push(x);
+    }
+    return result;
+  };
+};
