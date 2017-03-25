@@ -97,7 +97,7 @@ foldMapDefaultR
    => (a -> m)
    -> f a
    -> m
-foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs
+foldMapDefaultR f = foldr (\x acc -> f x <> acc) mempty
 
 -- | A default implementation of `foldMap` using `foldl`.
 -- |
@@ -109,7 +109,7 @@ foldMapDefaultL
    => (a -> m)
    -> f a
    -> m
-foldMapDefaultL f xs = foldl (\acc x -> f x <> acc) mempty xs
+foldMapDefaultL f = foldl (\acc x -> f x <> acc) mempty
 
 instance foldableArray :: Foldable Array where
   foldr = foldrArray
@@ -241,12 +241,12 @@ or = any id
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.
 all :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
-all p = alaF Conj foldMap p
+all = alaF Conj foldMap
 
 -- | `any f` is the same as `or <<< map f`; map a function over the structure,
 -- | and then get the disjunction of the results.
 any :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
-any p = alaF Disj foldMap p
+any = alaF Disj foldMap
 
 -- | Find the sum of the numeric values in a data structure.
 sum :: forall a f. (Foldable f, Semiring a) => f a -> a

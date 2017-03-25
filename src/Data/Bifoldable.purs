@@ -107,7 +107,7 @@ bifoldMapDefaultR
   -> (b -> m)
   -> p a b
   -> m
-bifoldMapDefaultR f g p = bifoldr (append <<< f) (append <<< g) mempty p
+bifoldMapDefaultR f g = bifoldr (append <<< f) (append <<< g) mempty
 
 -- | A default implementation of `bifoldMap` using `bifoldl`.
 -- |
@@ -120,7 +120,7 @@ bifoldMapDefaultL
   -> (b -> m)
   -> p a b
   -> m
-bifoldMapDefaultL f g p = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty p
+bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
 
 
 -- | Fold a data structure, accumulating values in a monoidal type.

@@ -88,7 +88,7 @@ bisequenceDefault
    . (Bitraversable t, Applicative f)
   => t (f a) (f b)
   -> f (t a b)
-bisequenceDefault t = bitraverse id id t
+bisequenceDefault = bitraverse id id
 
 -- | Traverse a data structure, accumulating effects and results using an `Applicative` functor.
 bifor
