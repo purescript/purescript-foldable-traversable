@@ -318,5 +318,5 @@ null = foldr (\_ _ -> false) true
 -- | Returns the size/length of a finite structure.
 -- | Optimized for structures that are similar to cons-lists, because there
 -- | is no general way to do better.
-length :: forall a b f. (Foldable f, Semiring b) => f a -> b
+length :: forall a b f. Foldable f => Semiring b => f a -> b
 length = foldl (\c _ -> add one c) zero
