@@ -102,7 +102,8 @@ bifoldlDefault f g z p =
 -- | use in combination with `bifoldrDefault`.
 bifoldMapDefaultR
   :: forall p m a b
-   . (Bifoldable p, Monoid m)
+   . Bifoldable p
+  => Monoid m
   => (a -> m)
   -> (b -> m)
   -> p a b
@@ -115,7 +116,8 @@ bifoldMapDefaultR f g = bifoldr (append <<< f) (append <<< g) mempty
 -- | use in combination with `bifoldlDefault`.
 bifoldMapDefaultL
   :: forall p m a b
-   . (Bifoldable p, Monoid m)
+   . Bifoldable p
+  => Monoid m
   => (a -> m)
   -> (b -> m)
   -> p a b
@@ -124,14 +126,15 @@ bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
 
 
 -- | Fold a data structure, accumulating values in a monoidal type.
-bifold :: forall t m. (Bifoldable t, Monoid m) => t m m -> m
+bifold :: forall t m. Bifoldable t => Monoid m => t m m -> m
 bifold = bifoldMap id id
 
 -- | Traverse a data structure, accumulating effects using an `Applicative` functor,
 -- | ignoring the final result.
 bitraverse_
   :: forall t f a b c d
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => (a -> f c)
   -> (b -> f d)
   -> t a b
@@ -141,7 +144,8 @@ bitraverse_ f g = bifoldr (applySecond <<< f) (applySecond <<< g) (pure unit)
 -- | A version of `bitraverse_` with the data structure as the first argument.
 bifor_
   :: forall t f a b c d
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => t a b
   -> (a -> f c)
   -> (b -> f d)
@@ -152,7 +156,8 @@ bifor_ t f g = bitraverse_ f g t
 -- | ignoring the final result.
 bisequence_
   :: forall t f a b
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => t (f a) (f b)
   -> f Unit
 bisequence_ = bitraverse_ id id
@@ -160,7 +165,8 @@ bisequence_ = bitraverse_ id id
 -- | Test whether a predicate holds at any position in a data structure.
 biany
   :: forall t a b c
-   . (Bifoldable t, BooleanAlgebra c)
+   . Bifoldable t
+  => BooleanAlgebra c
   => (a -> c)
   -> (b -> c)
   -> t a b
@@ -170,7 +176,8 @@ biany p q = unwrap <<< bifoldMap (Disj <<< p) (Disj <<< q)
 -- | Test whether a predicate holds at all positions in a data structure.
 biall
   :: forall t a b c
-   . (Bifoldable t, BooleanAlgebra c)
+   . Bifoldable t
+  => BooleanAlgebra c
   => (a -> c)
   -> (b -> c)
   -> t a b

@@ -113,8 +113,13 @@ main = do
   log "All done!"
 
 
-testFoldableFWith :: forall f e. (Foldable f, Eq (f Int)) =>
-                     (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+testFoldableFWith
+  :: forall f e
+   . Foldable f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
 testFoldableFWith f n = do
   let dat = f n
   let expectedSum = (n / 2) * (n + 1)
@@ -127,8 +132,13 @@ testFoldableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableArrayWith = testFoldableFWith arrayFrom1UpTo
 
 
-testTraversableFWith :: forall f e. (Traversable f, Eq (f Int)) =>
-                        (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+testTraversableFWith
+  :: forall f e
+   . Traversable f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
 testTraversableFWith f n = do
   let dat = f n
 
@@ -263,10 +273,15 @@ instance bitraversableIOr :: Bitraversable IOr where
   bisequence (Fst fst)      = Fst <$> fst
   bisequence (Snd snd)      = Snd <$> snd
 
-testBifoldableIOrWith :: forall t e. (Bifoldable t, Eq (t Int Int)) =>
-                         (forall l r. IOr l r -> t l r) ->
-                         Int -> Int -> Int ->
-                         Eff (assert :: ASSERT | e) Unit
+testBifoldableIOrWith
+  :: forall t e
+   . Bifoldable t
+  => Eq (t Int Int)
+  => (forall l r. IOr l r -> t l r)
+  -> Int
+  -> Int
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
 testBifoldableIOrWith lift fst snd u = do
   assert $ bifoldr (+) (*) u (lift $ Both fst snd) == fst + (snd * u)
   assert $ bifoldr (+) (*) u (lift $ Fst fst)      == fst + u
@@ -280,9 +295,12 @@ testBifoldableIOrWith lift fst snd u = do
   assert $ bifoldMap Additive Additive (lift $ Fst fst)      == Additive fst
   assert $ bifoldMap Additive Additive (lift $ Snd snd)      == Additive snd
 
-testBitraversableIOrWith :: forall t e. (Bitraversable t, Eq (t Boolean Boolean)) =>
-                        (forall l r. IOr l r -> t l r) ->
-                        Eff (assert :: ASSERT | e) Unit
+testBitraversableIOrWith
+  :: forall t e
+   . Bitraversable t
+  => Eq (t Boolean Boolean)
+  => (forall l r. IOr l r -> t l r)
+  -> Eff (assert :: ASSERT | e) Unit
 testBitraversableIOrWith lift = do
   let just a = Just (lift a)
   assert $ bisequence (lift (Both (Just true) (Just false))) == just (Both true false)

@@ -81,10 +81,10 @@ foldrDefault c u xs = unwrap (foldMap (Endo <<< c) xs) u
 foldlDefault
   :: forall f a b
    . Foldable f
-   => (b -> a -> b)
-   -> b
-   -> f a
-   -> b
+  => (b -> a -> b)
+  -> b
+  -> f a
+  -> b
 foldlDefault c u xs = unwrap (unwrap (foldMap (Dual <<< Endo <<< flip c) xs)) u
 
 -- | A default implementation of `foldMap` using `foldr`.
@@ -93,10 +93,11 @@ foldlDefault c u xs = unwrap (unwrap (foldMap (Dual <<< Endo <<< flip c) xs)) u
 -- | in combination with `foldrDefault`.
 foldMapDefaultR
   :: forall f a m
-   . (Foldable f, Monoid m)
-   => (a -> m)
-   -> f a
-   -> m
+   . Foldable f
+  => Monoid m
+  => (a -> m)
+  -> f a
+  -> m
 foldMapDefaultR f = foldr (\x acc -> f x <> acc) mempty
 
 -- | A default implementation of `foldMap` using `foldl`.
@@ -105,10 +106,11 @@ foldMapDefaultR f = foldr (\x acc -> f x <> acc) mempty
 -- | in combination with `foldlDefault`.
 foldMapDefaultL
   :: forall f a m
-   . (Foldable f, Monoid m)
-   => (a -> m)
-   -> f a
-   -> m
+   . Foldable f
+  => Monoid m
+  => (a -> m)
+  -> f a
+  -> m
 foldMapDefaultL f = foldl (\acc x -> f x <> acc) mempty
 
 instance foldableArray :: Foldable Array where
@@ -163,7 +165,7 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldMap f (Multiplicative x) = f x
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
-fold :: forall f m. (Foldable f, Monoid m) => f m -> m
+fold :: forall f m. Foldable f => Monoid m => f m -> m
 fold = foldMap id
 
 -- | Traverse a data structure, performing some effects encoded by an
@@ -176,7 +178,8 @@ fold = foldMap id
 -- | ```
 traverse_
   :: forall a b f m
-   . (Applicative m, Foldable f)
+   . Applicative m
+  => Foldable f
   => (a -> m b)
   -> f a
   -> m Unit
@@ -197,7 +200,8 @@ traverse_ f = foldr ((*>) <<< f) (pure unit)
 -- | ```
 for_
   :: forall a b f m
-   . (Applicative m, Foldable f)
+   . Applicative m
+  => Foldable f
   => f a
   -> (a -> m b)
   -> m Unit
@@ -211,16 +215,16 @@ for_ = flip traverse_
 -- | ```purescript
 -- | sequence_ [ trace "Hello, ", trace " world!" ]
 -- | ```
-sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
+sequence_ :: forall a f m. Applicative m => Foldable f => f (m a) -> m Unit
 sequence_ = traverse_ id
 
 -- | Combines a collection of elements using the `Alt` operation.
-oneOf :: forall f g a. (Foldable f, Plus g) => f (g a) -> g a
+oneOf :: forall f g a. Foldable f => Plus g => f (g a) -> g a
 oneOf = foldr alt empty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
-intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
+intercalate :: forall f m. Foldable f => Monoid m => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
   go { init: true } x = { init: false, acc: x }
@@ -229,39 +233,39 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data
 -- | structure are `true`.
-and :: forall a f. (Foldable f, HeytingAlgebra a) => f a -> a
+and :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
 and = all id
 
 -- | The disjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether any of the values in a data
 -- | structure is `true`.
-or :: forall a f. (Foldable f, HeytingAlgebra a) => f a -> a
+or :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
 or = any id
 
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.
-all :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
-all = alaF Conj foldMap
+all :: forall a b f. Foldable f => HeytingAlgebra b => (a -> b) -> f a -> b
+all  = alaF Conj foldMap
 
 -- | `any f` is the same as `or <<< map f`; map a function over the structure,
 -- | and then get the disjunction of the results.
-any :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
+any :: forall a b f. Foldable f => HeytingAlgebra b => (a -> b) -> f a -> b
 any = alaF Disj foldMap
 
 -- | Find the sum of the numeric values in a data structure.
-sum :: forall a f. (Foldable f, Semiring a) => f a -> a
+sum :: forall a f. Foldable f => Semiring a => f a -> a
 sum = foldl (+) zero
 
 -- | Find the product of the numeric values in a data structure.
-product :: forall a f. (Foldable f, Semiring a) => f a -> a
+product :: forall a f. Foldable f => Semiring a => f a -> a
 product = foldl (*) one
 
 -- | Test whether a value is an element of a data structure.
-elem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
+elem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 elem = any <<< (==)
 
 -- | Test whether a value is not an element of a data structure.
-notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
+notElem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 notElem x = not <<< elem x
 
 -- | Try to find an element in a data structure which satisfies a predicate.
@@ -279,7 +283,7 @@ findMap p = foldl go Nothing
   go r _ = r
 
 -- | Find the largest element of a structure, according to its `Ord` instance.
-maximum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+maximum :: forall a f. Ord a => Foldable f => f a -> Maybe a
 maximum = maximumBy compare
 
 -- | Find the largest element of a structure, according to a given comparison
@@ -292,7 +296,7 @@ maximumBy cmp = foldl max' Nothing
   max' (Just x) y = Just (if cmp x y == GT then x else y)
 
 -- | Find the smallest element of a structure, according to its `Ord` instance.
-minimum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+minimum :: forall a f. Ord a => Foldable f => f a -> Maybe a
 minimum = minimumBy compare
 
 -- | Find the smallest element of a structure, according to a given comparison
