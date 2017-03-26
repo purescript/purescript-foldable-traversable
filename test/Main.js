@@ -7,3 +7,19 @@ exports.arrayFrom1UpTo = function (n) {
   }
   return result;
 };
+
+exports.arrayReplicate = function (n) {
+  return function (x) {
+    var result = [];
+    for (var i = 1; i <= n; i++) {
+      result.push(x);
+    }
+    return result;
+  };
+};
+
+exports.intPow = function (x) {
+  return function (y) {
+    return Math.pow(x,y) | 0;
+  };
+};
