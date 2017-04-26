@@ -2,6 +2,7 @@ module Data.Foldable
   ( class Foldable, foldr, foldl, foldMap
   , foldrDefault, foldlDefault, foldMapDefaultL, foldMapDefaultR
   , fold
+  , foldM
   , traverse_
   , for_
   , sequence_
@@ -168,6 +169,10 @@ instance foldableMultiplicative :: Foldable Multiplicative where
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. Foldable f => Monoid m => f m -> m
 fold = foldMap id
+
+-- | Similar to 'foldl', but the result is encapsulated in a monad. 
+foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
+foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
 
 -- | Traverse a data structure, performing some effects encoded by an
 -- | `Applicative` functor at each value, ignoring the final result.
