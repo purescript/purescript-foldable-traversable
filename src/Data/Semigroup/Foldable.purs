@@ -28,8 +28,8 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 -- | use together - causing a non-terminating mutually recursive cycle.
 -- | These combinations are documented per function.
 class Foldable t <= Foldable1 t where
-  foldMap1 :: forall a m. (Semigroup m) => (a -> m) -> t a -> m
-  fold1 :: forall m. (Semigroup m) => t m -> m
+  foldMap1 :: forall a m. Semigroup m => (a -> m) -> t a -> m
+  fold1 :: forall m. Semigroup m => t m -> m
 
 -- | A default implementation of `fold1` using `foldMap1`.
 fold1Default :: forall t m. Foldable1 t => Semigroup m => t m -> m
@@ -52,7 +52,7 @@ newtype Act f a = Act (f a)
 getAct :: forall f a. Act f a -> f a
 getAct (Act f) = f
 
-instance semigroupAct :: (Apply f) => Semigroup (Act f a) where
+instance semigroupAct :: Apply f => Semigroup (Act f a) where
   append (Act a) (Act b) = Act (a *> b)
 
 -- | Traverse a data structure, performing some effects encoded by an
