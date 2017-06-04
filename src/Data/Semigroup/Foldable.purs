@@ -1,4 +1,13 @@
-module Data.Semigroup.Foldable where
+module Data.Semigroup.Foldable
+  ( class Foldable1
+  , foldMap1
+  , fold1
+  , traverse1_
+  , for1_
+  , sequence1_
+  , foldMap1Default
+  , fold1Default
+  ) where
 
 import Prelude
 import Data.Foldable (class Foldable)
@@ -18,7 +27,7 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 -- | Note: some combinations of the default implementations are unsafe to
 -- | use together - causing a non-terminating mutually recursive cycle.
 -- | These combinations are documented per function.
-class (Foldable t) <= Foldable1 t where
+class Foldable t <= Foldable1 t where
   foldMap1 :: forall a m. (Semigroup m) => (a -> m) -> t a -> m
   fold1 :: forall m. (Semigroup m) => t m -> m
 
