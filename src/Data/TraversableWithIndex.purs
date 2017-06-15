@@ -1,7 +1,7 @@
 module Data.TraversableWithIndex 
-  ( class TraversableWithIndex, itraverse,
+  ( class TraversableWithIndex, itraverse
   , itraverseDefault
-  , ifor_
+  , ifor
   , iscanl
   , imapAccumL
   , iscanr

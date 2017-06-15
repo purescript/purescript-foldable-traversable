@@ -1,5 +1,5 @@
 module Data.FoldableWithIndex
-  ( class FoldableWithIndex, ifoldr, ifoldl, ifoldMap,
+  ( class FoldableWithIndex, ifoldr, ifoldl, ifoldMap
   , ifoldrDefault
   , ifoldlDefault
   , ifoldMapDefaultR
