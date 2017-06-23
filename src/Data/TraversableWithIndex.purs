@@ -51,17 +51,8 @@ itraverseDefault
   -> m (t b)
 itraverseDefault f = sequence <<< imap f
 
-foreign import itraverseArrayImpl
-  :: forall m a b
-   . (m (a -> b) -> m a -> m b)
-  -> ((a -> b) -> m a -> m b)
-  -> (a -> m a)
-  -> (Int -> a -> m b)
-  -> Array a
-  -> m (Array b)
-
 instance traversableWithIndexArray :: TraversableWithIndex Int Array where
-  itraverse = itraverseArrayImpl apply map pure
+  itraverse = itraverseDefault
 
 instance traversableWithIndexMaybe :: TraversableWithIndex Unit Maybe where
   itraverse f = traverse $ f unit
