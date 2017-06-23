@@ -102,7 +102,7 @@ ifoldMapDefaultL
   => (i -> a -> m)
   -> f a
   -> m
-ifoldMapDefaultL f = ifoldl (\i acc x -> f i x <> acc) mempty
+ifoldMapDefaultL f = ifoldl (\i acc x -> acc <> f i x) mempty
 
 data Tuple a b = Tuple a b
 

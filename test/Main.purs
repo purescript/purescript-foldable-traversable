@@ -26,6 +26,8 @@ main = do
   log "Test foldableArray instance"
   testFoldableArrayWith 20
 
+  assert $ foldMapDefaultL (\x -> [x]) [1, 2] == [1, 2]
+
   log "Test foldableArray instance is stack safe"
   testFoldableArrayWith 20000
 

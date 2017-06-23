@@ -115,7 +115,7 @@ foldMapDefaultL
   => (a -> m)
   -> f a
   -> m
-foldMapDefaultL f = foldl (\acc x -> f x <> acc) mempty
+foldMapDefaultL f = foldl (\acc x -> acc <> f x) mempty
 
 instance foldableArray :: Foldable Array where
   foldr = foldrArray
