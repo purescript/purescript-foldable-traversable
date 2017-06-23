@@ -16,6 +16,7 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
+import Data.TraversableWithIndex (class TraversableWithIndex, itraverse)
 import Math (abs)
 import Test.Assert (ASSERT, assert)
 
@@ -66,6 +67,9 @@ main = do
     ["a", "b", "c"]
     (\i x -> [Tuple i x])
     (\x -> [x])
+
+  log "Test traversableArrayWithIndex instance"
+  testTraversableWithIndexArrayWith 20
 
   log "Test Bifoldable on `inclusive or`"
   testBifoldableIOrWith id 10 100 42
@@ -238,6 +242,27 @@ testTraversableFWith f n = do
 testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
+testTraversableWithIndexFWith
+  :: forall f e
+   . TraversableWithIndex Int f
+  => Eq (f (Tuple Int Int))
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
+testTraversableWithIndexFWith f n = do
+  let dat = f n
+
+  assert $ itraverse (\i -> Just <<< Tuple i) dat == Just (imap Tuple dat)
+  assert $ itraverse (const Just) dat == traverse Just dat
+  assert $ itraverse (\i -> pure <<< Tuple i) dat == [imap Tuple dat]
+  assert $
+    itraverse (const pure :: Int -> Int -> Array Int) dat ==
+    traverse pure dat
+
+testTraversableWithIndexArrayWith
+  :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testTraversableWithIndexArrayWith = testTraversableWithIndexFWith arrayFrom1UpTo
 
 -- structures for testing default `Foldable` implementations
 
