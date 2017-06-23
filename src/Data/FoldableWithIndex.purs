@@ -29,14 +29,15 @@ import Data.Monoid.Endo (Endo(..))
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (unwrap)
 
--- | A container that supports folding with an additional index.
--- |
--- | TODO: Laws. We probably want, in addition to the compatibility of ifoldr,
--- | ifoldl and ifoldMap via their default implementations,
--- | - `ifoldMap (const f) = foldMap f`
--- | and anologous rules for ifoldr, ifoldl (I guess they are automatic from
--- | the above one and compatibility though).
--- |
+-- | A `Foldable` with an additional index.  
+-- | A `FoldableWithIndex` instance must be compatible with its `Foldable`
+-- | instance
+-- | ```purescript
+-- | foldr f = ifoldr (const f)
+-- | foldl f = ifoldl (const f)
+-- | foldMap f = ifoldMap (const f)
+-- | ```
+-- | 
 -- | Default implementations are provided by the following functions:
 -- |
 -- | - `ifoldrDefault`

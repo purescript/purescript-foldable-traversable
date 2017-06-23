@@ -25,23 +25,24 @@ import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Traversable.Accum (Accum)
 import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
 
--- | A Traversable with an additional index.
--- | **TODO**: Laws. Apart from the IndexedTraversal laws of the haskell
--- | package (i.e. essentially the Traversal laws), we probably also want
--- | - `imap f = unwrap <<< itraverse (\i -> Identity <<< f i)`
--- | - `ifoldMap f = getConst <<< itraverse (\i -> Const <<< f i)`,
--- | i.e. that `imap` and `ifoldMap` are compatible with `itraverse`, and
--- | - `itraverse (const f) = traverse f
--- | i.e. that the `Traversable` and `IndexedTraversable` instances are
--- | compatible.
--- | Does it then follow that also
--- | - `sequence <<< imap f = itraverse f`
--- | ?
+
+-- | A `Traversable` with an additional index.  
+-- | A `TraversableWithIndex` instance must be compatible with its
+-- | `Traversable` instance
+-- | ```purescript
+-- | traverse f = itraverse (const f)
+-- | ```
+-- | with its `FoldableWithIndex` instance
+-- | ```
+-- | ifoldMap f = unwrap <<< itraverse (\i -> Const <<< f i)
+-- | ```
+-- | and with its `FunctorWithIndex` instance
+-- | ```
+-- | imap f = unwrap <<< itraverse (\i -> Identity <<< f i)
+-- | ```
 -- |
--- | A default implementation using `imap` and `sequence` is provided by
--- | `itraverseDefault`.
+-- | A default implementation is provided by `itraverseDefault`.
 class (FunctorWithIndex i t, FoldableWithIndex i t, Traversable t) <= TraversableWithIndex i t | t -> i where
-  -- TODO: formatting
   itraverse :: forall a b m. Applicative m => (i -> a -> m b) -> t a -> m (t b)
 
 -- | A default implementation of `itraverse` using `sequence` and `imap`.

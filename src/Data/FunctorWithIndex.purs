@@ -14,17 +14,16 @@ import Data.Monoid.Dual (Dual)
 import Data.Monoid.Multiplicative (Multiplicative)
 
 
--- | A `Functor` with an additional index.
--- | Instances must satisfy a modified form of the `Functor` laws: 
--- | 
--- | - Identity: `imap (\_ a -> a) = id`
--- | - Composition: `imap f . imap g = imap (\i -> f i <<< g i)`
--- |
--- | TODO: Don't we also want
--- | - `imap (const f) = map f`
--- | though?
--- |
--- | TODO: `imap` collides with `Invariant`s `imap`.
+-- | A `Functor` with an additional index.  
+-- | Instances must satisfy a modified form of the `Functor` laws
+-- | ```purescript
+-- | imap (\_ a -> a) = id
+-- | imap f . imap g = imap (\i -> f i <<< g i)
+-- | ```
+-- | and be compatible with the `Functor` instance
+-- | ```purescript
+-- | map f = imap (const f)
+-- | ```
 class Functor f <= FunctorWithIndex i f | f -> i where
   imap :: forall a b. (i -> a -> b) -> f a -> f b
 
