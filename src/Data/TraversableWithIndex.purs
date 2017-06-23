@@ -6,10 +6,12 @@ module Data.TraversableWithIndex
   , imapAccumL
   , iscanr
   , mapAccumR
+  , module Data.Traversable.Accum
   ) where
 
 import Prelude
 
+import Data.FoldableWithIndex (class FoldableWithIndex)
 import Data.FunctorWithIndex (class FunctorWithIndex, imap)
 import Data.Maybe (Maybe)
 import Data.Maybe.First (First)
@@ -19,8 +21,9 @@ import Data.Monoid.Conj (Conj)
 import Data.Monoid.Disj (Disj)
 import Data.Monoid.Dual (Dual)
 import Data.Monoid.Multiplicative (Multiplicative)
-import Data.Traversable (class Traversable, Accum, sequence, traverse)
-import Data.FoldableWithIndex (class FoldableWithIndex)
+import Data.Traversable (class Traversable, sequence, traverse)
+import Data.Traversable.Accum (Accum)
+import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
 
 -- | A Traversable with an additional index.
 -- | **TODO**: Laws. Apart from the IndexedTraversal laws of the haskell
@@ -100,23 +103,6 @@ ifor
   -> m (t b)
 ifor = flip itraverse
 
-newtype StateL s a = StateL (s -> Accum s a)
-
-stateL :: forall s a. StateL s a -> s -> Accum s a
-stateL (StateL k) = k
-
-instance functorStateL :: Functor (StateL s) where
-  map f k = StateL \s -> case stateL k s of
-    { accum: s1, value: a } -> { accum: s1, value: f a }
-
-instance applyStateL :: Apply (StateL s) where
-  apply f x = StateL \s -> case stateL f s of
-    { accum: s1, value: f' } -> case stateL x s1 of
-      { accum: s2, value: x' } -> { accum: s2, value: f' x' }
-
-instance applicativeStateL :: Applicative (StateL s) where
-  pure a = StateL \s -> { accum: s, value: a }
-
 -- | Fold a data structure from the left with access to the indices, keeping
 -- | all intermediate results instead of only the final result. Note that the
 -- | initial value does not appear in the result (unlike Haskell's
@@ -148,23 +134,6 @@ imapAccumL
   -> f a
   -> Accum s (f b)
 imapAccumL f s0 xs = stateL (itraverse (\i a -> StateL \s -> f i s a) xs) s0
-
-newtype StateR s a = StateR (s -> Accum s a)
-
-stateR :: forall s a. StateR s a -> s -> Accum s a
-stateR (StateR k) = k
-
-instance functorStateR :: Functor (StateR s) where
-  map f k = StateR \s -> case stateR k s of
-    { accum: s1, value: a } -> { accum: s1, value: f a }
-
-instance applyStateR :: Apply (StateR s) where
-  apply f x = StateR \s -> case stateR x s of
-    { accum: s1, value: x' } -> case stateR f s1 of
-      { accum: s2, value: f' } -> { accum: s2, value: f' x' }
-
-instance applicativeStateR :: Applicative (StateR s) where
-  pure a = StateR \s -> { accum: s, value: a }
 
 -- | Fold a data structure from the right with access to the indices, keeping
 -- | all intermediate results instead of only the final result. Note that the
