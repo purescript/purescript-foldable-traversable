@@ -16,6 +16,7 @@ module Data.FoldableWithIndex
 import Prelude
 
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
+import Data.FunctorWithIndex (imap)
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -103,22 +104,11 @@ ifoldMapDefaultL
   -> m
 ifoldMapDefaultL f = ifoldl (\i acc x -> f i x <> acc) mempty
 
-foreign import ifoldrArray
-  :: forall a b
-   . (Int -> a -> b -> b)
-  -> b
-  -> Array a
-  -> b
-foreign import ifoldlArray
-  :: forall a b
-   . (Int -> b -> a -> b)
-  -> b
-  -> Array a
-  -> b
+data Tuple a b = Tuple a b
 
 instance foldableWithIndexArray :: FoldableWithIndex Int Array where
-  ifoldr = ifoldrArray
-  ifoldl = ifoldlArray
+  ifoldr f z = foldr (\(Tuple i x) y -> f i x y) z <<< imap Tuple
+  ifoldl f z = foldl (\y (Tuple i x) -> f i y x) z <<< imap Tuple
   ifoldMap = ifoldMapDefaultR
 
 instance foldableWithIndexMaybe :: FoldableWithIndex Unit Maybe where
