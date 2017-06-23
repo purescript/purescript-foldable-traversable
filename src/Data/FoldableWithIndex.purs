@@ -214,17 +214,17 @@ ifor_ = flip itraverse_
 -- | For example:
 -- |
 -- | ```purescript
--- | > isurroundMap "*" (curry show) ([] :: Array Int)
+-- | > isurroundMap "*" (\i x -> show i <> x) []
 -- | = "*"
 -- |
--- | > isurroundMap "*" (curry show) [1]
--- | = "*(Tuple 0 1)*"
+-- | > isurroundMap "*" (\i x -> show i <> x) ["a"]
+-- | = "*0a*"
 -- |
--- | > isurroundMap "*" (curry show) [1, 2]
--- | = "*(Tuple 0 1)*(Tuple 1 2)*"
+-- | > isurroundMap "*" (\i x -> show i <> x) ["a", "b"]
+-- | = "*0a*1b*"
 -- |
--- | > isurroundMap "*" (curry show) [1, 2, 3]
--- | = "*(Tuple 0 1)*(Tuple 1 2)*(Tuple 2 3)*"
+-- | > isurroundMap "*" (\i x -> show i <> x) ["a", "b", "c"]
+-- | = "*0a*1b*2c*"
 -- | ```
 isurroundMap
   :: forall i f a m
