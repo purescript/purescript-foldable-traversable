@@ -5,7 +5,7 @@ module Data.TraversableWithIndex
   , iscanl
   , imapAccumL
   , iscanr
-  , mapAccumR
+  , imapAccumR
   , module Data.Traversable.Accum
   ) where
 
@@ -151,18 +151,18 @@ iscanr
   -> f a
   -> f b
 iscanr f b0 xs =
-  (mapAccumR (\i b a -> let b' = f i a b in { accum: b', value: b' }) b0 xs).value
+  (imapAccumR (\i b a -> let b' = f i a b in { accum: b', value: b' }) b0 xs).value
 
 -- | Fold a data structure from the right with access to the indices, keeping
 -- | all intermediate results instead of only the final result.
 -- |
--- | Unlike `iscanr`, `imapAccumR` allows the type of accumulator to differ
+-- | Unlike `iscanr`, `iimapAccumR` allows the type of accumulator to differ
 -- | from the element type of the final data structure.
-mapAccumR
+imapAccumR
   :: forall i a b s f
    . TraversableWithIndex i f
   => (i -> s -> a -> Accum s b)
   -> s
   -> f a
   -> Accum s (f b)
-mapAccumR f s0 xs = stateR (itraverse (\i a -> StateR \s -> f i s a) xs) s0
+imapAccumR f s0 xs = stateR (itraverse (\i a -> StateR \s -> f i s a) xs) s0
