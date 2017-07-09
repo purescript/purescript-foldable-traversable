@@ -1,5 +1,5 @@
 module Data.FunctorWithIndex
-  ( class FunctorWithIndex, imap
+  ( class FunctorWithIndex, mapWithIndex
   ) where
 
 import Prelude
@@ -17,41 +17,41 @@ import Data.Monoid.Multiplicative (Multiplicative)
 -- | A `Functor` with an additional index.  
 -- | Instances must satisfy a modified form of the `Functor` laws
 -- | ```purescript
--- | imap (\_ a -> a) = id
--- | imap f . imap g = imap (\i -> f i <<< g i)
+-- | mapWithIndex (\_ a -> a) = id
+-- | mapWithIndex f . mapWithIndex g = mapWithIndex (\i -> f i <<< g i)
 -- | ```
 -- | and be compatible with the `Functor` instance
 -- | ```purescript
--- | map f = imap (const f)
+-- | map f = mapWithIndex (const f)
 -- | ```
 class Functor f <= FunctorWithIndex i f | f -> i where
-  imap :: forall a b. (i -> a -> b) -> f a -> f b
+  mapWithIndex :: forall a b. (i -> a -> b) -> f a -> f b
 
-foreign import imapArray :: forall i a b. (i -> a -> b) -> Array a -> Array b
+foreign import mapWithIndexArray :: forall i a b. (i -> a -> b) -> Array a -> Array b
 
 instance functorWithIndexArray :: FunctorWithIndex Int Array where
-  imap = imapArray
+  mapWithIndex = mapWithIndexArray
 
 instance functorWithIndexMaybe :: FunctorWithIndex Unit Maybe where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexFirst :: FunctorWithIndex Unit First where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexLast :: FunctorWithIndex Unit Last where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexAdditive :: FunctorWithIndex Unit Additive where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexDual :: FunctorWithIndex Unit Dual where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexConj :: FunctorWithIndex Unit Conj where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexDisj :: FunctorWithIndex Unit Disj where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
 
 instance functorWithIndexMultiplicative :: FunctorWithIndex Unit Multiplicative where
-  imap f = map $ f unit
+  mapWithIndex f = map $ f unit
