@@ -1,10 +1,10 @@
 module Data.Bitraversable
-  ( class Bitraversable, btraverseWithIndex, bisequence
-  , btraverseWithIndexDefault
+  ( class Bitraversable, bitraverse, bisequence
+  , bitraverseDefault
   , bisequenceDefault
   , ltraverse
   , rtraverse
-  , bforWithIndex
+  , bifor
   , lfor
   , rfor
   , module Data.Bifoldable
@@ -12,7 +12,7 @@ module Data.Bitraversable
 
 import Prelude
 
-import Data.Bifoldable (class Bifoldable, ballWithIndex, banyWithIndex, bifold, bfoldMapWithIndex, bfoldMapWithIndexDefaultL, bfoldMapWithIndexDefaultR, bfoldlWithIndex, bfoldlWithIndexDefault, bfoldrWithIndex, bfoldrWithIndexDefault, bforWithIndex_, bisequence_, btraverseWithIndex_)
+import Data.Bifoldable (class Bifoldable, biall, biany, bifold, bifoldMap, bifoldMapDefaultL, bifoldMapDefaultR, bifoldl, bifoldlDefault, bifoldr, bifoldrDefault, bifor_, bisequence_, bitraverse_)
 import Data.Traversable (class Traversable, traverse, sequence)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bifunctor.Clown (Clown(..))
@@ -30,30 +30,30 @@ import Data.Bifunctor.Wrap (Wrap(..))
 -- |
 -- | Default implementations are provided by the following functions:
 -- |
--- | - `btraverseWithIndexDefault`
+-- | - `bitraverseDefault`
 -- | - `bisequenceDefault`
 class (Bifunctor t, Bifoldable t) <= Bitraversable t where
-  btraverseWithIndex :: forall f a b c d. Applicative f => (a -> f c) -> (b -> f d) -> t a b -> f (t c d)
+  bitraverse :: forall f a b c d. Applicative f => (a -> f c) -> (b -> f d) -> t a b -> f (t c d)
   bisequence :: forall f a b. Applicative f => t (f a) (f b) -> f (t a b)
 
 instance bitraversableClown :: Traversable f => Bitraversable (Clown f) where
-  btraverseWithIndex l _ (Clown f) = Clown <$> traverse l f
+  bitraverse l _ (Clown f) = Clown <$> traverse l f
   bisequence (Clown f) = Clown <$> sequence f
 
 instance bitraversableJoker :: Traversable f => Bitraversable (Joker f) where
-  btraverseWithIndex _ r (Joker f) = Joker <$> traverse r f
+  bitraverse _ r (Joker f) = Joker <$> traverse r f
   bisequence (Joker f) = Joker <$> sequence f
 
 instance bitraversableFlip :: Bitraversable p => Bitraversable (Flip p) where
-  btraverseWithIndex r l (Flip p) = Flip <$> btraverseWithIndex l r p
+  bitraverse r l (Flip p) = Flip <$> bitraverse l r p
   bisequence (Flip p) = Flip <$> bisequence p
 
 instance bitraversableProduct :: (Bitraversable f, Bitraversable g) => Bitraversable (Product f g) where
-  btraverseWithIndex l r (Product f g) = Product <$> btraverseWithIndex l r f <*> btraverseWithIndex l r g
+  bitraverse l r (Product f g) = Product <$> bitraverse l r f <*> bitraverse l r g
   bisequence (Product f g) = Product <$> bisequence f <*> bisequence g
 
 instance bitraversableWrap :: Bitraversable p => Bitraversable (Wrap p) where
-  btraverseWithIndex l r (Wrap p) = Wrap <$> btraverseWithIndex l r p
+  bitraverse l r (Wrap p) = Wrap <$> bitraverse l r p
   bisequence (Wrap p) = Wrap <$> bisequence p
 
 ltraverse
@@ -63,7 +63,7 @@ ltraverse
   => (a -> f c)
   -> t a b
   -> f (t c b)
-ltraverse f = btraverseWithIndex f pure
+ltraverse f = bitraverse f pure
 
 rtraverse
   :: forall t b c a f
@@ -72,10 +72,10 @@ rtraverse
   => (b -> f c)
   -> t a b
   -> f (t a c)
-rtraverse = btraverseWithIndex pure
+rtraverse = bitraverse pure
 
--- | A default implementation of `btraverseWithIndex` using `bisequence` and `bimap`.
-btraverseWithIndexDefault
+-- | A default implementation of `bitraverse` using `bisequence` and `bimap`.
+bitraverseDefault
   :: forall t f a b c d
    . Bitraversable t
   => Applicative f
@@ -83,19 +83,19 @@ btraverseWithIndexDefault
   -> (b -> f d)
   -> t a b
   -> f (t c d)
-btraverseWithIndexDefault f g t = bisequence (bimap f g t)
+bitraverseDefault f g t = bisequence (bimap f g t)
 
--- | A default implementation of `bisequence` using `btraverseWithIndex`.
+-- | A default implementation of `bisequence` using `bitraverse`.
 bisequenceDefault
   :: forall t f a b
    . Bitraversable t
   => Applicative f
   => t (f a) (f b)
   -> f (t a b)
-bisequenceDefault = btraverseWithIndex id id
+bisequenceDefault = bitraverse id id
 
 -- | Traverse a data structure, accumulating effects and results using an `Applicative` functor.
-bforWithIndex
+bifor
   :: forall t f a b c d
    . Bitraversable t
   => Applicative f
@@ -103,7 +103,7 @@ bforWithIndex
   -> (a -> f c)
   -> (b -> f d)
   -> f (t c d)
-bforWithIndex t f g = btraverseWithIndex f g t
+bifor t f g = bitraverse f g t
 
 lfor
   :: forall t b c a f
@@ -112,7 +112,7 @@ lfor
   => t a b
   -> (a -> f c)
   -> f (t c b)
-lfor t f = btraverseWithIndex f pure t
+lfor t f = bitraverse f pure t
 
 rfor
   :: forall t b c a f
@@ -121,4 +121,4 @@ rfor
   => t a b
   -> (b -> f c)
   -> f (t a c)
-rfor t f = btraverseWithIndex pure f t
+rfor t f = bitraverse pure f t

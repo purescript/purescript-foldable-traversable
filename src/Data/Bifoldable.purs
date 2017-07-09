@@ -26,49 +26,49 @@ import Data.Bifunctor.Wrap (Wrap(..))
 -- |
 -- | Default implementations are provided by the following functions:
 -- |
--- | - `bfoldrWithIndexDefault`
--- | - `bfoldlWithIndexDefault`
--- | - `bfoldMapWithIndexDefaultR`
--- | - `bfoldMapWithIndexDefaultL`
+-- | - `bifoldrDefault`
+-- | - `bifoldlDefault`
+-- | - `bifoldMapDefaultR`
+-- | - `bifoldMapDefaultL`
 -- |
 -- | Note: some combinations of the default implementations are unsafe to
 -- | use together - causing a non-terminating mutually recursive cycle.
 -- | These combinations are documented per function.
 class Bifoldable p where
-  bfoldrWithIndex :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
-  bfoldlWithIndex :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
-  bfoldMapWithIndex :: forall m a b. Monoid m => (a -> m) -> (b -> m) -> p a b -> m
+  bifoldr :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
+  bifoldl :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
+  bifoldMap :: forall m a b. Monoid m => (a -> m) -> (b -> m) -> p a b -> m
 
 instance bifoldableClown :: Foldable f => Bifoldable (Clown f) where
-  bfoldrWithIndex l _ u (Clown f) = foldr l u f
-  bfoldlWithIndex l _ u (Clown f) = foldl l u f
-  bfoldMapWithIndex l _ (Clown f) = foldMap l f
+  bifoldr l _ u (Clown f) = foldr l u f
+  bifoldl l _ u (Clown f) = foldl l u f
+  bifoldMap l _ (Clown f) = foldMap l f
 
 instance bifoldableJoker :: Foldable f => Bifoldable (Joker f) where
-  bfoldrWithIndex _ r u (Joker f) = foldr r u f
-  bfoldlWithIndex _ r u (Joker f) = foldl r u f
-  bfoldMapWithIndex _ r (Joker f) = foldMap r f
+  bifoldr _ r u (Joker f) = foldr r u f
+  bifoldl _ r u (Joker f) = foldl r u f
+  bifoldMap _ r (Joker f) = foldMap r f
 
 instance bifoldableFlip :: Bifoldable p => Bifoldable (Flip p) where
-  bfoldrWithIndex r l u (Flip p) = bfoldrWithIndex l r u p
-  bfoldlWithIndex r l u (Flip p) = bfoldlWithIndex l r u p
-  bfoldMapWithIndex r l (Flip p) = bfoldMapWithIndex l r p
+  bifoldr r l u (Flip p) = bifoldr l r u p
+  bifoldl r l u (Flip p) = bifoldl l r u p
+  bifoldMap r l (Flip p) = bifoldMap l r p
 
 instance bifoldableProduct :: (Bifoldable f, Bifoldable g) => Bifoldable (Product f g) where
-  bfoldrWithIndex l r u m = bfoldrWithIndexDefault l r u m
-  bfoldlWithIndex l r u m = bfoldlWithIndexDefault l r u m
-  bfoldMapWithIndex l r (Product f g) = bfoldMapWithIndex l r f <> bfoldMapWithIndex l r g
+  bifoldr l r u m = bifoldrDefault l r u m
+  bifoldl l r u m = bifoldlDefault l r u m
+  bifoldMap l r (Product f g) = bifoldMap l r f <> bifoldMap l r g
 
 instance bifoldableWrap :: Bifoldable p => Bifoldable (Wrap p) where
-  bfoldrWithIndex l r u (Wrap p) = bfoldrWithIndex l r u p
-  bfoldlWithIndex l r u (Wrap p) = bfoldlWithIndex l r u p
-  bfoldMapWithIndex l r (Wrap p) = bfoldMapWithIndex l r p
+  bifoldr l r u (Wrap p) = bifoldr l r u p
+  bifoldl l r u (Wrap p) = bifoldl l r u p
+  bifoldMap l r (Wrap p) = bifoldMap l r p
 
--- | A default implementation of `bfoldrWithIndex` using `bfoldMapWithIndex`.
+-- | A default implementation of `bifoldr` using `bifoldMap`.
 -- |
 -- | Note: when defining a `Bifoldable` instance, this function is unsafe to
--- | use in combination with `bfoldMapWithIndexDefaultR`.
-bfoldrWithIndexDefault
+-- | use in combination with `bifoldMapDefaultR`.
+bifoldrDefault
   :: forall p a b c
    . Bifoldable p
   => (a -> c -> c)
@@ -76,13 +76,13 @@ bfoldrWithIndexDefault
   -> c
   -> p a b
   -> c
-bfoldrWithIndexDefault f g z p = unwrap (bfoldMapWithIndex (Endo <<< f) (Endo <<< g) p) z
+bifoldrDefault f g z p = unwrap (bifoldMap (Endo <<< f) (Endo <<< g) p) z
 
--- | A default implementation of `bfoldlWithIndex` using `bfoldMapWithIndex`.
+-- | A default implementation of `bifoldl` using `bifoldMap`.
 -- |
 -- | Note: when defining a `Bifoldable` instance, this function is unsafe to
--- | use in combination with `bfoldMapWithIndexDefaultL`.
-bfoldlWithIndexDefault
+-- | use in combination with `bifoldMapDefaultL`.
+bifoldlDefault
   :: forall p a b c
    . Bifoldable p
   => (c -> a -> c)
@@ -90,17 +90,17 @@ bfoldlWithIndexDefault
   -> c
   -> p a b
   -> c
-bfoldlWithIndexDefault f g z p =
+bifoldlDefault f g z p =
   unwrap
     (unwrap
-      (bfoldMapWithIndex (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p))
+      (bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p))
     z
 
--- | A default implementation of `bfoldMapWithIndex` using `bfoldrWithIndex`.
+-- | A default implementation of `bifoldMap` using `bifoldr`.
 -- |
 -- | Note: when defining a `Bifoldable` instance, this function is unsafe to
--- | use in combination with `bfoldrWithIndexDefault`.
-bfoldMapWithIndexDefaultR
+-- | use in combination with `bifoldrDefault`.
+bifoldMapDefaultR
   :: forall p m a b
    . Bifoldable p
   => Monoid m
@@ -108,13 +108,13 @@ bfoldMapWithIndexDefaultR
   -> (b -> m)
   -> p a b
   -> m
-bfoldMapWithIndexDefaultR f g = bfoldrWithIndex (append <<< f) (append <<< g) mempty
+bifoldMapDefaultR f g = bifoldr (append <<< f) (append <<< g) mempty
 
--- | A default implementation of `bfoldMapWithIndex` using `bfoldlWithIndex`.
+-- | A default implementation of `bifoldMap` using `bifoldl`.
 -- |
 -- | Note: when defining a `Bifoldable` instance, this function is unsafe to
--- | use in combination with `bfoldlWithIndexDefault`.
-bfoldMapWithIndexDefaultL
+-- | use in combination with `bifoldlDefault`.
+bifoldMapDefaultL
   :: forall p m a b
    . Bifoldable p
   => Monoid m
@@ -122,16 +122,16 @@ bfoldMapWithIndexDefaultL
   -> (b -> m)
   -> p a b
   -> m
-bfoldMapWithIndexDefaultL f g = bfoldlWithIndex (\m a -> m <> f a) (\m b -> m <> g b) mempty
+bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
 
 
 -- | Fold a data structure, accumulating values in a monoidal type.
 bifold :: forall t m. Bifoldable t => Monoid m => t m m -> m
-bifold = bfoldMapWithIndex id id
+bifold = bifoldMap id id
 
 -- | Traverse a data structure, accumulating effects using an `Applicative` functor,
 -- | ignoring the final result.
-btraverseWithIndex_
+bitraverse_
   :: forall t f a b c d
    . Bifoldable t
   => Applicative f
@@ -139,10 +139,10 @@ btraverseWithIndex_
   -> (b -> f d)
   -> t a b
   -> f Unit
-btraverseWithIndex_ f g = bfoldrWithIndex (applySecond <<< f) (applySecond <<< g) (pure unit)
+bitraverse_ f g = bifoldr (applySecond <<< f) (applySecond <<< g) (pure unit)
 
--- | A version of `btraverseWithIndex_` with the data structure as the first argument.
-bforWithIndex_
+-- | A version of `bitraverse_` with the data structure as the first argument.
+bifor_
   :: forall t f a b c d
    . Bifoldable t
   => Applicative f
@@ -150,7 +150,7 @@ bforWithIndex_
   -> (a -> f c)
   -> (b -> f d)
   -> f Unit
-bforWithIndex_ t f g = btraverseWithIndex_ f g t
+bifor_ t f g = bitraverse_ f g t
 
 -- | Collapse a data structure, collecting effects using an `Applicative` functor,
 -- | ignoring the final result.
@@ -160,10 +160,10 @@ bisequence_
   => Applicative f
   => t (f a) (f b)
   -> f Unit
-bisequence_ = btraverseWithIndex_ id id
+bisequence_ = bitraverse_ id id
 
 -- | Test whether a predicate holds at any position in a data structure.
-banyWithIndex
+biany
   :: forall t a b c
    . Bifoldable t
   => BooleanAlgebra c
@@ -171,10 +171,10 @@ banyWithIndex
   -> (b -> c)
   -> t a b
   -> c
-banyWithIndex p q = unwrap <<< bfoldMapWithIndex (Disj <<< p) (Disj <<< q)
+biany p q = unwrap <<< bifoldMap (Disj <<< p) (Disj <<< q)
 
 -- | Test whether a predicate holds at all positions in a data structure.
-ballWithIndex
+biall
   :: forall t a b c
    . Bifoldable t
   => BooleanAlgebra c
@@ -182,4 +182,4 @@ ballWithIndex
   -> (b -> c)
   -> t a b
   -> c
-ballWithIndex p q = unwrap <<< bfoldMapWithIndex (Conj <<< p) (Conj <<< q)
+biall p q = unwrap <<< bifoldMap (Conj <<< p) (Conj <<< q)
