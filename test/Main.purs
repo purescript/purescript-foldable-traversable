@@ -4,19 +4,20 @@ import Prelude
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
-
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap, length, null, surroundMap)
+import Data.Foldable (class Foldable, find, findMap, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, length, maximum, maximumBy, minimum, minimumBy, null, surroundMap)
+import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
 import Data.Function (on)
+import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
+import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
-
+import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
 import Math (abs)
-
 import Test.Assert (ASSERT, assert)
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
@@ -55,6 +56,21 @@ main = do
   log "Test sequenceDefault"
   testSequenceDefault 20
 
+  log "Test foldableWithIndexArray instance"
+  testFoldableWithIndexArrayWith 20
+
+  log "Test foldableWithIndexArray instance is stack safe"
+  testFoldableWithIndexArrayWith 20000
+
+  log "Test FoldableWithIndex laws for array instance"
+  testFoldableWithIndexLawsOn
+    ["a", "b", "c"]
+    (\i x -> [Tuple i x])
+    (\x -> [x])
+
+  log "Test traversableArrayWithIndex instance"
+  testTraversableWithIndexArrayWith 20
+
   log "Test Bifoldable on `inclusive or`"
   testBifoldableIOrWith id 10 100 42
 
@@ -82,6 +98,9 @@ main = do
   log "Test find"
   assert $ find (_ == 10) [1, 5, 10] == Just 10
   assert $ find (\x -> x `mod` 2 == 0) [1, 4, 10] == Just 4
+
+  log "Test findWithIndex"
+  assert $ findWithIndex (\i x -> i == 2 && x `mod` 2 == 0) [1, 2, 4, 6] == Just 4
 
   log "Test findMap" *> do
     let pred x = if x > 5 then Just (x * 100) else Nothing
@@ -125,6 +144,12 @@ main = do
   assert $ "*1*2*" == surroundMap "*" show [1, 2]
   assert $ "*1*2*3*" == surroundMap "*" show [1, 2, 3]
 
+  log "Test surroundMapWithIndex"
+  assert $ "*" == surroundMapWithIndex "*" (\i x -> show i <> x) []
+  assert $ "*0a*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a"]
+  assert $ "*0a*1b*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a", "b"]
+  assert $ "*0a*1b*2c*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a", "b", "c"]
+
   log "All done!"
 
 
@@ -146,6 +171,58 @@ testFoldableFWith f n = do
 testFoldableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testFoldableArrayWith = testFoldableFWith arrayFrom1UpTo
 
+testFoldableWithIndexFWith
+  :: forall f e
+   . FoldableWithIndex Int f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
+testFoldableWithIndexFWith f n = do
+  let dat = f n
+  -- expectedSum = \Sum_{1 <= i <= n} i * i
+  let expectedSum = n * (n + 1) * (2 * n + 1) / 6
+
+  assert $ foldrWithIndex (\i x y -> (i + 1) * x + y) 0 dat == expectedSum
+  assert $ foldlWithIndex (\i y x -> y + (i + 1) * x) 0 dat == expectedSum 
+  assert $ foldMapWithIndex (\i x -> Additive $ (i + 1) * x) dat == Additive expectedSum
+
+testFoldableWithIndexArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableWithIndexArrayWith = testFoldableWithIndexFWith arrayFrom1UpTo
+
+
+data Tuple a b = Tuple a b
+derive instance eqTuple :: (Eq a, Eq b) => Eq (Tuple a b)
+
+-- test whether foldable laws hold, using foldMap and ifoldMap
+testFoldableWithIndexLawsOn
+  :: forall f i a m n e 
+   . FoldableWithIndex i f
+  => FunctorWithIndex i f
+  => Monoid m
+  => Monoid n
+  => Eq m
+  => Eq n
+  => f a
+  -> (i -> a -> m)
+  -> (a -> n)
+  -> Eff (assert :: ASSERT | e) Unit
+testFoldableWithIndexLawsOn c f g = do
+  -- compatibility with FunctorWithIndex (not strictly necessary for a valid
+  -- instance, but it's likely an error if this does not hold)
+  assert $ foldMapWithIndex f c == fold (mapWithIndex f c)
+
+  -- Compatiblity with Foldable
+  assert $ foldMap g c == foldMapWithIndex (const g) c
+
+  -- FoldableWithIndex laws
+  assert $ foldMapWithIndex f c == foldMapWithIndexDefaultL f c
+  assert $ foldMapWithIndex f c == foldMapWithIndexDefaultR f c
+
+  -- These follow from the above laws, but they test whether ifoldlDefault and
+  -- ifoldrDefault have been specified correctly.
+  assert $ foldMapWithIndex f c == foldlWithIndexDefault (\i y x -> y <> f i x) mempty c
+  assert $ foldMapWithIndex f c == foldrWithIndexDefault (\i x y -> f i x <> y) mempty c
 
 testTraversableFWith
   :: forall f e
@@ -165,6 +242,27 @@ testTraversableFWith f n = do
 testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
+testTraversableWithIndexFWith
+  :: forall f e
+   . TraversableWithIndex Int f
+  => Eq (f (Tuple Int Int))
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Eff (assert :: ASSERT | e) Unit
+testTraversableWithIndexFWith f n = do
+  let dat = f n
+
+  assert $ traverseWithIndex (\i -> Just <<< Tuple i) dat == Just (mapWithIndex Tuple dat)
+  assert $ traverseWithIndex (const Just) dat == traverse Just dat
+  assert $ traverseWithIndex (\i -> pure <<< Tuple i) dat == [mapWithIndex Tuple dat]
+  assert $
+    traverseWithIndex (const pure :: Int -> Int -> Array Int) dat ==
+    traverse pure dat
+
+testTraversableWithIndexArrayWith
+  :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testTraversableWithIndexArrayWith = testTraversableWithIndexFWith arrayFrom1UpTo
 
 -- structures for testing default `Foldable` implementations
 
