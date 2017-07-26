@@ -100,7 +100,10 @@ main = do
   assert $ find (\x -> x `mod` 2 == 0) [1, 4, 10] == Just 4
 
   log "Test findWithIndex"
-  assert $ findWithIndex (\i x -> i == 2 && x `mod` 2 == 0) [1, 2, 4, 6] == Just 4
+  assert $
+    case findWithIndex (\i x -> i `mod` 2 == 0 && x `mod` 2 == 0) [1, 2, 4, 6] of
+      Nothing -> false
+      Just { index, value } -> index == 2 && value == 4
 
   log "Test findMap" *> do
     let pred x = if x > 5 then Just (x * 100) else Nothing
