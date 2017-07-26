@@ -10,7 +10,6 @@ module Data.FoldableWithIndex
   , surroundMapWithIndex
   , allWithIndex
   , anyWithIndex
-  , ValueWithIndex
   , findWithIndex
   ) where
 
@@ -260,9 +259,6 @@ anyWithIndex
   -> b
 anyWithIndex t = unwrap <<< foldMapWithIndex (\i -> Disj <<< t i)
 
--- | Isomorphic to `Tuple i a`.
-type ValueWithIndex i a = { index :: i, value :: a }
-
 -- | Try to find an element in a data structure which satisfies a predicate
 -- | with access to the index.
 findWithIndex
@@ -270,9 +266,13 @@ findWithIndex
    . FoldableWithIndex i f
   => (i -> a -> Boolean)
   -> f a
-  -> Maybe (ValueWithIndex i a)
+  -> Maybe { index :: i, value :: a}
 findWithIndex p = foldlWithIndex go Nothing
   where
-  go :: i -> Maybe (ValueWithIndex i a) -> a -> Maybe (ValueWithIndex i a)
+  go
+    :: i
+    -> Maybe { index :: i, value :: a}
+    -> a
+    -> Maybe { index :: i, value :: a}
   go i Nothing x | p i x = Just { index: i, value: x}
   go _ r _ = r
