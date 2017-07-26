@@ -266,13 +266,13 @@ findWithIndex
    . FoldableWithIndex i f
   => (i -> a -> Boolean)
   -> f a
-  -> Maybe { index :: i, value :: a}
+  -> Maybe { index :: i, value :: a }
 findWithIndex p = foldlWithIndex go Nothing
   where
   go
     :: i
-    -> Maybe { index :: i, value :: a}
+    -> Maybe { index :: i, value :: a }
     -> a
-    -> Maybe { index :: i, value :: a}
-  go i Nothing x | p i x = Just { index: i, value: x}
+    -> Maybe { index :: i, value :: a }
+  go i Nothing x | p i x = Just { index: i, value: x }
   go _ r _ = r
