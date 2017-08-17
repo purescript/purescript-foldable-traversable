@@ -233,6 +233,10 @@ sequence_ = traverse_ id
 oneOf :: forall f g a. Foldable f => Plus g => f (g a) -> g a
 oneOf = foldr alt empty
 
+-- | Folds a structure into some `Plus`.
+oneOfMap :: forall f g a b. Foldable f => Plus g => (a -> g b) -> f a -> g b
+oneOfMap f = foldr (alt <<< f) empty
+
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
 intercalate :: forall f m. Foldable f => Monoid m => m -> f m -> m
