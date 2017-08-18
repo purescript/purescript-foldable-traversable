@@ -7,6 +7,7 @@ module Data.Foldable
   , for_
   , sequence_
   , oneOf
+  , oneOfMap
   , intercalate
   , surroundMap
   , surround
