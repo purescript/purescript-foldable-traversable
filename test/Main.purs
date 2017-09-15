@@ -234,6 +234,8 @@ testTraversableFWith
 testTraversableFWith f n = do
   let dat = f n
 
+  _ <- traverse pure dat
+
   assert $ traverse Just dat == Just dat
   assert $ traverse pure dat == [dat]
   assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
