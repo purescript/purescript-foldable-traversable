@@ -21,9 +21,9 @@
     "purescript-maybe": "^3.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^2.0.0",
-    "purescript-console": "^2.0.0",
-    "purescript-integers": "^2.1.0",
+    "purescript-assert": "^3.0.0",
+    "purescript-console": "^3.0.0",
+    "purescript-integers": "^3.0.0",
     "purescript-math": "^2.0.0",
     "purescript-unsafe-coerce": "^2.0.0"
   }
