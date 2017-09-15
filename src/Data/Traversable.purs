@@ -2,12 +2,12 @@ module Data.Traversable
   ( class Traversable, traverse, sequence
   , traverseDefault, sequenceDefault
   , for
-  , Accum
   , scanl
   , scanr
   , mapAccumL
   , mapAccumR
   , module Data.Foldable
+  , module Data.Traversable.Accum
   ) where
 
 import Prelude
@@ -21,6 +21,8 @@ import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Traversable.Accum (Accum)
+import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
 
 -- | `Traversable` represents data structures which can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -52,7 +54,8 @@ class (Functor t, Foldable t) <= Traversable t where
 -- | A default implementation of `traverse` using `sequence` and `map`.
 traverseDefault
   :: forall t a b m
-   . (Traversable t, Applicative m)
+   . Traversable t
+  => Applicative m
   => (a -> m b)
   -> t a
   -> m (t b)
@@ -61,10 +64,11 @@ traverseDefault f ta = sequence (f <$> ta)
 -- | A default implementation of `sequence` using `traverse`.
 sequenceDefault
   :: forall t a m
-   . (Traversable t, Applicative m)
+   . Traversable t
+  => Applicative m
   => t (m a)
   -> m (t a)
-sequenceDefault tma = traverse id tma
+sequenceDefault = traverse id
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
@@ -128,30 +132,12 @@ instance traversableMultiplicative :: Traversable Multiplicative where
 -- | ```
 for
   :: forall a b m t
-   . (Applicative m, Traversable t)
+   . Applicative m
+  => Traversable t
   => t a
   -> (a -> m b)
   -> m (t b)
 for x f = traverse f x
-
-type Accum s a = { accum :: s, value :: a }
-
-newtype StateL s a = StateL (s -> Accum s a)
-
-stateL :: forall s a. StateL s a -> s -> Accum s a
-stateL (StateL k) = k
-
-instance functorStateL :: Functor (StateL s) where
-  map f k = StateL \s -> case stateL k s of
-    { accum: s1, value: a } -> { accum: s1, value: f a }
-
-instance applyStateL :: Apply (StateL s) where
-  apply f x = StateL \s -> case stateL f s of
-    { accum: s1, value: f' } -> case stateL x s1 of
-      { accum: s2, value: x' } -> { accum: s2, value: f' x' }
-
-instance applicativeStateL :: Applicative (StateL s) where
-  pure a = StateL \s -> { accum: s, value: a }
 
 -- | Fold a data structure from the left, keeping all intermediate results
 -- | instead of only the final result. Note that the initial value does not
@@ -171,29 +157,12 @@ scanl f b0 xs = (mapAccumL (\b a -> let b' = f b a in { accum: b', value: b' }) 
 -- | from the element type of the final data structure.
 mapAccumL
   :: forall a b s f
-   . (Traversable f)
+   . Traversable f
   => (s -> a -> Accum s b)
   -> s
   -> f a
   -> Accum s (f b)
 mapAccumL f s0 xs = stateL (traverse (\a -> StateL \s -> f s a) xs) s0
-
-newtype StateR s a = StateR (s -> Accum s a)
-
-stateR :: forall s a. StateR s a -> s -> Accum s a
-stateR (StateR k) = k
-
-instance functorStateR :: Functor (StateR s) where
-  map f k = StateR \s -> case stateR k s of
-    { accum: s1, value: a } -> { accum: s1, value: f a }
-
-instance applyStateR :: Apply (StateR s) where
-  apply f x = StateR \s -> case stateR x s of
-    { accum: s1, value: x' } -> case stateR f s1 of
-      { accum: s2, value: f' } -> { accum: s2, value: f' x' }
-
-instance applicativeStateR :: Applicative (StateR s) where
-  pure a = StateR \s -> { accum: s, value: a }
 
 -- | Fold a data structure from the right, keeping all intermediate results
 -- | instead of only the final result. Note that the initial value does not

@@ -10,6 +10,12 @@ import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Endo (Endo(..))
 import Data.Newtype (unwrap)
+import Data.Foldable (class Foldable, foldr, foldl, foldMap)
+import Data.Bifunctor.Clown (Clown(..))
+import Data.Bifunctor.Joker (Joker(..))
+import Data.Bifunctor.Flip (Flip(..))
+import Data.Bifunctor.Product (Product(..))
+import Data.Bifunctor.Wrap (Wrap(..))
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -32,6 +38,31 @@ class Bifoldable p where
   bifoldr :: forall a b c. (a -> c -> c) -> (b -> c -> c) -> c -> p a b -> c
   bifoldl :: forall a b c. (c -> a -> c) -> (c -> b -> c) -> c -> p a b -> c
   bifoldMap :: forall m a b. Monoid m => (a -> m) -> (b -> m) -> p a b -> m
+
+instance bifoldableClown :: Foldable f => Bifoldable (Clown f) where
+  bifoldr l _ u (Clown f) = foldr l u f
+  bifoldl l _ u (Clown f) = foldl l u f
+  bifoldMap l _ (Clown f) = foldMap l f
+
+instance bifoldableJoker :: Foldable f => Bifoldable (Joker f) where
+  bifoldr _ r u (Joker f) = foldr r u f
+  bifoldl _ r u (Joker f) = foldl r u f
+  bifoldMap _ r (Joker f) = foldMap r f
+
+instance bifoldableFlip :: Bifoldable p => Bifoldable (Flip p) where
+  bifoldr r l u (Flip p) = bifoldr l r u p
+  bifoldl r l u (Flip p) = bifoldl l r u p
+  bifoldMap r l (Flip p) = bifoldMap l r p
+
+instance bifoldableProduct :: (Bifoldable f, Bifoldable g) => Bifoldable (Product f g) where
+  bifoldr l r u m = bifoldrDefault l r u m
+  bifoldl l r u m = bifoldlDefault l r u m
+  bifoldMap l r (Product f g) = bifoldMap l r f <> bifoldMap l r g
+
+instance bifoldableWrap :: Bifoldable p => Bifoldable (Wrap p) where
+  bifoldr l r u (Wrap p) = bifoldr l r u p
+  bifoldl l r u (Wrap p) = bifoldl l r u p
+  bifoldMap l r (Wrap p) = bifoldMap l r p
 
 -- | A default implementation of `bifoldr` using `bifoldMap`.
 -- |
@@ -71,12 +102,13 @@ bifoldlDefault f g z p =
 -- | use in combination with `bifoldrDefault`.
 bifoldMapDefaultR
   :: forall p m a b
-   . (Bifoldable p, Monoid m)
+   . Bifoldable p
+  => Monoid m
   => (a -> m)
   -> (b -> m)
   -> p a b
   -> m
-bifoldMapDefaultR f g p = bifoldr (append <<< f) (append <<< g) mempty p
+bifoldMapDefaultR f g = bifoldr (append <<< f) (append <<< g) mempty
 
 -- | A default implementation of `bifoldMap` using `bifoldl`.
 -- |
@@ -84,23 +116,25 @@ bifoldMapDefaultR f g p = bifoldr (append <<< f) (append <<< g) mempty p
 -- | use in combination with `bifoldlDefault`.
 bifoldMapDefaultL
   :: forall p m a b
-   . (Bifoldable p, Monoid m)
+   . Bifoldable p
+  => Monoid m
   => (a -> m)
   -> (b -> m)
   -> p a b
   -> m
-bifoldMapDefaultL f g p = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty p
+bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
 
 
 -- | Fold a data structure, accumulating values in a monoidal type.
-bifold :: forall t m. (Bifoldable t, Monoid m) => t m m -> m
+bifold :: forall t m. Bifoldable t => Monoid m => t m m -> m
 bifold = bifoldMap id id
 
 -- | Traverse a data structure, accumulating effects using an `Applicative` functor,
 -- | ignoring the final result.
 bitraverse_
   :: forall t f a b c d
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => (a -> f c)
   -> (b -> f d)
   -> t a b
@@ -110,7 +144,8 @@ bitraverse_ f g = bifoldr (applySecond <<< f) (applySecond <<< g) (pure unit)
 -- | A version of `bitraverse_` with the data structure as the first argument.
 bifor_
   :: forall t f a b c d
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => t a b
   -> (a -> f c)
   -> (b -> f d)
@@ -121,7 +156,8 @@ bifor_ t f g = bitraverse_ f g t
 -- | ignoring the final result.
 bisequence_
   :: forall t f a b
-   . (Bifoldable t, Applicative f)
+   . Bifoldable t
+  => Applicative f
   => t (f a) (f b)
   -> f Unit
 bisequence_ = bitraverse_ id id
@@ -129,7 +165,8 @@ bisequence_ = bitraverse_ id id
 -- | Test whether a predicate holds at any position in a data structure.
 biany
   :: forall t a b c
-   . (Bifoldable t, BooleanAlgebra c)
+   . Bifoldable t
+  => BooleanAlgebra c
   => (a -> c)
   -> (b -> c)
   -> t a b
@@ -139,7 +176,8 @@ biany p q = unwrap <<< bifoldMap (Disj <<< p) (Disj <<< q)
 -- | Test whether a predicate holds at all positions in a data structure.
 biall
   :: forall t a b c
-   . (Bifoldable t, BooleanAlgebra c)
+   . Bifoldable t
+  => BooleanAlgebra c
   => (a -> c)
   -> (b -> c)
   -> t a b
