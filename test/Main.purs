@@ -42,7 +42,7 @@ main = do
   testFoldableFoldlDefault 20
 
   log "Test foldrDefault"
-  testFoldableFoldlDefault 20
+  testFoldableFoldrDefault 20
 
   log "Test traversableArray instance"
   testTraversableArrayWith 20
