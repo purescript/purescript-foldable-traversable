@@ -177,6 +177,8 @@ fold = foldMap id
 -- |
 -- | Note: this function is not generally stack-safe, e.g., for monads which 
 -- | build up thunks a la `Eff`.
+-- | For a stack-safe alternative that works on lists, see
+-- | [purescript-safely](https://pursuit.purescript.org/packages/purescript-safely/3.0.0/docs/Control.Safely#v:foldM)
 foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
 foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
 
