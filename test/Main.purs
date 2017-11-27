@@ -7,7 +7,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, find, findMap, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, length, maximum, maximumBy, minimum, minimumBy, null, surroundMap)
+import Data.Foldable (class Foldable, find, findMap, fold, indexl, indexr, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, length, maximum, maximumBy, minimum, minimumBy, null, surroundMap)
 import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
 import Data.Function (on)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
@@ -94,6 +94,16 @@ main = do
 
   log "Test bisequenceDefault"
   testBitraversableIOrWith BSD
+
+  log "Test indexl"
+  assert $ indexl 2 [1, 5, 10] == Just 10
+  assert $ indexl 0 [1, 5, 10] == Just 1
+  assert $ indexl 9 [1, 5, 10] == Nothing
+
+  log "Test indexr"
+  assert $ indexr 2 [1, 5, 10] == Just 1
+  assert $ indexr 0 [1, 5, 10] == Just 10
+  assert $ indexr 9 [1, 5, 10] == Nothing
 
   log "Test find"
   assert $ find (_ == 10) [1, 5, 10] == Just 10

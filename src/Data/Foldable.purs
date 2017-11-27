@@ -19,6 +19,8 @@ module Data.Foldable
   , product
   , elem
   , notElem
+  , indexl
+  , indexr
   , find
   , findMap
   , maximum
@@ -324,6 +326,24 @@ elem = any <<< (==)
 -- | Test whether a value is not an element of a data structure.
 notElem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 notElem x = not <<< elem x
+
+-- | Try to get nth element from the left in a data structure
+indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
+  where
+  go cursor@{ pos } elem' | pos == idx =
+    cursor{pos = cursor.pos + 1, elem = Just elem'}
+  go cursor _ =
+    cursor{pos = cursor.pos + 1}
+
+-- | Try to get nth element from the right in a data structure
+indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
+  where
+  go elem' cursor@{ pos } | pos == idx =
+    cursor{pos = cursor.pos + 1, elem = Just elem'}
+  go _ cursor =
+    cursor{pos = cursor.pos + 1}
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
