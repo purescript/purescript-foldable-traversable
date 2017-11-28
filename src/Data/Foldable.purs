@@ -331,19 +331,25 @@ notElem x = not <<< elem x
 indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
 indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
   where
-  go cursor@{ pos } elem' | pos == idx =
-    cursor{pos = cursor.pos + 1, elem = Just elem'}
-  go cursor _ =
-    cursor{pos = cursor.pos + 1}
+  go cursor elem =
+    case cursor.elem of 
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just elem, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to get nth element from the right in a data structure
 indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
 indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
   where
-  go elem' cursor@{ pos } | pos == idx =
-    cursor{pos = cursor.pos + 1, elem = Just elem'}
-  go _ cursor =
-    cursor{pos = cursor.pos + 1}
+  go elem cursor =
+    case cursor.elem of 
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just elem, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
