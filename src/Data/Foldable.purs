@@ -175,9 +175,9 @@ instance foldableMultiplicative :: Foldable Multiplicative where
 fold :: forall f m. Foldable f => Monoid m => f m -> m
 fold = foldMap id
 
--- | Similar to 'foldl', but the result is encapsulated in a monad. 
+-- | Similar to 'foldl', but the result is encapsulated in a monad.
 -- |
--- | Note: this function is not generally stack-safe, e.g., for monads which 
+-- | Note: this function is not generally stack-safe, e.g., for monads which
 -- | build up thunks a la `Eff`.
 foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
 foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
@@ -331,24 +331,24 @@ notElem x = not <<< elem x
 indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
 indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
   where
-  go cursor elem =
-    case cursor.elem of 
+  go cursor a =
+    case cursor.elem of
       Just _ -> cursor
       _ ->
         if cursor.pos == idx
-          then { elem: Just elem, pos: cursor.pos }
+          then { elem: Just a, pos: cursor.pos }
           else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to get nth element from the right in a data structure
 indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
 indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
   where
-  go elem cursor =
-    case cursor.elem of 
+  go a cursor =
+    case cursor.elem of
       Just _ -> cursor
       _ ->
         if cursor.pos == idx
-          then { elem: Just elem, pos: cursor.pos }
+          then { elem: Just a, pos: cursor.pos }
           else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to find an element in a data structure which satisfies a predicate.
