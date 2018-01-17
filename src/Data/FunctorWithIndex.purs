@@ -1,5 +1,5 @@
 module Data.FunctorWithIndex
-  ( class FunctorWithIndex, mapWithIndex
+  ( class FunctorWithIndex, mapWithIndex, mapDefault
   ) where
 
 import Prelude
@@ -55,3 +55,7 @@ instance functorWithIndexDisj :: FunctorWithIndex Unit Disj where
 
 instance functorWithIndexMultiplicative :: FunctorWithIndex Unit Multiplicative where
   mapWithIndex f = map $ f unit
+
+-- | A default implementation of Functor's `map` in terms of `mapWithIndex`
+mapDefault :: forall i f a b. FunctorWithIndex i f => (a -> b) -> f a -> f b
+mapDefault f = mapWithIndex (const f)

@@ -11,6 +11,9 @@ module Data.FoldableWithIndex
   , allWithIndex
   , anyWithIndex
   , findWithIndex
+  , foldrDefault
+  , foldlDefault
+  , foldMapDefault
   ) where
 
 import Prelude
@@ -271,3 +274,25 @@ findWithIndex p = foldlWithIndex go Nothing
   where
   go i Nothing x | p i x = Just x
   go i r _ = r
+
+-- | A default implementation of `foldr` using `foldrWithIndex`
+foldrDefault
+  :: forall i f a b
+   . FoldableWithIndex i f
+  => (a -> b -> b) -> b -> f a -> b
+foldrDefault f = foldrWithIndex (const f)
+
+-- | A default implementation of `foldl` using `foldlWithIndex`
+foldlDefault
+  :: forall i f a b
+   . FoldableWithIndex i f
+  => (b -> a -> b) -> b -> f a -> b
+foldlDefault f = foldlWithIndex (const f)
+
+-- | A default implementation of `foldMap` using `foldMapWithIndex`
+foldMapDefault
+  :: forall i f a m
+   . FoldableWithIndex i f
+  => Monoid m
+  => (a -> m) -> f a -> m
+foldMapDefault f = foldMapWithIndex (const f)
