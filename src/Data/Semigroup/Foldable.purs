@@ -7,12 +7,18 @@ module Data.Semigroup.Foldable
   , sequence1_
   , foldMap1Default
   , fold1Default
+  , head
+  , last
   ) where
 
 import Prelude
+
 import Data.Foldable (class Foldable)
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
+import Data.Newtype (ala)
+import Data.Semigroup.First (First(..))
+import Data.Semigroup.Last (Last(..))
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
 -- |
@@ -71,3 +77,11 @@ for1_ = flip traverse1_
 -- | given by the `Foldable1` instance, ignoring the final result.
 sequence1_ :: forall t f a. Foldable1 t => Apply f => t (f a) -> f Unit
 sequence1_ = traverse1_ id
+
+-- | Get the first element from the left in a data structure.
+head :: forall f a. Foldable1 f => f a -> a
+head = ala First foldMap1
+
+-- | Get the last element from the left in a data structure.
+last :: forall f a. Foldable1 f => f a -> a
+last = ala Last foldMap1
