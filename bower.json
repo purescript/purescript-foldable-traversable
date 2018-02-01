@@ -18,7 +18,8 @@
   ],
   "dependencies": {
     "purescript-bifunctors": "^3.0.0",
-    "purescript-maybe": "^3.0.0"
+    "purescript-maybe": "^3.0.0",
+    "purescript-semigroups": "^0.0.1"
   },
   "devDependencies": {
     "purescript-assert": "^3.0.0",

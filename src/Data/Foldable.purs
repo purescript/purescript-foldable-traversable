@@ -19,6 +19,8 @@ module Data.Foldable
   , product
   , elem
   , notElem
+  , head
+  , last
   , indexl
   , indexr
   , find
@@ -34,7 +36,6 @@ module Data.Foldable
 import Prelude
 
 import Control.Plus (class Plus, alt, empty)
-
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
@@ -46,6 +47,8 @@ import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Endo (Endo(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Newtype (alaF, unwrap)
+import Data.Semigroup.First (First(First)) as Semigroup
+import Data.Semigroup.Last (Last(Last)) as Semigroup
 
 -- | `Foldable` represents data structures which can be _folded_.
 -- |
@@ -326,6 +329,14 @@ elem = any <<< (==)
 -- | Test whether a value is not an element of a data structure.
 notElem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 notElem x = not <<< elem x
+
+-- | Try to get the first element from the left in a data structure.
+head :: forall a f. Foldable f => f a -> Maybe a
+head = map unwrap <<< foldMap (Just <<< Semigroup.First)
+
+-- | Try to get the last element from the left in a data structure.
+last :: forall a f. Foldable f => f a -> Maybe a
+last = map unwrap <<< foldMap (Just <<< Semigroup.Last)
 
 -- | Try to get nth element from the left in a data structure
 indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
