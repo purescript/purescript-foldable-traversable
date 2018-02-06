@@ -17,6 +17,7 @@ import Prelude
 
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
 import Data.FunctorWithIndex (mapWithIndex)
+import Data.Lazy (Lazy)
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -148,6 +149,11 @@ instance foldableWithIndexConj :: FoldableWithIndex Unit Conj where
   foldMapWithIndex f = foldMap $ f unit
 
 instance foldableWithIndexMultiplicative :: FoldableWithIndex Unit Multiplicative where
+  foldrWithIndex f = foldr $ f unit
+  foldlWithIndex f = foldl $ f unit
+  foldMapWithIndex f = foldMap $ f unit
+
+instance foldableWithIndexLazy :: FoldableWithIndex Unit Lazy where
   foldrWithIndex f = foldr $ f unit
   foldlWithIndex f = foldl $ f unit
   foldMapWithIndex f = foldMap $ f unit

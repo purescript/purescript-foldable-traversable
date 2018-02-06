@@ -13,6 +13,7 @@ module Data.Traversable
 import Prelude
 
 import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, product, sequence_, sum, traverse_)
+import Data.Lazy (Lazy, defer, force)
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
@@ -116,6 +117,10 @@ instance traversableDisj :: Traversable Disj where
 instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
   sequence (Multiplicative x) = Multiplicative <$> x
+
+instance traversableLazy :: Traversable Lazy where
+  traverse f l = defer <<< const <$> f (force l)
+  sequence l = defer <<< const <$> force l
 
 -- | A version of `traverse` with its arguments flipped.
 -- |

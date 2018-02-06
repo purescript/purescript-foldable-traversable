@@ -34,7 +34,7 @@ module Data.Foldable
 import Prelude
 
 import Control.Plus (class Plus, alt, empty)
-
+import Data.Lazy (Lazy, force)
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
@@ -170,6 +170,11 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldr f z (Multiplicative x) = x `f` z
   foldl f z (Multiplicative x) = z `f` x
   foldMap f (Multiplicative x) = f x
+
+instance foldableLazy :: Foldable Lazy where
+  foldr f z l = f (force l) z
+  foldl f z l = f z (force l)
+  foldMap f l = f (force l)
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. Foldable f => Monoid m => f m -> m

@@ -13,6 +13,7 @@ import Prelude
 
 import Data.FoldableWithIndex (class FoldableWithIndex)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
+import Data.Lazy (Lazy)
 import Data.Maybe (Maybe)
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -80,6 +81,9 @@ instance traversableWithIndexDisj :: TraversableWithIndex Unit Disj where
   traverseWithIndex f = traverse $ f unit
 
 instance traversableWithIndexMultiplicative :: TraversableWithIndex Unit Multiplicative where
+  traverseWithIndex f = traverse $ f unit
+
+instance traversableWithIndexLazy :: TraversableWithIndex Unit Lazy where
   traverseWithIndex f = traverse $ f unit
 
 -- | A version of `traverseWithIndex` with its arguments flipped.

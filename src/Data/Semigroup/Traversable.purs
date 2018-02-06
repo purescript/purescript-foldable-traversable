@@ -1,8 +1,10 @@
 module Data.Semigroup.Traversable where
 
 import Prelude
-import Data.Traversable (class Traversable)
+
+import Data.Lazy (Lazy, defer, force)
 import Data.Semigroup.Foldable (class Foldable1)
+import Data.Traversable (class Traversable)
 
 -- | `Traversable1` represents data structures with a minimum of one element that can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -49,3 +51,7 @@ sequence1Default
   => t (m a)
   -> m (t a)
 sequence1Default = traverse1 id
+
+instance traversableLazy :: Traversable1 Lazy where
+  traverse1 f l = defer <<< const <$> f (force l)
+  sequence1 l = defer <<< const <$> force l
