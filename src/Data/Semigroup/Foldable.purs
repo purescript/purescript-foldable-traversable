@@ -10,7 +10,9 @@ module Data.Semigroup.Foldable
   ) where
 
 import Prelude
+
 import Data.Foldable (class Foldable)
+import Data.Lazy (Lazy, force)
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 
@@ -45,6 +47,10 @@ instance foldableDual :: Foldable1 Dual where
 
 instance foldableMultiplicative :: Foldable1 Multiplicative where
   foldMap1 f (Multiplicative x) = f x
+  fold1 = fold1Default
+
+instance foldable1Lazy :: Foldable1 Lazy where
+  foldMap1 f l = f (force l)
   fold1 = fold1Default
 
 newtype Act f a = Act (f a)

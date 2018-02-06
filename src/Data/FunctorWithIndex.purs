@@ -4,6 +4,7 @@ module Data.FunctorWithIndex
 
 import Prelude
 
+import Data.Lazy (Lazy)
 import Data.Maybe (Maybe)
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -54,4 +55,7 @@ instance functorWithIndexDisj :: FunctorWithIndex Unit Disj where
   mapWithIndex f = map $ f unit
 
 instance functorWithIndexMultiplicative :: FunctorWithIndex Unit Multiplicative where
+  mapWithIndex f = map $ f unit
+
+instance functorWithIndexLazy :: FunctorWithIndex Unit Lazy where
   mapWithIndex f = map $ f unit
