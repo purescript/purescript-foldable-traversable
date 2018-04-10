@@ -7,9 +7,12 @@ module Data.Semigroup.Foldable
   , sequence1_
   , foldMap1Default
   , fold1Default
+  , intercalate
+  , intercalateMap
   ) where
 
 import Prelude
+
 import Data.Foldable (class Foldable)
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
@@ -80,3 +83,27 @@ maximum = ala Max foldMap1
 
 minimum :: forall f a. Ord a => Foldable1 f => f a -> a
 minimum = ala Min foldMap1
+
+-- | Internal. Used by intercalation functions.
+newtype JoinWith a = JoinWith (a -> a)
+
+joinee :: forall a. JoinWith a -> a -> a
+joinee (JoinWith x) = x
+
+instance semigroupJoinWith :: Semigroup a => Semigroup (JoinWith a) where
+  append (JoinWith a) (JoinWith b) = JoinWith $ \j -> a j <> j <> b j
+
+-- | Fold a data structure using a `Semigroup` instance,
+-- | combining adjacent elements using the specified separator.
+intercalate :: forall f m. Foldable1 f => Semigroup m => m -> f m -> m
+intercalate = flip intercalateMap id
+
+-- | Fold a data structure, accumulating values in some `Semigroup`,
+-- | combining adjacent elements using the specified separator.
+intercalateMap
+  :: forall f m a
+   . Foldable1 f
+  => Semigroup m
+  => m -> (a -> m) -> f a -> m
+intercalateMap j f foldable =
+  joinee (foldMap1 (JoinWith <<< const <<< f) foldable) j
