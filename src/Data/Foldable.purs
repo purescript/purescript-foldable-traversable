@@ -34,11 +34,9 @@ module Data.Foldable
 import Prelude
 
 import Control.Plus (class Plus, alt, empty)
-
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
@@ -173,7 +171,7 @@ instance foldableMultiplicative :: Foldable Multiplicative where
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. Foldable f => Monoid m => f m -> m
-fold = foldMap id
+fold = foldMap identity
 
 -- | Similar to 'foldl', but the result is encapsulated in a monad.
 -- |
@@ -230,7 +228,7 @@ for_ = flip traverse_
 -- | sequence_ [ trace "Hello, ", trace " world!" ]
 -- | ```
 sequence_ :: forall a f m. Applicative m => Foldable f => f (m a) -> m Unit
-sequence_ = traverse_ id
+sequence_ = traverse_ identity
 
 -- | Combines a collection of elements using the `Alt` operation.
 oneOf :: forall f g a. Foldable f => Plus g => f (g a) -> g a
@@ -287,19 +285,19 @@ surroundMap d t f = unwrap (foldMap joined f) d
 -- | = "*1*2*3*"
 -- | ```
 surround :: forall f m. Foldable f => Semigroup m => m -> f m -> m
-surround d = surroundMap d id
+surround d = surroundMap d identity
 
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data
 -- | structure are `true`.
 and :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
-and = all id
+and = all identity
 
 -- | The disjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether any of the values in a data
 -- | structure is `true`.
 or :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
-or = any id
+or = any identity
 
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.

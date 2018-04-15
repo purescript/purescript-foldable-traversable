@@ -13,11 +13,10 @@ import Data.Monoid.Disj (Disj)
 import Data.Monoid.Dual (Dual)
 import Data.Monoid.Multiplicative (Multiplicative)
 
-
--- | A `Functor` with an additional index.  
+-- | A `Functor` with an additional index.
 -- | Instances must satisfy a modified form of the `Functor` laws
 -- | ```purescript
--- | mapWithIndex (\_ a -> a) = id
+-- | mapWithIndex (\_ a -> a) = identity
 -- | mapWithIndex f . mapWithIndex g = mapWithIndex (\i -> f i <<< g i)
 -- | ```
 -- | and be compatible with the `Functor` instance
