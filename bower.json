@@ -17,14 +17,15 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-bifunctors": "^3.0.0",
-    "purescript-maybe": "^3.0.0"
+    "purescript-bifunctors": "#compiler/0.12",
+    "purescript-maybe": "#compiler/0.12",
+    "purescript-orders": "#compiler/0.12"
   },
   "devDependencies": {
-    "purescript-assert": "^3.0.0",
-    "purescript-console": "^3.0.0",
-    "purescript-integers": "^3.0.0",
-    "purescript-math": "^2.0.0",
-    "purescript-unsafe-coerce": "^2.0.0"
+    "purescript-assert": "#compiler/0.12",
+    "purescript-console": "#compiler/0.12",
+    "purescript-integers": "#compiler/0.12",
+    "purescript-math": "#compiler/0.12",
+    "purescript-unsafe-coerce": "#compiler/0.12"
   }
 }

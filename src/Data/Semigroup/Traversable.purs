@@ -1,8 +1,11 @@
 module Data.Semigroup.Traversable where
 
 import Prelude
-import Data.Traversable (class Traversable)
+
+import Data.Monoid.Dual (Dual(..))
+import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Semigroup.Foldable (class Foldable1)
+import Data.Traversable (class Traversable)
 
 -- | `Traversable1` represents data structures with a minimum of one element that can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -16,7 +19,7 @@ import Data.Semigroup.Foldable (class Foldable1)
 -- | following sense:
 -- |
 -- | - `traverse1 f xs = sequence1 (f <$> xs)`
--- | - `sequence1 = traverse1 id`
+-- | - `sequence1 = traverse1 identity`
 -- |
 -- | `Traversable1` instances should also be compatible with the corresponding
 -- | `Foldable1` instances, in the following sense:
@@ -30,6 +33,14 @@ import Data.Semigroup.Foldable (class Foldable1)
 class (Foldable1 t, Traversable t) <= Traversable1 t where
   traverse1 :: forall a b f. Apply f => (a -> f b) -> t a -> f (t b)
   sequence1 :: forall b f. Apply f => t (f b) -> f (t b)
+
+instance traversableDual :: Traversable1 Dual where
+  traverse1 f (Dual x) = Dual <$> f x
+  sequence1 = sequence1Default
+
+instance traversableMultiplicative :: Traversable1 Multiplicative where
+  traverse1 f (Multiplicative x) = Multiplicative <$> f x
+  sequence1 = sequence1Default
 
 -- | A default implementation of `traverse1` using `sequence1`.
 traverse1Default
@@ -48,4 +59,4 @@ sequence1Default
   => Apply m
   => t (m a)
   -> m (t a)
-sequence1Default = traverse1 id
+sequence1Default = traverse1 identity
