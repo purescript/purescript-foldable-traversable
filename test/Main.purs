@@ -2,8 +2,6 @@ module Test.Main where
 
 import Prelude
 
-import Effect (Effect)
-import Effect.Console (log)
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
@@ -11,15 +9,27 @@ import Data.Foldable (class Foldable, find, findMap, fold, indexl, indexr, foldM
 import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
 import Data.Function (on)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
-import Data.Int (toNumber)
+import Data.Int (toNumber, pow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
+import Data.Newtype (unwrap)
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
+import Effect (Effect, foreachE)
+import Effect.Console (log)
 import Math (abs)
-import Test.Assert (assert)
+import Test.Assert (assert, assert')
+import Unsafe.Coerce (unsafeCoerce)
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
+foreign import arrayReplicate :: forall a. Int -> a -> Array a
+
+foldableLength :: forall f a. Foldable f => f a -> Int
+foldableLength = unwrap <<< foldMap (const (Additive 1))
+
+-- Ensure that a value is evaluated 'lazily' by treating it as an Eff action.
+deferEff :: forall a. (Unit -> a) -> Effect a
+deferEff = unsafeCoerce
 
 main :: Effect Unit
 main = do
@@ -43,8 +53,9 @@ main = do
   log "Test foldrDefault"
   testFoldableFoldrDefault 20
 
-  log "Test traversableArray instance"
-  testTraversableArrayWith 20
+  foreachE [1,2,3,4,5,10,20] \i -> do
+    log $ "Test traversableArray instance with an array of size: " <> show i
+    testTraversableArrayWith i
 
   log "Test traversableArray instance is stack safe"
   testTraversableArrayWith 20000
@@ -234,7 +245,7 @@ testFoldableWithIndexLawsOn c f g = do
   assert $ foldMapWithIndex f c == foldrWithIndexDefault (\i x y -> f i x <> y) mempty c
 
 testTraversableFWith
-  :: forall f 
+  :: forall f
    . Traversable f
   => Eq (f Int)
   => (Int -> f Int)
@@ -242,11 +253,25 @@ testTraversableFWith
   -> Effect Unit
 testTraversableFWith f n = do
   let dat = f n
+  let len = foldableLength dat
 
-  assert $ traverse Just dat == Just dat
-  assert $ traverse pure dat == [dat]
-  assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
-  assert $ sequence (map Just dat) == traverse Just dat
+  _ <- traverse pure dat
+
+  assert' "traverse Just == Just" $ traverse Just dat == Just dat
+  assert' "traverse pure == pure (Array)" $ traverse pure dat == [dat]
+
+  when (len <= 10) do
+    result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (pow 2 len) dat
+    assert' "traverse with Array as underlying applicative" result
+
+  assert' "traverse (const Nothing) == const Nothing" $
+    traverse (const Nothing :: Int -> Maybe Int) dat == Nothing
+
+  assert' "sequence <<< map f == traverse f" $
+    sequence (map Just dat) == traverse Just dat
+
+  assert' "underlying applicative" $
+    (traverse pure dat :: Unit -> f Int) unit == dat
 
 testTraversableArrayWith :: Int -> Effect Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo

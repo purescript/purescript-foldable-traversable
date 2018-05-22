@@ -3,59 +3,49 @@
 // jshint maxparams: 3
 
 exports.traverseArrayImpl = function () {
-  function Cont(fn) {
-    this.fn = fn;
+  function array1(a) {
+    return [a];
   }
 
-  var emptyList = {};
-
-  var ConsCell = function (head, tail) {
-    this.head = head;
-    this.tail = tail;
-  };
-
-  function consList(x) {
-    return function (xs) {
-      return new ConsCell(x, xs);
+  function array2(a) {
+    return function (b) {
+      return [a, b];
     };
   }
 
-  function listToArray(list) {
-    var arr = [];
-    var xs = list;
-    while (xs !== emptyList) {
-      arr.push(xs.head);
-      xs = xs.tail;
-    }
-    return arr;
+  function array3(a) {
+    return function (b) {
+      return function (c) {
+        return [a, b, c];
+      };
+    };
+  }
+
+  function concat2(xs) {
+    return function (ys) {
+      return xs.concat(ys);
+    };
   }
 
   return function (apply) {
     return function (map) {
       return function (pure) {
         return function (f) {
-          var buildFrom = function (x, ys) {
-            return apply(map(consList)(f(x)))(ys);
-          };
-
-          var go = function (acc, currentLen, xs) {
-            if (currentLen === 0) {
-              return acc;
-            } else {
-              var last = xs[currentLen - 1];
-              return new Cont(function () {
-                return go(buildFrom(last, acc), currentLen - 1, xs);
-              });
-            }
-          };
-
           return function (array) {
-            var result = go(pure(emptyList), array.length, array);
-            while (result instanceof Cont) {
-              result = result.fn();
+            function go(bot, top) {
+              switch (top - bot) {
+              case 0: return pure([]);
+              case 1: return map(array1)(f(array[bot]));
+              case 2: return apply(map(array2)(f(array[bot])))(f(array[bot + 1]));
+              case 3: return apply(apply(map(array3)(f(array[bot])))(f(array[bot + 1])))(f(array[bot + 2]));
+              default:
+                // This slightly tricky pivot selection aims to produce two
+                // even-length partitions where possible.
+                var pivot = bot + Math.floor((top - bot) / 4) * 2;
+                return apply(map(concat2)(go(bot, pivot)))(go(pivot, top));
+              }
             }
-
-            return map(listToArray)(result);
+            return go(0, array.length);
           };
         };
       };
