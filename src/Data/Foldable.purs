@@ -7,6 +7,7 @@ module Data.Foldable
   , for_
   , sequence_
   , oneOf
+  , oneOfMap
   , intercalate
   , surroundMap
   , surround
@@ -18,6 +19,8 @@ module Data.Foldable
   , product
   , elem
   , notElem
+  , indexl
+  , indexr
   , find
   , findMap
   , maximum
@@ -31,11 +34,9 @@ module Data.Foldable
 import Prelude
 
 import Control.Plus (class Plus, alt, empty)
-
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
@@ -170,11 +171,11 @@ instance foldableMultiplicative :: Foldable Multiplicative where
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
 fold :: forall f m. Foldable f => Monoid m => f m -> m
-fold = foldMap id
+fold = foldMap identity
 
--- | Similar to 'foldl', but the result is encapsulated in a monad. 
+-- | Similar to 'foldl', but the result is encapsulated in a monad.
 -- |
--- | Note: this function is not generally stack-safe, e.g., for monads which 
+-- | Note: this function is not generally stack-safe, e.g., for monads which
 -- | build up thunks a la `Eff`.
 foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
 foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
@@ -227,11 +228,15 @@ for_ = flip traverse_
 -- | sequence_ [ trace "Hello, ", trace " world!" ]
 -- | ```
 sequence_ :: forall a f m. Applicative m => Foldable f => f (m a) -> m Unit
-sequence_ = traverse_ id
+sequence_ = traverse_ identity
 
 -- | Combines a collection of elements using the `Alt` operation.
 oneOf :: forall f g a. Foldable f => Plus g => f (g a) -> g a
 oneOf = foldr alt empty
+
+-- | Folds a structure into some `Plus`.
+oneOfMap :: forall f g a b. Foldable f => Plus g => (a -> g b) -> f a -> g b
+oneOfMap f = foldr (alt <<< f) empty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
@@ -280,19 +285,19 @@ surroundMap d t f = unwrap (foldMap joined f) d
 -- | = "*1*2*3*"
 -- | ```
 surround :: forall f m. Foldable f => Semigroup m => m -> f m -> m
-surround d = surroundMap d id
+surround d = surroundMap d identity
 
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data
 -- | structure are `true`.
 and :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
-and = all id
+and = all identity
 
 -- | The disjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether any of the values in a data
 -- | structure is `true`.
 or :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
-or = any id
+or = any identity
 
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.
@@ -319,6 +324,30 @@ elem = any <<< (==)
 -- | Test whether a value is not an element of a data structure.
 notElem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 notElem x = not <<< elem x
+
+-- | Try to get nth element from the left in a data structure
+indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
+  where
+  go cursor a =
+    case cursor.elem of
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just a, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
+
+-- | Try to get nth element from the right in a data structure
+indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
+  where
+  go a cursor =
+    case cursor.elem of
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just a, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a

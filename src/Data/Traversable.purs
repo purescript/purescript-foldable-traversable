@@ -36,7 +36,7 @@ import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
 -- | following sense:
 -- |
 -- | - `traverse f xs = sequence (f <$> xs)`
--- | - `sequence = traverse id`
+-- | - `sequence = traverse identity`
 -- |
 -- | `Traversable` instances should also be compatible with the corresponding
 -- | `Foldable` instances, in the following sense:
@@ -68,7 +68,7 @@ sequenceDefault
   => Applicative m
   => t (m a)
   -> m (t a)
-sequenceDefault = traverse id
+sequenceDefault = traverse identity
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure

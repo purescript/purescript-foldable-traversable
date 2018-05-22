@@ -6,6 +6,7 @@ module Data.TraversableWithIndex
   , mapAccumLWithIndex
   , scanrWithIndex
   , mapAccumRWithIndex
+  , traverseDefault
   , module Data.Traversable.Accum
   ) where
 
@@ -166,3 +167,11 @@ mapAccumRWithIndex
   -> f a
   -> Accum s (f b)
 mapAccumRWithIndex f s0 xs = stateR (traverseWithIndex (\i a -> StateR \s -> f i s a) xs) s0
+
+-- | A default implementation of `traverse` in terms of `traverseWithIndex`
+traverseDefault
+  :: forall i t a b m
+   . TraversableWithIndex i t
+  => Applicative m
+  => (a -> m b) -> t a -> m (t b)
+traverseDefault f = traverseWithIndex (const f)

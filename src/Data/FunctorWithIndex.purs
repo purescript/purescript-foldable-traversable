@@ -1,5 +1,5 @@
 module Data.FunctorWithIndex
-  ( class FunctorWithIndex, mapWithIndex
+  ( class FunctorWithIndex, mapWithIndex, mapDefault
   ) where
 
 import Prelude
@@ -13,11 +13,10 @@ import Data.Monoid.Disj (Disj)
 import Data.Monoid.Dual (Dual)
 import Data.Monoid.Multiplicative (Multiplicative)
 
-
--- | A `Functor` with an additional index.  
+-- | A `Functor` with an additional index.
 -- | Instances must satisfy a modified form of the `Functor` laws
 -- | ```purescript
--- | mapWithIndex (\_ a -> a) = id
+-- | mapWithIndex (\_ a -> a) = identity
 -- | mapWithIndex f . mapWithIndex g = mapWithIndex (\i -> f i <<< g i)
 -- | ```
 -- | and be compatible with the `Functor` instance
@@ -55,3 +54,7 @@ instance functorWithIndexDisj :: FunctorWithIndex Unit Disj where
 
 instance functorWithIndexMultiplicative :: FunctorWithIndex Unit Multiplicative where
   mapWithIndex f = map $ f unit
+
+-- | A default implementation of Functor's `map` in terms of `mapWithIndex`
+mapDefault :: forall i f a b. FunctorWithIndex i f => (a -> b) -> f a -> f b
+mapDefault f = mapWithIndex (const f)

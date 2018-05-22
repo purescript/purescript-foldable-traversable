@@ -3,8 +3,6 @@ module Data.Bifoldable where
 import Prelude
 
 import Control.Apply (applySecond)
-
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
@@ -127,7 +125,7 @@ bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
 
 -- | Fold a data structure, accumulating values in a monoidal type.
 bifold :: forall t m. Bifoldable t => Monoid m => t m m -> m
-bifold = bifoldMap id id
+bifold = bifoldMap identity identity
 
 -- | Traverse a data structure, accumulating effects using an `Applicative` functor,
 -- | ignoring the final result.
@@ -160,7 +158,7 @@ bisequence_
   => Applicative f
   => t (f a) (f b)
   -> f Unit
-bisequence_ = bitraverse_ id id
+bisequence_ = bitraverse_ identity identity
 
 -- | Test whether a predicate holds at any position in a data structure.
 biany
