@@ -268,11 +268,16 @@ findWithIndex
    . FoldableWithIndex i f
   => (i -> a -> Boolean)
   -> f a
-  -> Maybe a
+  -> Maybe { index :: i, value :: a }
 findWithIndex p = foldlWithIndex go Nothing
   where
-  go i Nothing x | p i x = Just x
-  go i r _ = r
+    go
+      :: i
+      -> Maybe { index :: i, value :: a }
+      -> a
+      -> Maybe { index :: i, value :: a }
+    go i Nothing x | p i x = Just { index: i, value: x }
+    go _ r _ = r
 
 -- | A default implementation of `foldr` using `foldrWithIndex`
 foldrDefault
