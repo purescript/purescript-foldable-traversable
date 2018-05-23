@@ -19,7 +19,7 @@ import Data.Traversable (class Traversable)
 -- | following sense:
 -- |
 -- | - `traverse1 f xs = sequence1 (f <$> xs)`
--- | - `sequence1 = traverse1 id`
+-- | - `sequence1 = traverse1 identity`
 -- |
 -- | `Traversable1` instances should also be compatible with the corresponding
 -- | `Foldable1` instances, in the following sense:
@@ -59,4 +59,4 @@ sequence1Default
   => Apply m
   => t (m a)
   -> m (t a)
-sequence1Default = traverse1 id
+sequence1Default = traverse1 identity

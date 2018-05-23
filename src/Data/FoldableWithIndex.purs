@@ -23,7 +23,6 @@ import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive)
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
@@ -32,7 +31,7 @@ import Data.Monoid.Endo (Endo(..))
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (unwrap)
 
--- | A `Foldable` with an additional index.  
+-- | A `Foldable` with an additional index.
 -- | A `FoldableWithIndex` instance must be compatible with its `Foldable`
 -- | instance
 -- | ```purescript
@@ -40,7 +39,7 @@ import Data.Newtype (unwrap)
 -- | foldl f = foldlWithIndex (const f)
 -- | foldMap f = foldMapWithIndex (const f)
 -- | ```
--- | 
+-- |
 -- | Default implementations are provided by the following functions:
 -- |
 -- | - `foldrWithIndexDefault`
@@ -156,9 +155,9 @@ instance foldableWithIndexMultiplicative :: FoldableWithIndex Unit Multiplicativ
   foldMapWithIndex f = foldMap $ f unit
 
 
--- | Similar to 'foldlWithIndex', but the result is encapsulated in a monad. 
+-- | Similar to 'foldlWithIndex', but the result is encapsulated in a monad.
 -- |
--- | Note: this function is not generally stack-safe, e.g., for monads which 
+-- | Note: this function is not generally stack-safe, e.g., for monads which
 -- | build up thunks a la `Eff`.
 foldWithIndexM
   :: forall i f m a b
@@ -269,11 +268,16 @@ findWithIndex
    . FoldableWithIndex i f
   => (i -> a -> Boolean)
   -> f a
-  -> Maybe a
+  -> Maybe { index :: i, value :: a }
 findWithIndex p = foldlWithIndex go Nothing
   where
-  go i Nothing x | p i x = Just x
-  go i r _ = r
+    go
+      :: i
+      -> Maybe { index :: i, value :: a }
+      -> a
+      -> Maybe { index :: i, value :: a }
+    go i Nothing x | p i x = Just { index: i, value: x }
+    go _ r _ = r
 
 -- | A default implementation of `foldr` using `foldrWithIndex`
 foldrDefault

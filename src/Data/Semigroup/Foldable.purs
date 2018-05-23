@@ -39,7 +39,7 @@ class Foldable t <= Foldable1 t where
 
 -- | A default implementation of `fold1` using `foldMap1`.
 fold1Default :: forall t m. Foldable1 t => Semigroup m => t m -> m
-fold1Default = foldMap1 id
+fold1Default = foldMap1 identity
 
 -- | A default implementation of `foldMap1` using `fold1`.
 foldMap1Default :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
@@ -76,7 +76,7 @@ for1_ = flip traverse1_
 -- | Perform all of the effects in some data structure in the order
 -- | given by the `Foldable1` instance, ignoring the final result.
 sequence1_ :: forall t f a. Foldable1 t => Apply f => t (f a) -> f Unit
-sequence1_ = traverse1_ id
+sequence1_ = traverse1_ identity
 
 maximum :: forall f a. Ord a => Foldable1 f => f a -> a
 maximum = ala Max foldMap1
@@ -96,7 +96,7 @@ instance semigroupJoinWith :: Semigroup a => Semigroup (JoinWith a) where
 -- | Fold a data structure using a `Semigroup` instance,
 -- | combining adjacent elements using the specified separator.
 intercalate :: forall f m. Foldable1 f => Semigroup m => m -> f m -> m
-intercalate = flip intercalateMap id
+intercalate = flip intercalateMap identity
 
 -- | Fold a data structure, accumulating values in some `Semigroup`,
 -- | combining adjacent elements using the specified separator.
