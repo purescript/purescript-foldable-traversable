@@ -169,7 +169,7 @@ mapAccumL f s0 xs = stateL (traverse (\a -> StateL \s -> f s a) xs) s0
 -- | appear in the result (unlike Haskell's `Prelude.scanr`).
 -- |
 -- | ```purescript
--- | scanr (+) 0  [1,2,3] = [1,3,6]
+-- | scanr (+) 0 [1,2,3] = [6,5,3]
 -- | scanr (flip (-)) 10 [1,2,3] = [4,5,7]
 -- | ```
 scanr :: forall a b f. Traversable f => (a -> b -> b) -> b -> f a -> f b
