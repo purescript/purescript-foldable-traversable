@@ -9,6 +9,8 @@ module Data.Semigroup.Foldable
   , fold1Default
   , intercalate
   , intercalateMap
+  , maximum
+  , minimum
   ) where
 
 import Prelude
