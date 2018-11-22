@@ -249,6 +249,9 @@ oneOfMap f = foldr (alt <<< f) empty
 -- |
 -- | > intercalate "*" ["a", "b", "c"]
 -- | = "a*b*c"
+-- |
+-- | > intercalate [1] [[2, 3], [4, 5], [6, 7]]
+-- | = [2, 3, 1, 4, 5, 1, 6, 7]
 -- | ```
 intercalate :: forall f m. Foldable f => Monoid m => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
