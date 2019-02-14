@@ -1,6 +1,7 @@
 module Data.Traversable
   ( class Traversable, traverse, sequence
   , traverseDefault, sequenceDefault
+  , traverseM
   , for
   , scanl
   , scanr
@@ -69,6 +70,30 @@ sequenceDefault
   => t (m a)
   -> m (t a)
 sequenceDefault = traverse identity
+
+-- | A version of `traverse` where a `join` is applied to the inner result
+-- |
+-- | For example where `traverse` applied over an array of `Effect`s will produce `Effect (Array (Array _))` 
+-- | The same array applied to `traverseM` will results in `Effect (Array _)`
+-- |
+-- | testTraverseM :: Effect Unit
+-- | testTraverseM = do 
+-- |   result <- traverseM identity [ arrayZero, arrayOne, arrayTwo, arrayThree ] 
+-- |   assert $ result == [ 1, 2, 2, 3, 3, 3 ] 
+-- |   where
+-- |     arrayZero   = pure [ ]
+-- |     arrayOne    = pure [ 1 ]
+-- |     arrayTwo    = pure [ 2, 2 ]
+-- |     arrayThree  = pure [ 3, 3, 3 ]
+traverseM 
+  :: forall a b f t
+   . Applicative f
+  => Traversable t
+  => Bind t
+  => (a -> f (t b))
+  -> t a
+  -> f (t b)
+traverseM fn ta = join <$> traverse fn ta
 
 instance traversableArray :: Traversable Array where
   traverse = traverseArrayImpl apply map pure
