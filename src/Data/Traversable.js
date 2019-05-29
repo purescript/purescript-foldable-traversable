@@ -2,7 +2,7 @@
 
 // jshint maxparams: 3
 
-exports.traverseArrayImpl = function () {
+exports.traverseArrayImpl = (function () {
   function array1(a) {
     return [a];
   }
@@ -51,4 +51,4 @@ exports.traverseArrayImpl = function () {
       };
     };
   };
-}();
+})();
