@@ -2,29 +2,41 @@ module Test.Main where
 
 import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
-
 import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDefault, bifoldlDefault, bifoldMapDefaultR, bifoldMapDefaultL)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
-import Data.Foldable (class Foldable, foldl, foldr, foldMap, foldrDefault, foldlDefault, foldMapDefaultR, foldMapDefaultL, minimumBy, minimum, maximumBy, maximum, find, findMap)
+import Data.Foldable (class Foldable, find, findMap, fold, indexl, indexr, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, length, maximum, maximumBy, minimum, minimumBy, null, surroundMap)
+import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
 import Data.Function (on)
-import Data.Int (toNumber)
+import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
+import Data.Int (toNumber, pow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
+import Data.Newtype (unwrap)
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
-
+import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
+import Effect (Effect, foreachE)
+import Effect.Console (log)
 import Math (abs)
-
-import Test.Assert (ASSERT, assert)
+import Test.Assert (assert, assert')
+import Unsafe.Coerce (unsafeCoerce)
 
 foreign import arrayFrom1UpTo :: Int -> Array Int
+foreign import arrayReplicate :: forall a. Int -> a -> Array a
 
-main :: Eff (console :: CONSOLE, assert :: ASSERT) Unit
+foldableLength :: forall f a. Foldable f => f a -> Int
+foldableLength = unwrap <<< foldMap (const (Additive 1))
+
+-- Ensure that a value is evaluated 'lazily' by treating it as an Eff action.
+deferEff :: forall a. (Unit -> a) -> Effect a
+deferEff = unsafeCoerce
+
+main :: Effect Unit
 main = do
   log "Test foldableArray instance"
   testFoldableArrayWith 20
+
+  assert $ foldMapDefaultL (\x -> [x]) [1, 2] == [1, 2]
 
   log "Test foldableArray instance is stack safe"
   testFoldableArrayWith 20000
@@ -39,10 +51,11 @@ main = do
   testFoldableFoldlDefault 20
 
   log "Test foldrDefault"
-  testFoldableFoldlDefault 20
+  testFoldableFoldrDefault 20
 
-  log "Test traversableArray instance"
-  testTraversableArrayWith 20
+  foreachE [1,2,3,4,5,10,20] \i -> do
+    log $ "Test traversableArray instance with an array of size: " <> show i
+    testTraversableArrayWith i
 
   log "Test traversableArray instance is stack safe"
   testTraversableArrayWith 20000
@@ -53,8 +66,23 @@ main = do
   log "Test sequenceDefault"
   testSequenceDefault 20
 
+  log "Test foldableWithIndexArray instance"
+  testFoldableWithIndexArrayWith 20
+
+  log "Test foldableWithIndexArray instance is stack safe"
+  testFoldableWithIndexArrayWith 20000
+
+  log "Test FoldableWithIndex laws for array instance"
+  testFoldableWithIndexLawsOn
+    ["a", "b", "c"]
+    (\i x -> [Tuple i x])
+    (\x -> [x])
+
+  log "Test traversableArrayWithIndex instance"
+  testTraversableWithIndexArrayWith 20
+
   log "Test Bifoldable on `inclusive or`"
-  testBifoldableIOrWith id 10 100 42
+  testBifoldableIOrWith identity 10 100 42
 
   log "Test bifoldMapDefaultL"
   testBifoldableIOrWith BFML 10 100 42
@@ -69,7 +97,7 @@ main = do
   testBifoldableIOrWith BFRD 10 100 42
 
   log "Test Bitraversable on `inclusive or`"
-  testBitraversableIOrWith id
+  testBitraversableIOrWith identity
 
   log "Test bitraverseDefault"
   testBitraversableIOrWith BTD
@@ -77,9 +105,25 @@ main = do
   log "Test bisequenceDefault"
   testBitraversableIOrWith BSD
 
+  log "Test indexl"
+  assert $ indexl 2 [1, 5, 10] == Just 10
+  assert $ indexl 0 [1, 5, 10] == Just 1
+  assert $ indexl 9 [1, 5, 10] == Nothing
+
+  log "Test indexr"
+  assert $ indexr 2 [1, 5, 10] == Just 1
+  assert $ indexr 0 [1, 5, 10] == Just 10
+  assert $ indexr 9 [1, 5, 10] == Nothing
+
   log "Test find"
   assert $ find (_ == 10) [1, 5, 10] == Just 10
   assert $ find (\x -> x `mod` 2 == 0) [1, 4, 10] == Just 4
+
+  log "Test findWithIndex"
+  assert $
+    case findWithIndex (\i x -> i `mod` 2 == 0 && x `mod` 2 == 0) [1, 2, 4, 6] of
+      Nothing -> false
+      Just { index, value } -> index == 2 && value == 4
 
   log "Test findMap" *> do
     let pred x = if x > 5 then Just (x * 100) else Nothing
@@ -103,11 +147,42 @@ main = do
               (map (negate <<< toNumber) (arrayFrom1UpTo 10))
       == Just (-1.0)
 
+  log "Test null"
+  assert $ null Nothing == true
+  assert $ null (Just 1) == false
+  assert $ null [] == true
+  assert $ null [0] == false
+  assert $ null [0,1] == false
+
+  log "Test length"
+  assert $ length Nothing == 0
+  assert $ length (Just 1) == 1
+  assert $ length [] == 0
+  assert $ length [1] == 1
+  assert $ length [1, 2] == 2
+
+  log "Test surroundMap"
+  assert $ "*" == surroundMap "*" show ([] :: Array Int)
+  assert $ "*1*" == surroundMap "*" show [1]
+  assert $ "*1*2*" == surroundMap "*" show [1, 2]
+  assert $ "*1*2*3*" == surroundMap "*" show [1, 2, 3]
+
+  log "Test surroundMapWithIndex"
+  assert $ "*" == surroundMapWithIndex "*" (\i x -> show i <> x) []
+  assert $ "*0a*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a"]
+  assert $ "*0a*1b*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a", "b"]
+  assert $ "*0a*1b*2c*" == surroundMapWithIndex "*" (\i x -> show i <> x) ["a", "b", "c"]
+
   log "All done!"
 
 
-testFoldableFWith :: forall f e. (Foldable f, Eq (f Int)) =>
-                     (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+testFoldableFWith
+  :: forall f
+   . Foldable f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Effect Unit
 testFoldableFWith f n = do
   let dat = f n
   let expectedSum = (n / 2) * (n + 1)
@@ -116,23 +191,115 @@ testFoldableFWith f n = do
   assert $ foldl (+) 0 dat == expectedSum
   assert $ foldMap Additive dat == Additive expectedSum
 
-testFoldableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableArrayWith :: Int -> Effect Unit
 testFoldableArrayWith = testFoldableFWith arrayFrom1UpTo
 
+testFoldableWithIndexFWith
+  :: forall f
+   . FoldableWithIndex Int f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Effect Unit
+testFoldableWithIndexFWith f n = do
+  let dat = f n
+  -- expectedSum = \Sum_{1 <= i <= n} i * i
+  let expectedSum = n * (n + 1) * (2 * n + 1) / 6
 
-testTraversableFWith :: forall f e. (Traversable f, Eq (f Int)) =>
-                        (Int -> f Int) -> Int -> Eff (assert :: ASSERT | e) Unit
+  assert $ foldrWithIndex (\i x y -> (i + 1) * x + y) 0 dat == expectedSum
+  assert $ foldlWithIndex (\i y x -> y + (i + 1) * x) 0 dat == expectedSum
+  assert $ foldMapWithIndex (\i x -> Additive $ (i + 1) * x) dat == Additive expectedSum
+
+testFoldableWithIndexArrayWith :: Int -> Effect Unit
+testFoldableWithIndexArrayWith = testFoldableWithIndexFWith arrayFrom1UpTo
+
+
+data Tuple a b = Tuple a b
+derive instance eqTuple :: (Eq a, Eq b) => Eq (Tuple a b)
+
+-- test whether foldable laws hold, using foldMap and ifoldMap
+testFoldableWithIndexLawsOn
+  :: forall f i a m n
+   . FoldableWithIndex i f
+  => FunctorWithIndex i f
+  => Monoid m
+  => Monoid n
+  => Eq m
+  => Eq n
+  => f a
+  -> (i -> a -> m)
+  -> (a -> n)
+  -> Effect Unit
+testFoldableWithIndexLawsOn c f g = do
+  -- compatibility with FunctorWithIndex (not strictly necessary for a valid
+  -- instance, but it's likely an error if this does not hold)
+  assert $ foldMapWithIndex f c == fold (mapWithIndex f c)
+
+  -- Compatiblity with Foldable
+  assert $ foldMap g c == foldMapWithIndex (const g) c
+
+  -- FoldableWithIndex laws
+  assert $ foldMapWithIndex f c == foldMapWithIndexDefaultL f c
+  assert $ foldMapWithIndex f c == foldMapWithIndexDefaultR f c
+
+  -- These follow from the above laws, but they test whether ifoldlDefault and
+  -- ifoldrDefault have been specified correctly.
+  assert $ foldMapWithIndex f c == foldlWithIndexDefault (\i y x -> y <> f i x) mempty c
+  assert $ foldMapWithIndex f c == foldrWithIndexDefault (\i x y -> f i x <> y) mempty c
+
+testTraversableFWith
+  :: forall f
+   . Traversable f
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Effect Unit
 testTraversableFWith f n = do
   let dat = f n
+  let len = foldableLength dat
 
-  assert $ traverse Just dat == Just dat
-  assert $ traverse pure dat == [dat]
-  assert $ traverse (\x -> if x < 10 then Just x else Nothing) dat == Nothing
-  assert $ sequence (map Just dat) == traverse Just dat
+  _ <- traverse pure dat
 
-testTraversableArrayWith :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+  assert' "traverse Just == Just" $ traverse Just dat == Just dat
+  assert' "traverse pure == pure (Array)" $ traverse pure dat == [dat]
+
+  when (len <= 10) do
+    result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (pow 2 len) dat
+    assert' "traverse with Array as underlying applicative" result
+
+  assert' "traverse (const Nothing) == const Nothing" $
+    traverse (const Nothing :: Int -> Maybe Int) dat == Nothing
+
+  assert' "sequence <<< map f == traverse f" $
+    sequence (map Just dat) == traverse Just dat
+
+  assert' "underlying applicative" $
+    (traverse pure dat :: Unit -> f Int) unit == dat
+
+testTraversableArrayWith :: Int -> Effect Unit
 testTraversableArrayWith = testTraversableFWith arrayFrom1UpTo
 
+testTraversableWithIndexFWith
+  :: forall f
+   . TraversableWithIndex Int f
+  => Eq (f (Tuple Int Int))
+  => Eq (f Int)
+  => (Int -> f Int)
+  -> Int
+  -> Effect Unit
+testTraversableWithIndexFWith f n = do
+  let dat = f n
+
+  assert $ traverseWithIndex (\i -> Just <<< Tuple i) dat == Just (mapWithIndex Tuple dat)
+  assert $ traverseWithIndex (const Just) dat == traverse Just dat
+  assert $ traverseWithIndex (\i -> pure <<< Tuple i) dat == [mapWithIndex Tuple dat]
+  assert $
+    traverseWithIndex (const pure :: Int -> Int -> Array Int) dat ==
+    traverse pure dat
+
+testTraversableWithIndexArrayWith
+  :: Int -> Effect Unit
+testTraversableWithIndexArrayWith = testTraversableWithIndexFWith arrayFrom1UpTo
 
 -- structures for testing default `Foldable` implementations
 
@@ -170,16 +337,16 @@ instance foldableDFR :: Foldable FoldrDefault where
   foldl f u (FRD a) = foldl f u a
   foldr f u         = foldrDefault f u
 
-testFoldableFoldMapDefaultL :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldMapDefaultL :: Int -> Effect Unit
 testFoldableFoldMapDefaultL = testFoldableFWith (FML <<< arrayFrom1UpTo)
 
-testFoldableFoldMapDefaultR :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldMapDefaultR :: Int -> Effect Unit
 testFoldableFoldMapDefaultR = testFoldableFWith (FMR <<< arrayFrom1UpTo)
 
-testFoldableFoldlDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldlDefault :: Int -> Effect Unit
 testFoldableFoldlDefault = testFoldableFWith (FLD <<< arrayFrom1UpTo)
 
-testFoldableFoldrDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testFoldableFoldrDefault :: Int -> Effect Unit
 testFoldableFoldrDefault = testFoldableFWith (FRD <<< arrayFrom1UpTo)
 
 
@@ -212,10 +379,10 @@ instance traversableSD :: Traversable SequenceDefault where
   traverse f (SD a) = map SD (traverse f a)
   sequence m        = sequenceDefault m
 
-testTraverseDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testTraverseDefault :: Int -> Effect Unit
 testTraverseDefault = testTraversableFWith (TD <<< arrayFrom1UpTo)
 
-testSequenceDefault :: forall eff. Int -> Eff (assert :: ASSERT | eff) Unit
+testSequenceDefault :: Int -> Effect Unit
 testSequenceDefault = testTraversableFWith (SD <<< arrayFrom1UpTo)
 
 
@@ -256,10 +423,15 @@ instance bitraversableIOr :: Bitraversable IOr where
   bisequence (Fst fst)      = Fst <$> fst
   bisequence (Snd snd)      = Snd <$> snd
 
-testBifoldableIOrWith :: forall t e. (Bifoldable t, Eq (t Int Int)) =>
-                         (forall l r. IOr l r -> t l r) ->
-                         Int -> Int -> Int ->
-                         Eff (assert :: ASSERT | e) Unit
+testBifoldableIOrWith
+  :: forall t
+   . Bifoldable t
+  => Eq (t Int Int)
+  => (forall l r. IOr l r -> t l r)
+  -> Int
+  -> Int
+  -> Int
+  -> Effect Unit
 testBifoldableIOrWith lift fst snd u = do
   assert $ bifoldr (+) (*) u (lift $ Both fst snd) == fst + (snd * u)
   assert $ bifoldr (+) (*) u (lift $ Fst fst)      == fst + u
@@ -273,9 +445,12 @@ testBifoldableIOrWith lift fst snd u = do
   assert $ bifoldMap Additive Additive (lift $ Fst fst)      == Additive fst
   assert $ bifoldMap Additive Additive (lift $ Snd snd)      == Additive snd
 
-testBitraversableIOrWith :: forall t e. (Bitraversable t, Eq (t Boolean Boolean)) =>
-                        (forall l r. IOr l r -> t l r) ->
-                        Eff (assert :: ASSERT | e) Unit
+testBitraversableIOrWith
+  :: forall t
+   . Bitraversable t
+  => Eq (t Boolean Boolean)
+  => (forall l r. IOr l r -> t l r)
+  -> Effect Unit
 testBitraversableIOrWith lift = do
   let just a = Just (lift a)
   assert $ bisequence (lift (Both (Just true) (Just false))) == just (Both true false)

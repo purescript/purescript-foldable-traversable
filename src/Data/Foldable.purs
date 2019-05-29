@@ -2,11 +2,15 @@ module Data.Foldable
   ( class Foldable, foldr, foldl, foldMap
   , foldrDefault, foldlDefault, foldMapDefaultL, foldMapDefaultR
   , fold
+  , foldM
   , traverse_
   , for_
   , sequence_
   , oneOf
+  , oneOfMap
   , intercalate
+  , surroundMap
+  , surround
   , and
   , or
   , all
@@ -15,22 +19,24 @@ module Data.Foldable
   , product
   , elem
   , notElem
+  , indexl
+  , indexr
   , find
   , findMap
   , maximum
   , maximumBy
   , minimum
   , minimumBy
+  , null
+  , length
   ) where
 
 import Prelude
 
 import Control.Plus (class Plus, alt, empty)
-
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(..))
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
@@ -80,10 +86,10 @@ foldrDefault c u xs = unwrap (foldMap (Endo <<< c) xs) u
 foldlDefault
   :: forall f a b
    . Foldable f
-   => (b -> a -> b)
-   -> b
-   -> f a
-   -> b
+  => (b -> a -> b)
+  -> b
+  -> f a
+  -> b
 foldlDefault c u xs = unwrap (unwrap (foldMap (Dual <<< Endo <<< flip c) xs)) u
 
 -- | A default implementation of `foldMap` using `foldr`.
@@ -92,11 +98,12 @@ foldlDefault c u xs = unwrap (unwrap (foldMap (Dual <<< Endo <<< flip c) xs)) u
 -- | in combination with `foldrDefault`.
 foldMapDefaultR
   :: forall f a m
-   . (Foldable f, Monoid m)
-   => (a -> m)
-   -> f a
-   -> m
-foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs
+   . Foldable f
+  => Monoid m
+  => (a -> m)
+  -> f a
+  -> m
+foldMapDefaultR f = foldr (\x acc -> f x <> acc) mempty
 
 -- | A default implementation of `foldMap` using `foldl`.
 -- |
@@ -104,11 +111,12 @@ foldMapDefaultR f xs = foldr (\x acc -> f x <> acc) mempty xs
 -- | in combination with `foldlDefault`.
 foldMapDefaultL
   :: forall f a m
-   . (Foldable f, Monoid m)
-   => (a -> m)
-   -> f a
-   -> m
-foldMapDefaultL f xs = foldl (\acc x -> f x <> acc) mempty xs
+   . Foldable f
+  => Monoid m
+  => (a -> m)
+  -> f a
+  -> m
+foldMapDefaultL f = foldl (\acc x -> acc <> f x) mempty
 
 instance foldableArray :: Foldable Array where
   foldr = foldrArray
@@ -162,8 +170,15 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldMap f (Multiplicative x) = f x
 
 -- | Fold a data structure, accumulating values in some `Monoid`.
-fold :: forall f m. (Foldable f, Monoid m) => f m -> m
-fold = foldMap id
+fold :: forall f m. Foldable f => Monoid m => f m -> m
+fold = foldMap identity
+
+-- | Similar to 'foldl', but the result is encapsulated in a monad.
+-- |
+-- | Note: this function is not generally stack-safe, e.g., for monads which
+-- | build up thunks a la `Eff`.
+foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
+foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
 
 -- | Traverse a data structure, performing some effects encoded by an
 -- | `Applicative` functor at each value, ignoring the final result.
@@ -175,7 +190,8 @@ fold = foldMap id
 -- | ```
 traverse_
   :: forall a b f m
-   . (Applicative m, Foldable f)
+   . Applicative m
+  => Foldable f
   => (a -> m b)
   -> f a
   -> m Unit
@@ -196,7 +212,8 @@ traverse_ f = foldr ((*>) <<< f) (pure unit)
 -- | ```
 for_
   :: forall a b f m
-   . (Applicative m, Foldable f)
+   . Applicative m
+  => Foldable f
   => f a
   -> (a -> m b)
   -> m Unit
@@ -210,58 +227,140 @@ for_ = flip traverse_
 -- | ```purescript
 -- | sequence_ [ trace "Hello, ", trace " world!" ]
 -- | ```
-sequence_ :: forall a f m. (Applicative m, Foldable f) => f (m a) -> m Unit
-sequence_ = traverse_ id
+sequence_ :: forall a f m. Applicative m => Foldable f => f (m a) -> m Unit
+sequence_ = traverse_ identity
 
 -- | Combines a collection of elements using the `Alt` operation.
-oneOf :: forall f g a. (Foldable f, Plus g) => f (g a) -> g a
+oneOf :: forall f g a. Foldable f => Plus g => f (g a) -> g a
 oneOf = foldr alt empty
+
+-- | Folds a structure into some `Plus`.
+oneOfMap :: forall f g a b. Foldable f => Plus g => (a -> g b) -> f a -> g b
+oneOfMap f = foldr (alt <<< f) empty
 
 -- | Fold a data structure, accumulating values in some `Monoid`,
 -- | combining adjacent elements using the specified separator.
-intercalate :: forall f m. (Foldable f, Monoid m) => m -> f m -> m
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | > intercalate ", " ["Lorem", "ipsum", "dolor"]
+-- | = "Lorem, ipsum, dolor"
+-- |
+-- | > intercalate "*" ["a", "b", "c"]
+-- | = "a*b*c"
+-- |
+-- | > intercalate [1] [[2, 3], [4, 5], [6, 7]]
+-- | = [2, 3, 1, 4, 5, 1, 6, 7]
+-- | ```
+intercalate :: forall f m. Foldable f => Monoid m => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
   go { init: true } x = { init: false, acc: x }
   go { acc: acc }   x = { init: false, acc: acc <> sep <> x }
 
+-- | `foldMap` but with each element surrounded by some fixed value.
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | > surroundMap "*" show []
+-- | = "*"
+-- |
+-- | > surroundMap "*" show [1]
+-- | = "*1*"
+-- |
+-- | > surroundMap "*" show [1, 2]
+-- | = "*1*2*"
+-- |
+-- | > surroundMap "*" show [1, 2, 3]
+-- | = "*1*2*3*"
+-- | ```
+surroundMap :: forall f a m. Foldable f => Semigroup m => m -> (a -> m) -> f a -> m
+surroundMap d t f = unwrap (foldMap joined f) d
+  where joined a = Endo \m -> d <> t a <> m
+
+-- | `fold` but with each element surrounded by some fixed value.
+-- |
+-- | For example:
+-- |
+-- | ```purescript
+-- | > surround "*" []
+-- | = "*"
+-- |
+-- | > surround "*" ["1"]
+-- | = "*1*"
+-- |
+-- | > surround "*" ["1", "2"]
+-- | = "*1*2*"
+-- |
+-- | > surround "*" ["1", "2", "3"]
+-- | = "*1*2*3*"
+-- | ```
+surround :: forall f m. Foldable f => Semigroup m => m -> f m -> m
+surround d = surroundMap d identity
+
 -- | The conjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether all of the values in a data
 -- | structure are `true`.
-and :: forall a f. (Foldable f, HeytingAlgebra a) => f a -> a
-and = all id
+and :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
+and = all identity
 
 -- | The disjunction of all the values in a data structure. When specialized
 -- | to `Boolean`, this function will test whether any of the values in a data
 -- | structure is `true`.
-or :: forall a f. (Foldable f, HeytingAlgebra a) => f a -> a
-or = any id
+or :: forall a f. Foldable f => HeytingAlgebra a => f a -> a
+or = any identity
 
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.
-all :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
-all p = alaF Conj foldMap p
+all :: forall a b f. Foldable f => HeytingAlgebra b => (a -> b) -> f a -> b
+all  = alaF Conj foldMap
 
 -- | `any f` is the same as `or <<< map f`; map a function over the structure,
 -- | and then get the disjunction of the results.
-any :: forall a b f. (Foldable f, HeytingAlgebra b) => (a -> b) -> f a -> b
-any p = alaF Disj foldMap p
+any :: forall a b f. Foldable f => HeytingAlgebra b => (a -> b) -> f a -> b
+any = alaF Disj foldMap
 
 -- | Find the sum of the numeric values in a data structure.
-sum :: forall a f. (Foldable f, Semiring a) => f a -> a
+sum :: forall a f. Foldable f => Semiring a => f a -> a
 sum = foldl (+) zero
 
 -- | Find the product of the numeric values in a data structure.
-product :: forall a f. (Foldable f, Semiring a) => f a -> a
+product :: forall a f. Foldable f => Semiring a => f a -> a
 product = foldl (*) one
 
 -- | Test whether a value is an element of a data structure.
-elem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
+elem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 elem = any <<< (==)
 
 -- | Test whether a value is not an element of a data structure.
-notElem :: forall a f. (Foldable f, Eq a) => a -> f a -> Boolean
+notElem :: forall a f. Foldable f => Eq a => a -> f a -> Boolean
 notElem x = not <<< elem x
+
+-- | Try to get nth element from the left in a data structure
+indexl :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
+  where
+  go cursor a =
+    case cursor.elem of
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just a, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
+
+-- | Try to get nth element from the right in a data structure
+indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
+indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
+  where
+  go a cursor =
+    case cursor.elem of
+      Just _ -> cursor
+      _ ->
+        if cursor.pos == idx
+          then { elem: Just a, pos: cursor.pos }
+          else { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
@@ -278,7 +377,7 @@ findMap p = foldl go Nothing
   go r _ = r
 
 -- | Find the largest element of a structure, according to its `Ord` instance.
-maximum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+maximum :: forall a f. Ord a => Foldable f => f a -> Maybe a
 maximum = maximumBy compare
 
 -- | Find the largest element of a structure, according to a given comparison
@@ -291,7 +390,7 @@ maximumBy cmp = foldl max' Nothing
   max' (Just x) y = Just (if cmp x y == GT then x else y)
 
 -- | Find the smallest element of a structure, according to its `Ord` instance.
-minimum :: forall a f. (Ord a, Foldable f) => f a -> Maybe a
+minimum :: forall a f. Ord a => Foldable f => f a -> Maybe a
 minimum = minimumBy compare
 
 -- | Find the smallest element of a structure, according to a given comparison
@@ -302,3 +401,15 @@ minimumBy cmp = foldl min' Nothing
   where
   min' Nothing x  = Just x
   min' (Just x) y = Just (if cmp x y == LT then x else y)
+
+-- | Test whether the structure is empty.
+-- | Optimized for structures that are similar to cons-lists, because there
+-- | is no general way to do better.
+null :: forall a f. Foldable f => f a -> Boolean
+null = foldr (\_ _ -> false) true
+
+-- | Returns the size/length of a finite structure.
+-- | Optimized for structures that are similar to cons-lists, because there
+-- | is no general way to do better.
+length :: forall a b f. Foldable f => Semiring b => f a -> b
+length = foldl (\c _ -> add one c) zero

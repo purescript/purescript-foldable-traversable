@@ -2,7 +2,7 @@
   "name": "purescript-foldable-traversable",
   "homepage": "https://github.com/purescript/purescript-foldable-traversable",
   "description": "Classes for foldable and traversable data structures",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "git://github.com/purescript/purescript-foldable-traversable.git"
@@ -17,13 +17,18 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-bifunctors": "^2.0.0",
-    "purescript-maybe": "^2.0.0"
+    "purescript-bifunctors": "^4.0.0",
+    "purescript-control": "^4.0.0",
+    "purescript-maybe": "^4.0.0",
+    "purescript-newtype": "^3.0.0",
+    "purescript-orders": "^4.0.0",
+    "purescript-prelude": "^4.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^2.0.0",
-    "purescript-console": "^2.0.0",
-    "purescript-integers": "^2.0.0",
-    "purescript-math": "^2.0.0"
+    "purescript-assert": "^4.0.0",
+    "purescript-console": "^4.0.0",
+    "purescript-integers": "^4.0.0",
+    "purescript-math": "^2.1.1",
+    "purescript-unsafe-coerce": "^4.0.0"
   }
 }
