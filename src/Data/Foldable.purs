@@ -177,8 +177,8 @@ fold = foldMap identity
 -- |
 -- | Note: this function is not generally stack-safe, e.g., for monads which
 -- | build up thunks a la `Eff`.
-foldM :: forall f m a b. Foldable f => Monad m => (a -> b -> m a) -> a -> f b -> m a
-foldM f a0 = foldl (\ma b -> ma >>= flip f b) (pure a0)
+foldM :: forall f m a b. Foldable f => Monad m => (b -> a -> m b) -> b -> f a -> m b
+foldM f b0 = foldl (\b a -> b >>= flip f a) (pure b0)
 
 -- | Traverse a data structure, performing some effects encoded by an
 -- | `Applicative` functor at each value, ignoring the final result.
