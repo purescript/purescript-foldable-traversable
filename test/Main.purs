@@ -6,7 +6,7 @@ import Data.Bifoldable (class Bifoldable, bifoldl, bifoldr, bifoldMap, bifoldrDe
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Bitraversable (class Bitraversable, bisequenceDefault, bitraverse, bisequence, bitraverseDefault)
 import Data.Foldable (class Foldable, find, findMap, fold, indexl, indexr, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, length, maximum, maximumBy, minimum, minimumBy, null, surroundMap)
-import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
+import Data.FoldableWithIndex (class FoldableWithIndex, findWithIndex, findMapWithIndex, foldMapWithIndex, foldMapWithIndexDefaultL, foldMapWithIndexDefaultR, foldlWithIndex, foldlWithIndexDefault, foldrWithIndex, foldrWithIndexDefault, surroundMapWithIndex)
 import Data.Function (on)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Int (toNumber, pow)
@@ -128,6 +128,10 @@ main = do
   log "Test findMap" *> do
     let pred x = if x > 5 then Just (x * 100) else Nothing
     assert $ findMap pred [1, 5, 10, 20] == Just 1000
+
+  log "Test findMapWithIndex" *> do
+    let pred i x = if x >= 5 && i >= 3 then Just { i, x } else Nothing
+    assert $ findMapWithIndex pred [1, 5, 10, 20] == Just { i: 3, x: 20 }
 
   log "Test maximum"
   assert $ maximum (arrayFrom1UpTo 10) == Just 10

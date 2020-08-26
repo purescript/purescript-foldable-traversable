@@ -11,6 +11,7 @@ module Data.FoldableWithIndex
   , allWithIndex
   , anyWithIndex
   , findWithIndex
+  , findMapWithIndex
   , foldrDefault
   , foldlDefault
   , foldMapDefault
@@ -277,6 +278,24 @@ findWithIndex p = foldlWithIndex go Nothing
       -> a
       -> Maybe { index :: i, value :: a }
     go i Nothing x | p i x = Just { index: i, value: x }
+    go _ r _ = r
+
+-- | Try to find an element in a data structure which satisfies a predicate mapping
+-- | with access to the index.
+findMapWithIndex
+  :: forall i a b f
+   . FoldableWithIndex i f
+  => (i -> a -> Maybe b)
+  -> f a
+  -> Maybe b
+findMapWithIndex f = foldlWithIndex go Nothing
+  where
+    go
+      :: i
+      -> Maybe b
+      -> a
+      -> Maybe b
+    go i Nothing x = f i x
     go _ r _ = r
 
 -- | A default implementation of `foldr` using `foldrWithIndex`
