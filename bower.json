@@ -17,18 +17,18 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-bifunctors": "^4.0.0",
-    "purescript-control": "^4.0.0",
-    "purescript-maybe": "^4.0.0",
-    "purescript-newtype": "^3.0.0",
-    "purescript-orders": "^4.0.0",
-    "purescript-prelude": "^4.0.0"
+    "purescript-bifunctors": "master",
+    "purescript-control": "master",
+    "purescript-maybe": "master",
+    "purescript-newtype": "master",
+    "purescript-orders": "master",
+    "purescript-prelude": "master"
   },
   "devDependencies": {
-    "purescript-assert": "^4.0.0",
-    "purescript-console": "^4.0.0",
-    "purescript-integers": "^4.0.0",
-    "purescript-math": "^2.1.1",
-    "purescript-unsafe-coerce": "^4.0.0"
+    "purescript-assert": "master",
+    "purescript-console": "master",
+    "purescript-integers": "master",
+    "purescript-math": "master",
+    "purescript-unsafe-coerce": "master"
   }
 }
