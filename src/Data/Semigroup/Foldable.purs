@@ -55,6 +55,7 @@ instance foldableMultiplicative :: Foldable1 Multiplicative where
   foldMap1 f (Multiplicative x) = f x
   fold1 = fold1Default
 
+newtype Act :: forall k. (k -> Type) -> k -> Type
 newtype Act f a = Act (f a)
 
 getAct :: forall f a. Act f a -> f a
