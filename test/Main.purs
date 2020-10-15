@@ -13,7 +13,7 @@ import Data.Int (toNumber, pow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (unwrap)
-import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
+import Data.Traversable (class Traversable, sequenceDefault, traverse, traverseM, sequence, traverseDefault)
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
 import Effect (Effect, foreachE)
 import Effect.Console (log)
@@ -65,6 +65,9 @@ main = do
 
   log "Test sequenceDefault"
   testSequenceDefault 20
+
+  log "Test traverseM"
+  testTraverseM
 
   log "Test foldableWithIndexArray instance"
   testFoldableWithIndexArrayWith 20
@@ -388,6 +391,17 @@ testTraverseDefault = testTraversableFWith (TD <<< arrayFrom1UpTo)
 
 testSequenceDefault :: Int -> Effect Unit
 testSequenceDefault = testTraversableFWith (SD <<< arrayFrom1UpTo)
+
+
+testTraverseM :: Effect Unit
+testTraverseM = do 
+  result <- traverseM identity [ arrayZero, arrayOne, arrayTwo, arrayThree ] 
+  assert $ result == [ 1, 2, 2, 3, 3, 3 ] 
+  where
+    arrayZero   = pure [ ]
+    arrayOne    = pure [ 1 ]
+    arrayTwo    = pure [ 2, 2 ]
+    arrayThree  = pure [ 3, 3, 3 ]
 
 
 -- structure for testing bifoldable, picked `inclusive or` as it has both products and sums
