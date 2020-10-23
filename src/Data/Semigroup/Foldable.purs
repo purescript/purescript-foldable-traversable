@@ -7,6 +7,8 @@ module Data.Semigroup.Foldable
   , traverse1_
   , for1_
   , sequence1_
+  , oneOf1
+  , oneOfMap1
   , foldMap1Default
   , fold1Default
   , fold1DefaultR
@@ -23,7 +25,9 @@ module Data.Semigroup.Foldable
 
 import Prelude
 
+import Control.Alt (class Alt, alt)
 import Data.Foldable (class Foldable)
+import Data.Monoid.Alternate (Alternate(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Newtype (ala, alaF)
@@ -116,6 +120,14 @@ for1_ = flip traverse1_
 -- | given by the `Foldable1` instance, ignoring the final result.
 sequence1_ :: forall t f a. Foldable1 t => Apply f => t (f a) -> f Unit
 sequence1_ = traverse1_ identity
+
+-- | Combines a non empty collection of elements using the `Alt` operation.
+oneOf1 :: forall f g a. Foldable1 f => Alt g => f (g a) -> g a
+oneOf1 = foldr1 alt
+
+-- | Folds a non empty structure into some `Alt`.
+oneOfMap1 :: forall f g a b. Foldable1 f => Alt g => (a -> g b) -> f a -> g b
+oneOfMap1 = alaF Alternate foldMap1
 
 maximum :: forall f a. Ord a => Foldable1 f => f a -> a
 maximum = ala Max foldMap1
