@@ -120,13 +120,13 @@ sequence1_ = traverse1_ identity
 maximum :: forall f a. Ord a => Foldable1 f => f a -> a
 maximum = ala Max foldMap1
 
-maximumBy :: forall f a. Ord a => Foldable1 f => (a -> a -> Ordering) -> f a -> a
+maximumBy :: forall f a. Foldable1 f => (a -> a -> Ordering) -> f a -> a
 maximumBy cmp = foldl1 \x y -> if cmp x y == GT then x else y
 
 minimum :: forall f a. Ord a => Foldable1 f => f a -> a
 minimum = ala Min foldMap1
 
-minimumBy :: forall f a. Ord a => Foldable1 f => (a -> a -> Ordering) -> f a -> a
+minimumBy :: forall f a. Foldable1 f => (a -> a -> Ordering) -> f a -> a
 minimumBy cmp = foldl1 \x y -> if cmp x y == LT then x else y
 
 -- | Internal. Used by intercalation functions.
