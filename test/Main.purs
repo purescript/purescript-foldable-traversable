@@ -14,6 +14,7 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (unwrap)
 import Data.Semigroup.Foldable (class Foldable1, foldr1, foldl1, fold1Default, foldr1Default, foldl1Default)
+import Data.Semigroup.Foldable as Foldable1
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
 import Effect (Effect, foreachE)
@@ -199,6 +200,18 @@ main = do
   log "Test Foldable1 defaults"
   assert $ "(a(b(cd)))" == foldMap (foldr1 (\x y -> "(" <> x <> y <> ")")) (maybeMkNEArray ["a", "b", "c", "d"])
   assert $ "(((ab)c)d)" == foldMap (foldl1 (\x y -> "(" <> x <> y <> ")")) (maybeMkNEArray ["a", "b", "c", "d"])
+
+  log "Test maximumBy"
+  assert $
+    (Foldable1.maximumBy (compare `on` abs) <$>
+        (maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10)))
+      == Just (-10.0)
+
+  log "Test minimumBy"
+  assert $
+    (Foldable1.minimumBy (compare `on` abs) <$>
+        (maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10)))
+      == Just (-1.0)
 
   log "All done!"
 
