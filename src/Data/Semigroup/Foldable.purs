@@ -9,6 +9,8 @@ module Data.Semigroup.Foldable
   , sequence1_
   , foldr1Default
   , foldl1Default
+  , foldMap1DefaultR
+  , foldMap1DefaultL
   , foldMap1Default
   , intercalate
   , intercalateMap
@@ -26,6 +28,7 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Newtype (ala, alaF)
 import Data.Ord.Max (Max(..))
 import Data.Ord.Min (Min(..))
+import Prim.TypeError (class Warn, Text)
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
 -- |
@@ -37,7 +40,8 @@ import Data.Ord.Min (Min(..))
 -- |
 -- | - `foldr1Default`
 -- | - `foldl1Default`
--- | - `foldMap1Default`
+-- | - `foldMap1DefaultR`
+-- | - `foldMap1DefaultL`
 -- |
 -- | Note: some combinations of the default implementations are unsafe to
 -- | use together - causing a non-terminating mutually recursive cycle.
@@ -48,22 +52,36 @@ class Foldable t <= Foldable1 t where
   foldMap1 :: forall a m. Semigroup m => (a -> m) -> t a -> m
 
 -- | A default implementation of `foldr1` using `foldMap1`.
+-- |
+-- | Note: when defining a `Foldable1` instance, this function is unsafe to use
+-- | in combination with `foldMap1DefaultR`.
 foldr1Default :: forall t a. Foldable1 t => (a -> a -> a) -> t a -> a
 foldr1Default = flip (runFoldRight1 <<< foldMap1 mkFoldRight1)
 
 -- | A default implementation of `foldl1` using `foldMap1`.
 -- |
 -- | Note: when defining a `Foldable1` instance, this function is unsafe to use
--- | in combination with `foldMap1Default`.
+-- | in combination with `foldMap1DefaultL`.
 foldl1Default :: forall t a. Foldable1 t => (a -> a -> a) -> t a -> a
 foldl1Default = flip (runFoldRight1 <<< alaF Dual foldMap1 mkFoldRight1) <<< flip
+
+-- | A default implementation of `foldMap1` using `foldr1`.
+-- |
+-- | Note: when defining a `Foldable1` instance, this function is unsafe to use
+-- | in combination with `foldr1Default`.
+foldMap1DefaultR :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
+foldMap1DefaultR f = map f >>> foldr1 (<>)
 
 -- | A default implementation of `foldMap1` using `foldl1`.
 -- |
 -- | Note: when defining a `Foldable1` instance, this function is unsafe to use
 -- | in combination with `foldl1Default`.
-foldMap1Default :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
-foldMap1Default f = map f >>> foldl1 (<>)
+foldMap1DefaultL :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
+foldMap1DefaultL f = map f >>> foldl1 (<>)
+
+-- | Deprecated previous name of `foldMap1DefaultL`.
+foldMap1Default :: forall t m a. Warn (Text "'foldMap1Default' is deprecated, use 'foldMap1DefaultL' instead") => Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
+foldMap1Default = foldMap1DefaultL
 
 instance foldableDual :: Foldable1 Dual where
   foldr1 _ (Dual x) = x
