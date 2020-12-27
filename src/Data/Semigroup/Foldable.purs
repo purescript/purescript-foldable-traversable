@@ -9,6 +9,7 @@ module Data.Semigroup.Foldable
   , sequence1_
   , foldr1Default
   , foldl1Default
+  , foldMap1Default
   , intercalate
   , intercalateMap
   , maximum
@@ -36,6 +37,11 @@ import Data.Ord.Min (Min(..))
 -- |
 -- | - `foldr1Default`
 -- | - `foldl1Default`
+-- | - `foldMap1Default`
+-- |
+-- | Note: some combinations of the default implementations are unsafe to
+-- | use together - causing a non-terminating mutually recursive cycle.
+-- | These combinations are documented per function.
 class Foldable t <= Foldable1 t where
   foldr1 :: forall a. (a -> a -> a) -> t a -> a
   foldl1 :: forall a. (a -> a -> a) -> t a -> a
@@ -46,8 +52,18 @@ foldr1Default :: forall t a. Foldable1 t => (a -> a -> a) -> t a -> a
 foldr1Default = flip (runFoldRight1 <<< foldMap1 mkFoldRight1)
 
 -- | A default implementation of `foldl1` using `foldMap1`.
+-- |
+-- | Note: when defining a `Foldable1` instance, this function is unsafe to use
+-- | in combination with `foldMap1Default`.
 foldl1Default :: forall t a. Foldable1 t => (a -> a -> a) -> t a -> a
 foldl1Default = flip (runFoldRight1 <<< alaF Dual foldMap1 mkFoldRight1) <<< flip
+
+-- | A default implementation of `foldMap1` using `foldl1`.
+-- |
+-- | Note: when defining a `Foldable1` instance, this function is unsafe to use
+-- | in combination with `foldl1Default`.
+foldMap1Default :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
+foldMap1Default f = map f >>> foldl1 (<>)
 
 instance foldableDual :: Foldable1 Dual where
   foldr1 _ (Dual x) = x
