@@ -13,7 +13,7 @@ import Data.Int (toNumber, pow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (unwrap)
-import Data.Semigroup.Foldable (class Foldable1, foldr1, foldl1, fold1Default, foldr1Default, foldl1Default)
+import Data.Semigroup.Foldable (class Foldable1, foldr1, foldl1, fold1Default, foldr1Default, foldl1Default, oneOf1, oneOfMap1)
 import Data.Semigroup.Foldable as Foldable1
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
@@ -212,6 +212,13 @@ main = do
     (Foldable1.minimumBy (compare `on` abs) <$>
         (maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10)))
       == Just (-1.0)
+
+  log "Test oneOf1"
+  assert $ Just "a" == (maybeMkNEArray [Nothing, Just "a", Just "b"] >>= oneOf1)
+
+  log "Test oneOfMap1" *> do
+    let pred n = if n >= 5 then Just n else Nothing
+    assert $ Just 5 == (maybeMkNEArray [1, 5, 10, 20] >>= oneOfMap1 pred)
 
   log "All done!"
 
