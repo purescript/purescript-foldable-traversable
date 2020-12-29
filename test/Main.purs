@@ -13,7 +13,7 @@ import Data.Int (toNumber, pow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (unwrap)
-import Data.Semigroup.Foldable (class Foldable1, foldr1, foldl1, fold1Default, foldr1Default, foldl1Default)
+import Data.Semigroup.Foldable (class Foldable1, foldr1, foldl1, foldr1Default, foldl1Default)
 import Data.Semigroup.Foldable as Foldable1
 import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence, traverseDefault)
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
@@ -36,10 +36,9 @@ instance foldableNEArray :: Foldable NEArray where
   foldr f = foldrDefault f
 
 instance foldable1NEArray :: Foldable1 NEArray where
-  foldMap1 = foldMap1NEArray append
-  fold1 = fold1Default
   foldr1 f = foldr1Default f
   foldl1 f = foldl1Default f
+  foldMap1 = foldMap1NEArray append
 
 maybeMkNEArray :: forall a. Array a -> Maybe (NEArray a)
 maybeMkNEArray = mkNEArray Nothing Just
