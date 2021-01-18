@@ -5,12 +5,22 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- Updated code for PureScript 0.14 (#120)
+- Removed `fold1Default` and deprecated `foldMap1Default` (#128)
 
 New features:
+- Added `findMapWithIndex` (#119)
+- Added `foldr1` `foldl1` `foldr1Default` `foldl1Default` `foldMap1DefaultR` `foldMap1DefaultL` (#121, #128)
+- Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123) 
 
 Bugfixes:
 
 Other improvements:
+- Migrated CI to GitHub Actions and updated installation instructions to use Spago (#127)
+- Added a CHANGELOG.md file and pull request template (#129 #130)
+- Wrapped `traverseArrayImpl` IIFE in parentheses (#52)
+- Added examples for `sequence` and `traverse` (#115)
+- Changed `foldM` type signature to more closely match `foldl` (#111)
 
 ## [v4.1.1](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v4.1.1) - 2018-11-23
 
