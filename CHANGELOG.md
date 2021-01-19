@@ -5,12 +5,12 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
-- Updated code for PureScript 0.14 (#120)
+- Added support for PureScript 0.14 and dropped support for all previous versions (#120)
 - Removed `fold1Default` and deprecated `foldMap1Default` (#128)
 
 New features:
 - Added `findMapWithIndex` (#119)
-- Added `foldr1` `foldl1` `foldr1Default` `foldl1Default` `foldMap1DefaultR` `foldMap1DefaultL` (#121, #128)
+- Added `foldr1`, `foldl1`, `foldr1Default`, `foldl1Default`, `foldMap1DefaultR`, `foldMap1DefaultL` (#121, #128)
 - Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123) 
 
 Bugfixes:
