@@ -17,7 +17,7 @@ Bugfixes:
 
 Other improvements:
 - Migrated CI to GitHub Actions and updated installation instructions to use Spago (#127)
-- Added a CHANGELOG.md file and pull request template (#129 #130)
+- Added a CHANGELOG.md file and pull request template (#129, #130)
 - Wrapped `traverseArrayImpl` IIFE in parentheses (#52)
 - Added examples for `sequence` and `traverse` (#115)
 - Changed `foldM` type signature to more closely match `foldl` (#111)
