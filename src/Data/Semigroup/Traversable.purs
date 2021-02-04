@@ -2,10 +2,12 @@ module Data.Semigroup.Traversable where
 
 import Prelude
 
+import Data.Identity (Identity(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Semigroup.Foldable (class Foldable1)
 import Data.Traversable (class Traversable)
+import Data.Tuple (Tuple(..))
 
 -- | `Traversable1` represents data structures with a minimum of one element that can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -41,6 +43,14 @@ instance traversableDual :: Traversable1 Dual where
 instance traversableMultiplicative :: Traversable1 Multiplicative where
   traverse1 f (Multiplicative x) = Multiplicative <$> f x
   sequence1 = sequence1Default
+
+instance traversableTuple :: Traversable1 (Tuple a) where
+  traverse1 f (Tuple x y) = Tuple x <$> f y
+  sequence1 (Tuple x y) = Tuple x <$> y
+
+instance traversableIdentity :: Traversable1 Identity where
+  traverse1 f (Identity x) = Identity <$> f x
+  sequence1 (Identity x) = Identity <$> x
 
 -- | A default implementation of `traverse1` using `sequence1`.
 traverse1Default

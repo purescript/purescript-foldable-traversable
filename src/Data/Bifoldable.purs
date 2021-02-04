@@ -3,17 +3,19 @@ module Data.Bifoldable where
 import Prelude
 
 import Control.Apply (applySecond)
+import Data.Const (Const(..))
+import Data.Either (Either(..))
+import Data.Foldable (class Foldable, foldr, foldl, foldMap)
+import Data.Functor.Clown (Clown(..))
+import Data.Functor.Flip (Flip(..))
+import Data.Functor.Joker (Joker(..))
+import Data.Functor.Product2 (Product2(..))
 import Data.Monoid.Conj (Conj(..))
 import Data.Monoid.Disj (Disj(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Endo (Endo(..))
 import Data.Newtype (unwrap)
-import Data.Foldable (class Foldable, foldr, foldl, foldMap)
-import Data.Bifunctor.Clown (Clown(..))
-import Data.Bifunctor.Joker (Joker(..))
-import Data.Bifunctor.Flip (Flip(..))
-import Data.Bifunctor.Product (Product(..))
-import Data.Bifunctor.Wrap (Wrap(..))
+import Data.Tuple (Tuple(..))
 
 -- | `Bifoldable` represents data structures with two type arguments which can be
 -- | folded.
@@ -52,15 +54,28 @@ instance bifoldableFlip :: Bifoldable p => Bifoldable (Flip p) where
   bifoldl r l u (Flip p) = bifoldl l r u p
   bifoldMap r l (Flip p) = bifoldMap l r p
 
-instance bifoldableProduct :: (Bifoldable f, Bifoldable g) => Bifoldable (Product f g) where
+instance bifoldableProduct2 :: (Bifoldable f, Bifoldable g) => Bifoldable (Product2 f g) where
   bifoldr l r u m = bifoldrDefault l r u m
   bifoldl l r u m = bifoldlDefault l r u m
-  bifoldMap l r (Product f g) = bifoldMap l r f <> bifoldMap l r g
+  bifoldMap l r (Product2 f g) = bifoldMap l r f <> bifoldMap l r g
 
-instance bifoldableWrap :: Bifoldable p => Bifoldable (Wrap p) where
-  bifoldr l r u (Wrap p) = bifoldr l r u p
-  bifoldl l r u (Wrap p) = bifoldl l r u p
-  bifoldMap l r (Wrap p) = bifoldMap l r p
+instance bifoldableEither :: Bifoldable Either where
+  bifoldr f _ z (Left a) = f a z
+  bifoldr _ g z (Right b) = g b z
+  bifoldl f _ z (Left a) = f z a
+  bifoldl _ g z (Right b) = g z b
+  bifoldMap f _ (Left a) = f a
+  bifoldMap _ g (Right b) = g b
+
+instance bifoldableTuple :: Bifoldable Tuple where
+  bifoldMap f g (Tuple a b) = f a <> g b
+  bifoldr f g z (Tuple a b) = f a (g b z)
+  bifoldl f g z (Tuple a b) = g (f z a) b
+
+instance bifoldableConst :: Bifoldable Const where
+  bifoldr f _ z (Const a) = f a z
+  bifoldl f _ z (Const a) = f z a
+  bifoldMap f _ (Const a) = f a
 
 -- | A default implementation of `bifoldr` using `bifoldMap`.
 -- |

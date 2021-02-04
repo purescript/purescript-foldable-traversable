@@ -23,11 +23,13 @@ module Data.Semigroup.Foldable
 import Prelude
 
 import Data.Foldable (class Foldable)
+import Data.Identity (Identity(..))
 import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Newtype (ala, alaF)
 import Data.Ord.Max (Max(..))
 import Data.Ord.Min (Min(..))
+import Data.Tuple (Tuple(..))
 import Prim.TypeError (class Warn, Text)
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
@@ -92,6 +94,16 @@ instance foldableMultiplicative :: Foldable1 Multiplicative where
   foldr1 _ (Multiplicative x) = x
   foldl1 _ (Multiplicative x) = x
   foldMap1 f (Multiplicative x) = f x
+
+instance foldable1Tuple :: Foldable1 (Tuple a) where
+  foldMap1 f (Tuple _ x) = f x
+  foldr1 _ (Tuple _ x) = x
+  foldl1 _ (Tuple _ x) = x
+
+instance foldableIdentity :: Foldable1 Identity where
+  foldMap1 f (Identity x) = f x
+  foldl1 _ (Identity x) = x
+  foldr1 _ (Identity x) = x
 
 -- | Fold a data structure, accumulating values in some `Semigroup`.
 fold1 :: forall t m. Foldable1 t => Semigroup m => t m -> m

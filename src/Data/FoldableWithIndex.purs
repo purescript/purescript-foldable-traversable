@@ -19,8 +19,15 @@ module Data.FoldableWithIndex
 
 import Prelude
 
+import Data.Const (Const)
+import Data.Either (Either(..))
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
+import Data.Functor.App (App(..))
+import Data.Functor.Compose (Compose(..))
+import Data.Functor.Coproduct (Coproduct, coproduct)
+import Data.Functor.Product (Product(..))
 import Data.FunctorWithIndex (mapWithIndex)
+import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -31,6 +38,7 @@ import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Endo (Endo(..))
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (unwrap)
+import Data.Tuple (Tuple(..), curry)
 
 -- | A `Foldable` with an additional index.
 -- | A `FoldableWithIndex` instance must be compatible with its `Foldable`
@@ -108,8 +116,6 @@ foldMapWithIndexDefaultL
   -> m
 foldMapWithIndexDefaultL f = foldlWithIndex (\i acc x -> acc <> f i x) mempty
 
-data Tuple a b = Tuple a b
-
 instance foldableWithIndexArray :: FoldableWithIndex Int Array where
   foldrWithIndex f z = foldr (\(Tuple i x) y -> f i x y) z <<< mapWithIndex Tuple
   foldlWithIndex f z = foldl (\y (Tuple i x) -> f i y x) z <<< mapWithIndex Tuple
@@ -154,6 +160,49 @@ instance foldableWithIndexMultiplicative :: FoldableWithIndex Unit Multiplicativ
   foldrWithIndex f = foldr $ f unit
   foldlWithIndex f = foldl $ f unit
   foldMapWithIndex f = foldMap $ f unit
+
+instance foldableWithIndexEither :: FoldableWithIndex Unit (Either a) where
+  foldrWithIndex _ z (Left _)  = z
+  foldrWithIndex f z (Right x) = f unit x z
+  foldlWithIndex _ z (Left _)  = z
+  foldlWithIndex f z (Right x) = f unit z x
+  foldMapWithIndex f (Left _)  = mempty
+  foldMapWithIndex f (Right x) = f unit x
+
+instance foldableWithIndexTuple :: FoldableWithIndex Unit (Tuple a) where
+  foldrWithIndex f z (Tuple _ x) = f unit x z
+  foldlWithIndex f z (Tuple _ x) = f unit z x
+  foldMapWithIndex f (Tuple _ x) = f unit x
+
+instance foldableWithIndexIdentity :: FoldableWithIndex Unit Identity where
+  foldrWithIndex f z (Identity x) = f unit x z
+  foldlWithIndex f z (Identity x) = f unit z x
+  foldMapWithIndex f (Identity x) = f unit x
+
+instance foldableWithIndexConst :: FoldableWithIndex Void (Const a) where
+  foldrWithIndex _ z _ = z
+  foldlWithIndex _ z _ = z
+  foldMapWithIndex _ _ = mempty
+
+instance foldableWithIndexProduct :: (FoldableWithIndex a f, FoldableWithIndex b g) => FoldableWithIndex (Either a b) (Product f g) where
+  foldrWithIndex f z (Product (Tuple fa ga)) = foldrWithIndex (f <<< Left) (foldrWithIndex (f <<< Right) z ga) fa
+  foldlWithIndex f z (Product (Tuple fa ga)) = foldlWithIndex (f <<< Right) (foldlWithIndex (f <<< Left) z fa) ga
+  foldMapWithIndex f (Product (Tuple fa ga)) = foldMapWithIndex (f <<< Left) fa <> foldMapWithIndex (f <<< Right) ga
+
+instance foldableWithIndexCoproduct :: (FoldableWithIndex a f, FoldableWithIndex b g) => FoldableWithIndex (Either a b) (Coproduct f g) where
+  foldrWithIndex f z = coproduct (foldrWithIndex (f <<< Left) z) (foldrWithIndex (f <<< Right) z)
+  foldlWithIndex f z = coproduct (foldlWithIndex (f <<< Left) z) (foldlWithIndex (f <<< Right) z)
+  foldMapWithIndex f = coproduct (foldMapWithIndex (f <<< Left)) (foldMapWithIndex (f <<< Right))
+
+instance foldableWithIndexCompose :: (FoldableWithIndex a f, FoldableWithIndex b g) => FoldableWithIndex (Tuple a b) (Compose f g) where
+  foldrWithIndex f i (Compose fga) = foldrWithIndex (\a -> flip (foldrWithIndex (curry f a))) i fga
+  foldlWithIndex f i (Compose fga) = foldlWithIndex (foldlWithIndex <<< curry f) i fga
+  foldMapWithIndex f (Compose fga) = foldMapWithIndex (foldMapWithIndex <<< curry f) fga
+
+instance foldableWithIndexApp :: FoldableWithIndex a f => FoldableWithIndex a (App f) where
+  foldrWithIndex f z (App x) = foldrWithIndex f z x
+  foldlWithIndex f z (App x) = foldlWithIndex f z x
+  foldMapWithIndex f (App x) = foldMapWithIndex f x
 
 
 -- | Similar to 'foldlWithIndex', but the result is encapsulated in a monad.

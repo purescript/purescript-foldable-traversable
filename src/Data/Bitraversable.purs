@@ -15,11 +15,13 @@ import Prelude
 import Data.Bifoldable (class Bifoldable, biall, biany, bifold, bifoldMap, bifoldMapDefaultL, bifoldMapDefaultR, bifoldl, bifoldlDefault, bifoldr, bifoldrDefault, bifor_, bisequence_, bitraverse_)
 import Data.Traversable (class Traversable, traverse, sequence)
 import Data.Bifunctor (class Bifunctor, bimap)
-import Data.Bifunctor.Clown (Clown(..))
-import Data.Bifunctor.Joker (Joker(..))
-import Data.Bifunctor.Flip (Flip(..))
-import Data.Bifunctor.Product (Product(..))
-import Data.Bifunctor.Wrap (Wrap(..))
+import Data.Const (Const(..))
+import Data.Either (Either(..))
+import Data.Functor.Clown (Clown(..))
+import Data.Functor.Flip (Flip(..))
+import Data.Functor.Joker (Joker(..))
+import Data.Functor.Product2 (Product2(..))
+import Data.Tuple (Tuple(..))
 
 -- | `Bitraversable` represents data structures with two type arguments which can be
 -- | traversed.
@@ -48,13 +50,23 @@ instance bitraversableFlip :: Bitraversable p => Bitraversable (Flip p) where
   bitraverse r l (Flip p) = Flip <$> bitraverse l r p
   bisequence (Flip p) = Flip <$> bisequence p
 
-instance bitraversableProduct :: (Bitraversable f, Bitraversable g) => Bitraversable (Product f g) where
-  bitraverse l r (Product f g) = Product <$> bitraverse l r f <*> bitraverse l r g
-  bisequence (Product f g) = Product <$> bisequence f <*> bisequence g
+instance bitraversableProduct2 :: (Bitraversable f, Bitraversable g) => Bitraversable (Product2 f g) where
+  bitraverse l r (Product2 f g) = Product2 <$> bitraverse l r f <*> bitraverse l r g
+  bisequence (Product2 f g) = Product2 <$> bisequence f <*> bisequence g
 
-instance bitraversableWrap :: Bitraversable p => Bitraversable (Wrap p) where
-  bitraverse l r (Wrap p) = Wrap <$> bitraverse l r p
-  bisequence (Wrap p) = Wrap <$> bisequence p
+instance bitraversableEither :: Bitraversable Either where
+  bitraverse f _ (Left a) = Left <$> f a
+  bitraverse _ g (Right b) = Right <$> g b
+  bisequence (Left a) = Left <$> a
+  bisequence (Right b) = Right <$> b
+
+instance bitraversableTuple :: Bitraversable Tuple where
+  bitraverse f g (Tuple a b) = Tuple <$> f a <*> g b
+  bisequence (Tuple a b) = Tuple <$> a <*> b
+
+instance bitraversableConst :: Bitraversable Const where
+  bitraverse f _ (Const a) = Const <$> f a
+  bisequence (Const a) = Const <$> a
 
 ltraverse
   :: forall t b c a f
