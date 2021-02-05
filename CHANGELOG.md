@@ -12,6 +12,7 @@ New features:
 - Added `findMapWithIndex` (#119)
 - Added `foldr1`, `foldl1`, `foldr1Default`, `foldl1Default`, `foldMap1DefaultR`, `foldMap1DefaultL` (#121, #128)
 - Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123) 
+- Added `lookup` to `Data.Foldable`; this function previously lived in `Data.Tuple` in the `purescript-tuples` package (#131)
 
 Bugfixes:
 
@@ -21,6 +22,7 @@ Other improvements:
 - Wrapped `traverseArrayImpl` IIFE in parentheses (#52)
 - Added examples for `sequence` and `traverse` (#115)
 - Changed `foldM` type signature to more closely match `foldl` (#111)
+- This package now depends on the `purescript-const`, `purescript-either`, `purescript-functors`, `purescript-identity`, and `purescript-tuples` packages, and contains instances previously in those packages or the `purescript-bifunctors` or `purescript-profunctor` packages (#131)
 
 ## [v4.1.1](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v4.1.1) - 2018-11-23
 

@@ -12,7 +12,15 @@ module Data.Traversable
 
 import Prelude
 
-import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, product, sequence_, sum, traverse_)
+import Control.Apply (lift2)
+import Data.Const (Const(..))
+import Data.Either (Either(..))
+import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, sequence_, sum, traverse_)
+import Data.Functor.App (App(..))
+import Data.Functor.Compose (Compose(..))
+import Data.Functor.Coproduct (Coproduct(..), coproduct)
+import Data.Functor.Product (Product(..), product)
+import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First(..))
 import Data.Maybe.Last (Last(..))
@@ -23,6 +31,7 @@ import Data.Monoid.Dual (Dual(..))
 import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Traversable.Accum (Accum)
 import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
+import Data.Tuple (Tuple(..))
 
 -- | `Traversable` represents data structures which can be _traversed_,
 -- | accumulating results and effects in some `Applicative` functor.
@@ -136,6 +145,44 @@ instance traversableDisj :: Traversable Disj where
 instance traversableMultiplicative :: Traversable Multiplicative where
   traverse f (Multiplicative x) = Multiplicative <$> f x
   sequence (Multiplicative x) = Multiplicative <$> x
+
+instance traversableEither :: Traversable (Either a) where
+  traverse _ (Left x)  = pure (Left x)
+  traverse f (Right x) = Right <$> f x
+  sequence (Left x) = pure (Left x)
+  sequence (Right x)  = Right <$> x
+
+instance traversableTuple :: Traversable (Tuple a) where
+  traverse f (Tuple x y) = Tuple x <$> f y
+  sequence (Tuple x y) = Tuple x <$> y
+
+instance traversableIdentity :: Traversable Identity where
+  traverse f (Identity x) = Identity <$> f x
+  sequence (Identity x) = Identity <$> x
+
+instance traversableConst :: Traversable (Const a) where
+  traverse _ (Const x) = pure (Const x)
+  sequence (Const x) = pure (Const x)
+
+instance traversableProduct :: (Traversable f, Traversable g) => Traversable (Product f g) where
+  traverse f (Product (Tuple fa ga)) = lift2 product (traverse f fa) (traverse f ga)
+  sequence (Product (Tuple fa ga)) = lift2 product (sequence fa) (sequence ga)
+
+instance traversableCoproduct :: (Traversable f, Traversable g) => Traversable (Coproduct f g) where
+  traverse f = coproduct
+    (map (Coproduct <<< Left) <<< traverse f)
+    (map (Coproduct <<< Right) <<< traverse f)
+  sequence = coproduct
+    (map (Coproduct <<< Left) <<< sequence)
+    (map (Coproduct <<< Right) <<< sequence)
+
+instance traversableCompose :: (Traversable f, Traversable g) => Traversable (Compose f g) where
+  traverse f (Compose fga) = map Compose $ traverse (traverse f) fga
+  sequence = traverse identity
+
+instance traversableApp :: Traversable f => Traversable (App f) where
+  traverse f (App x) = App <$> traverse f x
+  sequence (App x) = App <$> sequence x
 
 -- | A version of `traverse` with its arguments flipped.
 -- |

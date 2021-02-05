@@ -4,6 +4,14 @@ module Data.FunctorWithIndex
 
 import Prelude
 
+import Data.Bifunctor (bimap)
+import Data.Const (Const(..))
+import Data.Either (Either(..))
+import Data.Functor.App (App(..))
+import Data.Functor.Compose (Compose(..))
+import Data.Functor.Coproduct (Coproduct(..))
+import Data.Functor.Product (Product(..))
+import Data.Identity (Identity(..))
 import Data.Maybe (Maybe)
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -12,6 +20,7 @@ import Data.Monoid.Conj (Conj)
 import Data.Monoid.Disj (Disj)
 import Data.Monoid.Dual (Dual)
 import Data.Monoid.Multiplicative (Multiplicative)
+import Data.Tuple (Tuple, curry)
 
 -- | A `Functor` with an additional index.
 -- | Instances must satisfy a modified form of the `Functor` laws
@@ -54,6 +63,30 @@ instance functorWithIndexDisj :: FunctorWithIndex Unit Disj where
 
 instance functorWithIndexMultiplicative :: FunctorWithIndex Unit Multiplicative where
   mapWithIndex f = map $ f unit
+
+instance functorWithIndexEither :: FunctorWithIndex Unit (Either a) where
+  mapWithIndex f = map $ f unit
+
+instance functorWithIndexTuple :: FunctorWithIndex Unit (Tuple a) where
+  mapWithIndex f = map $ f unit
+
+instance functorWithIndexIdentity :: FunctorWithIndex Unit Identity where
+  mapWithIndex f (Identity a) = Identity (f unit a)
+
+instance functorWithIndexConst :: FunctorWithIndex Void (Const a) where
+  mapWithIndex _ (Const x) = Const x
+
+instance functorWithIndexProduct :: (FunctorWithIndex a f, FunctorWithIndex b g) => FunctorWithIndex (Either a b) (Product f g) where
+  mapWithIndex f (Product fga) = Product (bimap (mapWithIndex (f <<< Left)) (mapWithIndex (f <<< Right)) fga)
+
+instance functorWithIndexCoproduct :: (FunctorWithIndex a f, FunctorWithIndex b g) => FunctorWithIndex (Either a b) (Coproduct f g) where
+  mapWithIndex f (Coproduct e) = Coproduct (bimap (mapWithIndex (f <<< Left)) (mapWithIndex (f <<< Right)) e)
+
+instance functorWithIndexCompose :: (FunctorWithIndex a f, FunctorWithIndex b g) => FunctorWithIndex (Tuple a b) (Compose f g) where
+  mapWithIndex f (Compose fga) = Compose $ mapWithIndex (mapWithIndex <<< curry f) fga
+
+instance functorWithIndexApp :: FunctorWithIndex a f => FunctorWithIndex a (App f) where
+  mapWithIndex f (App x) = App $ mapWithIndex f x
 
 -- | A default implementation of Functor's `map` in terms of `mapWithIndex`
 mapDefault :: forall i f a b. FunctorWithIndex i f => (a -> b) -> f a -> f b

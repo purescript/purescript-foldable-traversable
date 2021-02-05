@@ -12,8 +12,16 @@ module Data.TraversableWithIndex
 
 import Prelude
 
+import Control.Apply (lift2)
+import Data.Const (Const(..))
+import Data.Either (Either(..))
 import Data.FoldableWithIndex (class FoldableWithIndex)
+import Data.Functor.App (App(..))
+import Data.Functor.Compose (Compose(..))
+import Data.Functor.Coproduct (Coproduct(..), coproduct)
+import Data.Functor.Product (Product(..), product)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
+import Data.Identity (Identity(..))
 import Data.Maybe (Maybe)
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
@@ -25,6 +33,7 @@ import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Traversable.Accum (Accum)
 import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
+import Data.Tuple (Tuple(..), curry)
 
 
 -- | A `Traversable` with an additional index.  
@@ -82,6 +91,33 @@ instance traversableWithIndexDisj :: TraversableWithIndex Unit Disj where
 
 instance traversableWithIndexMultiplicative :: TraversableWithIndex Unit Multiplicative where
   traverseWithIndex f = traverse $ f unit
+
+instance traversableWithIndexEither :: TraversableWithIndex Unit (Either a) where
+  traverseWithIndex _ (Left x)  = pure (Left x)
+  traverseWithIndex f (Right x) = Right <$> f unit x
+
+instance traversableWithIndexTuple :: TraversableWithIndex Unit (Tuple a) where
+  traverseWithIndex f (Tuple x y) = Tuple x <$> f unit y
+
+instance traversableWithIndexIdentity :: TraversableWithIndex Unit Identity where
+  traverseWithIndex f (Identity x) = Identity <$> f unit x
+
+instance traversableWithIndexConst :: TraversableWithIndex Void (Const a) where
+  traverseWithIndex _ (Const x) = pure (Const x)
+
+instance traversableWithIndexProduct :: (TraversableWithIndex a f, TraversableWithIndex b g) => TraversableWithIndex (Either a b) (Product f g) where
+  traverseWithIndex f (Product (Tuple fa ga)) = lift2 product (traverseWithIndex (f <<< Left) fa) (traverseWithIndex (f <<< Right) ga)
+
+instance traversableWithIndexCoproduct :: (TraversableWithIndex a f, TraversableWithIndex b g) => TraversableWithIndex (Either a b) (Coproduct f g) where
+  traverseWithIndex f = coproduct
+    (map (Coproduct <<< Left) <<< traverseWithIndex (f <<< Left))
+    (map (Coproduct <<< Right) <<< traverseWithIndex (f <<< Right))
+
+instance traversableWithIndexCompose :: (TraversableWithIndex a f, TraversableWithIndex b g) => TraversableWithIndex (Tuple a b) (Compose f g) where
+  traverseWithIndex f (Compose fga) = map Compose $ traverseWithIndex (traverseWithIndex <<< curry f) fga
+
+instance traversableWithIndexApp :: TraversableWithIndex a f => TraversableWithIndex a (App f) where
+  traverseWithIndex f (App x) = App <$> traverseWithIndex f x
 
 -- | A version of `traverseWithIndex` with its arguments flipped.
 -- |

@@ -18,11 +18,16 @@
   ],
   "dependencies": {
     "purescript-bifunctors": "master",
+    "purescript-const": "master",
     "purescript-control": "master",
+    "purescript-either": "master",
+    "purescript-functors": "master",
+    "purescript-identity": "master",
     "purescript-maybe": "master",
     "purescript-newtype": "master",
     "purescript-orders": "master",
-    "purescript-prelude": "master"
+    "purescript-prelude": "master",
+    "purescript-tuples": "master"
   },
   "devDependencies": {
     "purescript-assert": "master",
