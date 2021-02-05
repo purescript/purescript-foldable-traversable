@@ -95,7 +95,7 @@ instance foldableMultiplicative :: Foldable1 Multiplicative where
   foldl1 _ (Multiplicative x) = x
   foldMap1 f (Multiplicative x) = f x
 
-instance foldable1Tuple :: Foldable1 (Tuple a) where
+instance foldableTuple :: Foldable1 (Tuple a) where
   foldMap1 f (Tuple _ x) = f x
   foldr1 _ (Tuple _ x) = x
   foldl1 _ (Tuple _ x) = x
