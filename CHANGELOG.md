@@ -12,6 +12,7 @@ New features:
 - Added `findMapWithIndex` (#119)
 - Added `foldr1`, `foldl1`, `foldr1Default`, `foldl1Default`, `foldMap1DefaultR`, `foldMap1DefaultL` (#121, #128)
 - Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123) 
+- Added `lookup` to `Data.Foldable`; this function previously lived in `Data.Tuple` in the `purescript-tuples` package (#131)
 
 Bugfixes:
 
