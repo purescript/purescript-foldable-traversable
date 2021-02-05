@@ -29,6 +29,7 @@ module Data.Foldable
   , minimumBy
   , null
   , length
+  , lookup
   ) where
 
 import Prelude
