@@ -140,7 +140,7 @@ instance foldableMaybe :: Foldable Maybe where
   foldr f z (Just x) = x `f` z
   foldl _ z Nothing  = z
   foldl f z (Just x) = z `f` x
-  foldMap f Nothing  = mempty
+  foldMap _ Nothing  = mempty
   foldMap f (Just x) = f x
 
 instance foldableFirst :: Foldable First where
@@ -183,7 +183,7 @@ instance foldableEither :: Foldable (Either a) where
   foldr f z (Right x) = f x z
   foldl _ z (Left _)  = z
   foldl f z (Right x) = f z x
-  foldMap f (Left _)  = mempty
+  foldMap _ (Left _)  = mempty
   foldMap f (Right x) = f x
 
 instance foldableTuple :: Foldable (Tuple a) where
