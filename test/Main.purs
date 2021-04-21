@@ -437,26 +437,26 @@ instance eqIOr :: (Eq l, Eq r) => Eq (IOr l r) where
 
 instance bifoldableIOr :: Bifoldable IOr where
   bifoldr l r u (Both fst snd) = l fst (r snd u)
-  bifoldr l r u (Fst fst)      = l fst u
-  bifoldr l r u (Snd snd)      = r snd u
+  bifoldr l _ u (Fst fst)      = l fst u
+  bifoldr _ r u (Snd snd)      = r snd u
 
   bifoldl l r u (Both fst snd) = r (l u fst) snd
-  bifoldl l r u (Fst fst)      = l u fst
-  bifoldl l r u (Snd snd)      = r u snd
+  bifoldl l _ u (Fst fst)      = l u fst
+  bifoldl _ r u (Snd snd)      = r u snd
 
   bifoldMap l r (Both fst snd) = l fst <> r snd
-  bifoldMap l r (Fst fst)      = l fst
-  bifoldMap l r (Snd snd)      = r snd
+  bifoldMap l _ (Fst fst)      = l fst
+  bifoldMap _ r (Snd snd)      = r snd
 
 instance bifunctorIOr :: Bifunctor IOr where
   bimap f g (Both fst snd) = Both (f fst) (g snd)
-  bimap f g (Fst fst)      = Fst (f fst)
-  bimap f g (Snd snd)      = Snd (g snd)
+  bimap f _ (Fst fst)      = Fst (f fst)
+  bimap _ g (Snd snd)      = Snd (g snd)
 
 instance bitraversableIOr :: Bitraversable IOr where
   bitraverse f g (Both fst snd) = Both <$> f fst <*> g snd
-  bitraverse f g (Fst fst)      = Fst <$> f fst
-  bitraverse f g (Snd snd)      = Snd <$> g snd
+  bitraverse f _ (Fst fst)      = Fst <$> f fst
+  bitraverse _ g (Snd snd)      = Snd <$> g snd
 
   bisequence (Both fst snd) = Both <$> fst <*> snd
   bisequence (Fst fst)      = Fst <$> fst

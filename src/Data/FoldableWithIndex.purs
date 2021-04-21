@@ -166,7 +166,7 @@ instance foldableWithIndexEither :: FoldableWithIndex Unit (Either a) where
   foldrWithIndex f z (Right x) = f unit x z
   foldlWithIndex _ z (Left _)  = z
   foldlWithIndex f z (Right x) = f unit z x
-  foldMapWithIndex f (Left _)  = mempty
+  foldMapWithIndex _ (Left _)  = mempty
   foldMapWithIndex f (Right x) = f unit x
 
 instance foldableWithIndexTuple :: FoldableWithIndex Unit (Tuple a) where
