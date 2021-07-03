@@ -6,16 +6,18 @@ module Data.Traversable
   , scanr
   , mapAccumL
   , mapAccumR
-  , module Data.Foldable
-  , module Data.Traversable.Accum
+  , module Exports
   ) where
 
 import Prelude
 
+import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, sequence_, sum, product, traverse_) as Exports
+import Data.Traversable.Accum (Accum) as Exports
+
 import Control.Apply (lift2)
 import Data.Const (Const(..))
 import Data.Either (Either(..))
-import Data.Foldable (class Foldable, all, and, any, elem, find, fold, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, intercalate, maximum, maximumBy, minimum, minimumBy, notElem, oneOf, or, sequence_, sum, traverse_)
+import Data.Foldable (class Foldable)
 import Data.Functor.App (App(..))
 import Data.Functor.Compose (Compose(..))
 import Data.Functor.Coproduct (Coproduct(..), coproduct)

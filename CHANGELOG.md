@@ -5,6 +5,7 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- `Data.Traversable` now re-exports `product` (was mistakenly removed in 5.0.0) (#138)
 
 New features:
 
