@@ -1,6 +1,6 @@
 "use strict";
 
-exports.mapWithIndexArray = function (f) {
+export var mapWithIndexArray = function (f) {
   return function (xs) {
     var l = xs.length;
     var result = Array(l);
