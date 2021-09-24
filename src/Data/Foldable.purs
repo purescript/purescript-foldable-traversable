@@ -27,6 +27,7 @@ module Data.Foldable
   , maximumBy
   , minimum
   , minimumBy
+  , foldlMaybe
   , null
   , length
   , lookup
@@ -436,10 +437,7 @@ maximum = maximumBy compare
 -- | function. The comparison function should represent a total ordering (see
 -- | the `Ord` type class laws); if it does not, the behaviour is undefined.
 maximumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
-maximumBy cmp = foldl max' Nothing
-  where
-  max' Nothing x  = Just x
-  max' (Just x) y = Just (if cmp x y == GT then x else y)
+maximumBy cmp = foldlMaybe \x y -> if cmp x y == GT then x else y
 
 -- | Find the smallest element of a structure, according to its `Ord` instance.
 minimum :: forall a f. Ord a => Foldable f => f a -> Maybe a
@@ -449,10 +447,13 @@ minimum = minimumBy compare
 -- | function. The comparison function should represent a total ordering (see
 -- | the `Ord` type class laws); if it does not, the behaviour is undefined.
 minimumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
-minimumBy cmp = foldl min' Nothing
+minimumBy cmp = foldlMaybe \x y -> if cmp x y == LT then x else y
+
+foldlMaybe :: forall f a . Foldable f => (a -> a -> a) -> f a -> Maybe a
+foldlMaybe f = foldl f' Nothing
   where
-  min' Nothing x  = Just x
-  min' (Just x) y = Just (if cmp x y == LT then x else y)
+  f' Nothing x  = Just x
+  f' (Just x) y = Just (f x y)
 
 -- | Test whether the structure is empty.
 -- | Optimized for structures that are similar to cons-lists, because there
