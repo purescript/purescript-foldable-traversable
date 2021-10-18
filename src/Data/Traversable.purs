@@ -105,9 +105,9 @@ instance traversableArray :: Traversable Array where
 
 foreign import traverseArrayImpl
   :: forall m a b
-   . (m (a -> b) -> m a -> m b)
-  -> ((a -> b) -> m a -> m b)
-  -> (a -> m a)
+   . (forall x y. m (x -> y) -> m x -> m y)
+  -> (forall x y. (x -> y) -> m x -> m y)
+  -> (forall x. x -> m x)
   -> (a -> m b)
   -> Array a
   -> m (Array b)
