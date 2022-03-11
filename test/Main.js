@@ -1,5 +1,3 @@
-"use strict";
-
 export function arrayFrom1UpTo(n) {
   var result = [];
   for (var i = 1; i <= n; i++) {

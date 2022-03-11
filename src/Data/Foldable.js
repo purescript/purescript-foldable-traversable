@@ -1,5 +1,3 @@
-"use strict";
-
 export const foldrArray = function (f) {
   return function (init) {
     return function (xs) {

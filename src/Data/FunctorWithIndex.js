@@ -1,5 +1,3 @@
-"use strict";
-
 export const mapWithIndexArray = function (f) {
   return function (xs) {
     var l = xs.length;
