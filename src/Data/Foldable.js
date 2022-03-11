@@ -1,6 +1,6 @@
 "use strict";
 
-export var foldrArray = function (f) {
+export const foldrArray = function (f) {
   return function (init) {
     return function (xs) {
       var acc = init;
@@ -13,7 +13,7 @@ export var foldrArray = function (f) {
   };
 };
 
-export var foldlArray = function (f) {
+export const foldlArray = function (f) {
   return function (init) {
     return function (xs) {
       var acc = init;
