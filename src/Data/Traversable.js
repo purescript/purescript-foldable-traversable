@@ -1,8 +1,6 @@
-"use strict";
-
 // jshint maxparams: 3
 
-exports.traverseArrayImpl = (function () {
+export const traverseArrayImpl = (function () {
   function array1(a) {
     return [a];
   }
