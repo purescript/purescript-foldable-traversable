@@ -29,7 +29,6 @@ import Data.Newtype (ala, alaF)
 import Data.Ord.Max (Max(..))
 import Data.Ord.Min (Min(..))
 import Data.Tuple (Tuple(..))
-import Prim.TypeError (class Warn, Text)
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
 -- |
