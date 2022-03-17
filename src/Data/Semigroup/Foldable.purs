@@ -11,7 +11,6 @@ module Data.Semigroup.Foldable
   , foldl1Default
   , foldMap1DefaultR
   , foldMap1DefaultL
-  , foldMap1Default
   , intercalate
   , intercalateMap
   , maximum
@@ -30,7 +29,6 @@ import Data.Newtype (ala, alaF)
 import Data.Ord.Max (Max(..))
 import Data.Ord.Min (Min(..))
 import Data.Tuple (Tuple(..))
-import Prim.TypeError (class Warn, Text)
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
 -- |
@@ -80,10 +78,6 @@ foldMap1DefaultR f = map f >>> foldr1 (<>)
 -- | in combination with `foldl1Default`.
 foldMap1DefaultL :: forall t m a. Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
 foldMap1DefaultL f = map f >>> foldl1 (<>)
-
--- | Deprecated previous name of `foldMap1DefaultL`.
-foldMap1Default :: forall t m a. Warn (Text "'foldMap1Default' is deprecated, use 'foldMap1DefaultL' instead") => Foldable1 t => Functor t => Semigroup m => (a -> m) -> t a -> m
-foldMap1Default = foldMap1DefaultL
 
 instance foldableDual :: Foldable1 Dual where
   foldr1 _ (Dual x) = x
