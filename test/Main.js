@@ -1,14 +1,12 @@
-"use strict";
-
-exports.arrayFrom1UpTo = function (n) {
+export function arrayFrom1UpTo(n) {
   var result = [];
   for (var i = 1; i <= n; i++) {
     result.push(i);
   }
   return result;
-};
+}
 
-exports.arrayReplicate = function (n) {
+export function arrayReplicate(n) {
   return function (x) {
     var result = [];
     for (var i = 1; i <= n; i++) {
@@ -16,17 +14,17 @@ exports.arrayReplicate = function (n) {
     }
     return result;
   };
-};
+}
 
-exports.mkNEArray = function (nothing) {
+export function mkNEArray(nothing) {
   return function (just) {
     return function (arr) {
       return arr.length > 0 ? just(arr) : nothing;
     };
   };
-};
+}
 
-exports.foldMap1NEArray = function (append) {
+export function foldMap1NEArray(append) {
   return function (f) {
     return function (arr) {
       var acc = f(arr[0]);
@@ -37,4 +35,4 @@ exports.foldMap1NEArray = function (append) {
       return acc;
     };
   };
-};
+}
