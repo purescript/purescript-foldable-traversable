@@ -75,44 +75,48 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 
+
+-- | This internal type is used just to implement a stack-safe and performant foldrDefault and foldlDefault.
+-- | It has O(1) append (because foldrDefault and foldlDefault are implemented in terms of foldMap), and 
+-- | an amortized O(1) uncons/unsnoc.  It behaves similarly to a CatList
 data FreeMonoidTree a = Empty | Node a | Append (FreeMonoidTree a) (FreeMonoidTree a)
-data UnconsView a = Cons a (FreeMonoidTree a) | NoCons
-data UnsnocView a = Snoc (FreeMonoidTree a) a | NoSnoc
-
-unconsTree :: ∀ a. FreeMonoidTree a -> UnconsView a
-unconsTree t = go t Empty
-  where 
-  go :: FreeMonoidTree a -> FreeMonoidTree a -> UnconsView a
-  go Empty Empty = NoCons
-  go Empty rhs = go rhs Empty
-  go (Node a) rhs = Cons a rhs
-  go (Append xs Empty) rhs = go xs rhs
-  go (Append xs ys) Empty = go xs ys
-  go (Append xs ys) rhs = go xs $ Append ys rhs
-
-unsnocTree :: ∀ a. FreeMonoidTree a -> UnsnocView a 
-unsnocTree = go Empty 
-  where 
-  go :: FreeMonoidTree a -> FreeMonoidTree a -> UnsnocView a
-  go Empty Empty = NoSnoc
-  go lhs Empty = go Empty lhs
-  go lhs (Node a) = Snoc lhs a
-  go lhs (Append Empty ys) = go lhs ys
-  go Empty (Append xs ys) = go xs ys
-  go lhs (Append xs ys) = go (Append lhs xs) ys
 
 instance Foldable FreeMonoidTree where 
-  foldl fn = go
-    where 
-    go init xs = case unconsTree xs of 
-      NoCons -> init
-      Cons x rest -> go (fn init x) rest
+  -- these folding implementations could be written more plainly, but are optimized to minimize conditionals.
+  foldl fn = (\a b -> go a b Empty)
+    where
+    go acc lhs rhs = 
+      case lhs of
+        Node a -> go (fn acc a) rhs Empty
+        Append xs ys ->
+          case ys of
+            Empty -> go acc xs rhs
+            _ ->
+              case rhs of
+                Empty -> go acc xs ys
+                _ -> go acc xs (Append ys rhs)
+        Empty ->
+          case rhs of
+            Empty -> acc
+            _ -> go acc rhs Empty
 
-  foldr fn = go
+  foldr fn = (\a b -> go a Empty b)
     where 
-    go init xs = case unsnocTree xs of
-      NoSnoc -> init
-      Snoc rest x -> go (fn x init) rest
+    go acc lhs rhs = 
+      case rhs of 
+        Node a -> go (fn a acc) Empty lhs
+        Append xs ys -> 
+          case xs of 
+            Empty -> go acc lhs ys
+            _ -> 
+              case lhs of 
+                Empty -> go acc xs ys
+                _ -> go acc (Append lhs xs) ys
+        Empty -> 
+          case lhs of 
+            Empty -> acc
+            _ -> go acc Empty lhs
+
 
   foldMap = foldMapDefaultR
 
