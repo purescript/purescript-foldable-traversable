@@ -33,6 +33,7 @@
     "purescript-assert": "^6.0.0",
     "purescript-console": "^6.0.0",
     "purescript-integers": "^6.0.0",
-    "purescript-unsafe-coerce": "^6.0.0"
+    "purescript-unsafe-coerce": "^6.0.0",
+    "purescript-minibench": "^4.0.0"
   }
 }

@@ -75,6 +75,54 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 
+
+-- | This internal type is used just to implement a stack-safe and performant foldrDefault and foldlDefault.
+-- | It has O(1) append (because foldrDefault and foldlDefault are implemented in terms of foldMap), and 
+-- | an amortized O(1) uncons/unsnoc.  It behaves similarly to a CatList
+data FreeMonoidTree a = Empty | Node a | Append (FreeMonoidTree a) (FreeMonoidTree a)
+
+instance Foldable FreeMonoidTree where 
+  -- these folding implementations could be written more plainly, but are optimized to minimize conditionals.
+  foldl fn = (\a b -> go a b Empty)
+    where
+    go acc lhs rhs = 
+      case lhs of
+        Node a -> go (fn acc a) rhs Empty
+        Append xs ys ->
+          case ys of
+            Empty -> go acc xs rhs
+            _ ->
+              case rhs of
+                Empty -> go acc xs ys
+                _ -> go acc xs (Append ys rhs)
+        Empty ->
+          case rhs of
+            Empty -> acc
+            _ -> go acc rhs Empty
+
+  foldr fn = (\a b -> go a Empty b)
+    where 
+    go acc lhs rhs = 
+      case rhs of 
+        Node a -> go (fn a acc) Empty lhs
+        Append xs ys -> 
+          case xs of 
+            Empty -> go acc lhs ys
+            _ -> 
+              case lhs of 
+                Empty -> go acc xs ys
+                _ -> go acc (Append lhs xs) ys
+        Empty -> 
+          case lhs of 
+            Empty -> acc
+            _ -> go acc Empty lhs
+
+
+  foldMap = foldMapDefaultR
+
+instance Semigroup (FreeMonoidTree a) where append = Append
+instance Monoid (FreeMonoidTree a) where mempty = Empty
+
 -- | A default implementation of `foldr` using `foldMap`.
 -- |
 -- | Note: when defining a `Foldable` instance, this function is unsafe to use
@@ -86,7 +134,7 @@ foldrDefault
   -> b
   -> f a
   -> b
-foldrDefault c u xs = unwrap (foldMap (Endo <<< c) xs) u
+foldrDefault c u xs = foldr c u $ foldMap Node xs
 
 -- | A default implementation of `foldl` using `foldMap`.
 -- |
@@ -99,7 +147,7 @@ foldlDefault
   -> b
   -> f a
   -> b
-foldlDefault c u xs = unwrap (unwrap (foldMap (Dual <<< Endo <<< flip c) xs)) u
+foldlDefault c u xs = foldl c u $ foldMap Node xs
 
 -- | A default implementation of `foldMap` using `foldr`.
 -- |

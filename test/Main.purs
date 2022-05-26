@@ -20,6 +20,7 @@ import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence,
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
 import Effect (Effect, foreachE)
 import Effect.Console (log)
+import Performance.Minibench (benchWith)
 import Test.Assert (assert, assert')
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -58,26 +59,38 @@ main = do
   assert $ foldMapDefaultL (\x -> [x]) [1, 2] == [1, 2]
 
   log "Test foldableArray instance is stack safe"
-  testFoldableArrayWith 20000
+  testFoldableArrayWith 20_000
 
   log "Test foldMapDefaultL"
   testFoldableFoldMapDefaultL 20
 
+  log "Test foldMapDefaultL is stack safe"
+  testFoldableFoldMapDefaultL 20_000
+
   log "Test foldMapDefaultR"
   testFoldableFoldMapDefaultR 20
+
+  log "Test foldMapDefaultR is stack safe"
+  testFoldableFoldMapDefaultR 20_000
 
   log "Test foldlDefault"
   testFoldableFoldlDefault 20
 
+  log "Test foldlDefault is stack safe"
+  testFoldableFoldlDefault 20_000
+
   log "Test foldrDefault"
   testFoldableFoldrDefault 20
+
+  log "Test foldrDefault is stack safe"
+  testFoldableFoldrDefault 20_000
 
   foreachE [1,2,3,4,5,10,20] \i -> do
     log $ "Test traversableArray instance with an array of size: " <> show i
     testTraversableArrayWith i
 
   log "Test traversableArray instance is stack safe"
-  testTraversableArrayWith 20000
+  testTraversableArrayWith 20_000
 
   log "Test traverseDefault"
   testTraverseDefault 20
@@ -89,7 +102,7 @@ main = do
   testFoldableWithIndexArrayWith 20
 
   log "Test foldableWithIndexArray instance is stack safe"
-  testFoldableWithIndexArrayWith 20000
+  testFoldableWithIndexArrayWith 20_000
 
   log "Test FoldableWithIndex laws for array instance"
   testFoldableWithIndexLawsOn
@@ -561,3 +574,22 @@ instance bitraversableBTD :: Bitraversable BitraverseDefault where
 instance bitraversableBSD :: Bitraversable BisequenceDefault where
   bitraverse f g (BSD m) = map BSD (bitraverse f g m)
   bisequence m           = bisequenceDefault m
+
+
+benchmarkDefaultFolds :: Effect Unit
+benchmarkDefaultFolds = do
+  let 
+    sm = arrayFrom1UpTo 1_000
+    m = arrayFrom1UpTo 10_000
+    lg = arrayFrom1UpTo 100_000
+    xl = arrayFrom1UpTo 1_000_000
+
+  log "\nbenching 1,000"
+  benchWith 1000 $ \_ -> foldrDefault (+) 0 sm
+  log "\nbenching 10,000"
+  benchWith 1000 $ \_ -> foldrDefault (+) 0 m
+  log "\nbenching 100,000"
+  benchWith 100 $ \_ -> foldrDefault (+) 0 lg
+  log "\nbenching 1,000,000"
+  benchWith 50 $ \_ -> foldrDefault (+) 0 xl
+

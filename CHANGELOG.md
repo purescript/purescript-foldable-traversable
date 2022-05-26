@@ -11,6 +11,7 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Make `foldrDefault` and `foldlDefault` stack safe (#148)
 
 ## [v6.0.0](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v6.0.0) - 2022-04-27
 
