@@ -20,7 +20,7 @@ import Data.Traversable (class Traversable, sequenceDefault, traverse, sequence,
 import Data.TraversableWithIndex (class TraversableWithIndex, traverseWithIndex)
 import Effect (Effect, foreachE)
 import Effect.Console (log)
-import Performance.Minibench (benchWith)
+-- import Performance.Minibench (benchWith)
 import Test.Assert (assert, assert')
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -576,20 +576,20 @@ instance bitraversableBSD :: Bitraversable BisequenceDefault where
   bisequence m           = bisequenceDefault m
 
 
-benchmarkDefaultFolds :: Effect Unit
-benchmarkDefaultFolds = do
-  let 
-    sm = arrayFrom1UpTo 1_000
-    m = arrayFrom1UpTo 10_000
-    lg = arrayFrom1UpTo 100_000
-    xl = arrayFrom1UpTo 1_000_000
-
-  log "\nbenching 1,000"
-  benchWith 1000 $ \_ -> foldrDefault (+) 0 sm
-  log "\nbenching 10,000"
-  benchWith 1000 $ \_ -> foldrDefault (+) 0 m
-  log "\nbenching 100,000"
-  benchWith 100 $ \_ -> foldrDefault (+) 0 lg
-  log "\nbenching 1,000,000"
-  benchWith 50 $ \_ -> foldrDefault (+) 0 xl
+-- benchmarkDefaultFolds :: Effect Unit
+-- benchmarkDefaultFolds = do
+--   let 
+--     sm = arrayFrom1UpTo 1_000
+--     m = arrayFrom1UpTo 10_000
+--     lg = arrayFrom1UpTo 100_000
+--     xl = arrayFrom1UpTo 1_000_000
+-- 
+--   log "\nbenching 1,000"
+--   benchWith 1000 $ \_ -> foldrDefault (+) 0 sm
+--   log "\nbenching 10,000"
+--   benchWith 1000 $ \_ -> foldrDefault (+) 0 m
+--   log "\nbenching 100,000"
+--   benchWith 100 $ \_ -> foldrDefault (+) 0 lg
+--   log "\nbenching 1,000,000"
+--   benchWith 50 $ \_ -> foldrDefault (+) 0 xl
 
