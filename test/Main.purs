@@ -1,3 +1,4 @@
+-- @inline export deferEff never
 module Test.Main where
 
 import Prelude
