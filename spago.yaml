@@ -1,0 +1,29 @@
+package:
+  name: foldable-traversable
+  dependencies:
+    - bifunctors
+    - const
+    - control
+    - either
+    - functors
+    - identity
+    - maybe
+    - newtype
+    - orders
+    - prelude
+    - tuples
+  test:
+    main: Test.Main
+    dependencies:
+      - assert
+      - console
+      - integers
+      - unsafe-coerce
+workspace:
+  backend:
+    cmd: purescm
+    args:
+      - build
+  package_set:
+    url: https://raw.githubusercontent.com/purescm/purescm/36eb8664ffdc9edec3939269d56ada75f98b0010/package-sets/1.0.0.json
+    hash: sha256-FhoDkjR0ZghGFh87iO0XmlAjRXnw+va+g9j5j9pxRdU=
