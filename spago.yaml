@@ -27,3 +27,7 @@ workspace:
   package_set:
     url: https://raw.githubusercontent.com/purescm/purescm/36eb8664ffdc9edec3939269d56ada75f98b0010/package-sets/1.0.0.json
     hash: sha256-FhoDkjR0ZghGFh87iO0XmlAjRXnw+va+g9j5j9pxRdU=
+  extra_packages:
+    effect:
+      git: https://github.com/purescm/purescript-effect.git
+      ref: abb3d8ab0ac534194f2d05f978167b8c48666484
