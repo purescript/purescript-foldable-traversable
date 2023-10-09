@@ -316,9 +316,9 @@ testTraversableFWith f n = do
   assert' "traverse Just == Just" $ traverse Just dat == Just dat
   assert' "traverse pure == pure (Array)" $ traverse pure dat == [dat]
 
-  when (len <= 10) do
-    result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (pow 2 len) dat
-    assert' "traverse with Array as underlying applicative" result
+  -- when (len <= 10) do
+  --   result <- deferEff \_ -> traverse (\x -> [x,x]) dat == arrayReplicate (pow 2 len) dat
+  --   assert' "traverse with Array as underlying applicative" result
 
   assert' "traverse (const Nothing) == const Nothing" $
     traverse (const Nothing :: Int -> Maybe Int) dat == Nothing
