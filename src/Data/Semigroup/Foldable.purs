@@ -28,6 +28,7 @@ import Data.Monoid.Multiplicative (Multiplicative(..))
 import Data.Newtype (ala, alaF)
 import Data.Ord.Max (Max(..))
 import Data.Ord.Min (Min(..))
+import Data.Semigroup.Foldable.Internal (Act(..), JoinWith(..), getAct, joinee)
 import Data.Tuple (Tuple(..))
 
 -- | `Foldable1` represents data structures with a minimum of one element that can be _folded_.
@@ -103,15 +104,6 @@ instance foldableIdentity :: Foldable1 Identity where
 fold1 :: forall t m. Foldable1 t => Semigroup m => t m -> m
 fold1 = foldMap1 identity
 
-newtype Act :: forall k. (k -> Type) -> k -> Type
-newtype Act f a = Act (f a)
-
-getAct :: forall f a. Act f a -> f a
-getAct (Act f) = f
-
-instance semigroupAct :: Apply f => Semigroup (Act f a) where
-  append (Act a) (Act b) = Act (a *> b)
-
 -- | Traverse a data structure, performing some effects encoded by an
 -- | `Apply` instance at each value, ignoring the final result.
 traverse1_ :: forall t f a b. Foldable1 t => Apply f => (a -> f b) -> t a -> f Unit
@@ -140,15 +132,6 @@ minimum = ala Min foldMap1
 
 minimumBy :: forall f a. Foldable1 f => (a -> a -> Ordering) -> f a -> a
 minimumBy cmp = foldl1 \x y -> if cmp x y == LT then x else y
-
--- | Internal. Used by intercalation functions.
-newtype JoinWith a = JoinWith (a -> a)
-
-joinee :: forall a. JoinWith a -> a -> a
-joinee (JoinWith x) = x
-
-instance semigroupJoinWith :: Semigroup a => Semigroup (JoinWith a) where
-  append (JoinWith a) (JoinWith b) = JoinWith $ \j -> a j <> j <> b j
 
 -- | Fold a data structure using a `Semigroup` instance,
 -- | combining adjacent elements using the specified separator.
