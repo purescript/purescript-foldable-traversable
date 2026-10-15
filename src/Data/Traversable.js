@@ -1,5 +1,3 @@
-// jshint maxparams: 3
-
 export const traverseArrayImpl = (function () {
   function array1(a) {
     return [a];
