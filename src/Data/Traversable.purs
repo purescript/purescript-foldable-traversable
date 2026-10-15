@@ -1,6 +1,9 @@
 module Data.Traversable
-  ( class Traversable, traverse, sequence
-  , traverseDefault, sequenceDefault
+  ( class Traversable
+  , traverse
+  , sequence
+  , traverseDefault
+  , sequenceDefault
   , for
   , scanl
   , scanr
@@ -113,9 +116,9 @@ foreign import traverseArrayImpl
   -> m (Array b)
 
 instance traversableMaybe :: Traversable Maybe where
-  traverse _ Nothing  = pure Nothing
+  traverse _ Nothing = pure Nothing
   traverse f (Just x) = Just <$> f x
-  sequence Nothing  = pure Nothing
+  sequence Nothing = pure Nothing
   sequence (Just x) = Just <$> x
 
 instance traversableFirst :: Traversable First where
@@ -147,10 +150,10 @@ instance traversableMultiplicative :: Traversable Multiplicative where
   sequence (Multiplicative x) = Multiplicative <$> x
 
 instance traversableEither :: Traversable (Either a) where
-  traverse _ (Left x)  = pure (Left x)
+  traverse _ (Left x) = pure (Left x)
   traverse f (Right x) = Right <$> f x
   sequence (Left x) = pure (Left x)
-  sequence (Right x)  = Right <$> x
+  sequence (Right x) = Right <$> x
 
 instance traversableTuple :: Traversable (Tuple a) where
   traverse f (Tuple x y) = Tuple x <$> f y

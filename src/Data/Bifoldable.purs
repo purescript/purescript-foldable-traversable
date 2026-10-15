@@ -5,7 +5,7 @@ import Prelude
 import Control.Apply (applySecond)
 import Data.Const (Const(..))
 import Data.Either (Either(..))
-import Data.Foldable (class Foldable, foldr, foldl, foldMap)
+import Data.Foldable (class Foldable, foldMap, foldl, foldr)
 import Data.Functor.Clown (Clown(..))
 import Data.Functor.Flip (Flip(..))
 import Data.Functor.Joker (Joker(..))
@@ -105,8 +105,9 @@ bifoldlDefault
   -> c
 bifoldlDefault f g z p =
   unwrap
-    (unwrap
-      (bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p))
+    ( unwrap
+        (bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p)
+    )
     z
 
 -- | A default implementation of `bifoldMap` using `bifoldr`.
@@ -136,7 +137,6 @@ bifoldMapDefaultL
   -> p a b
   -> m
 bifoldMapDefaultL f g = bifoldl (\m a -> m <> f a) (\m b -> m <> g b) mempty
-
 
 -- | Fold a data structure, accumulating values in a monoidal type.
 bifold :: forall t m. Bifoldable t => Monoid m => t m m -> m

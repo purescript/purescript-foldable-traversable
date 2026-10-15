@@ -1,5 +1,6 @@
-module Data.TraversableWithIndex 
-  ( class TraversableWithIndex, traverseWithIndex
+module Data.TraversableWithIndex
+  ( class TraversableWithIndex
+  , traverseWithIndex
   , traverseWithIndexDefault
   , forWithIndex
   , scanlWithIndex
@@ -34,7 +35,6 @@ import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Traversable.Accum (Accum)
 import Data.Traversable.Accum.Internal (StateL(..), StateR(..), stateL, stateR)
 import Data.Tuple (Tuple(..), curry)
-
 
 -- | A `Traversable` with an additional index.  
 -- | A `TraversableWithIndex` instance must be compatible with its
@@ -93,7 +93,7 @@ instance traversableWithIndexMultiplicative :: TraversableWithIndex Unit Multipl
   traverseWithIndex f = traverse $ f unit
 
 instance traversableWithIndexEither :: TraversableWithIndex Unit (Either a) where
-  traverseWithIndex _ (Left x)  = pure (Left x)
+  traverseWithIndex _ (Left x) = pure (Left x)
   traverseWithIndex f (Right x) = Right <$> f unit x
 
 instance traversableWithIndexTuple :: TraversableWithIndex Unit (Tuple a) where
@@ -209,5 +209,7 @@ traverseDefault
   :: forall i t a b m
    . TraversableWithIndex i t
   => Applicative m
-  => (a -> m b) -> t a -> m (t b)
+  => (a -> m b)
+  -> t a
+  -> m (t b)
 traverseDefault f = traverseWithIndex (const f)

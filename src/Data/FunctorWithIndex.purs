@@ -1,5 +1,7 @@
 module Data.FunctorWithIndex
-  ( class FunctorWithIndex, mapWithIndex, mapDefault
+  ( class FunctorWithIndex
+  , mapWithIndex
+  , mapDefault
   ) where
 
 import Prelude
