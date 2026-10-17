@@ -103,12 +103,9 @@ bifoldlDefault
   -> c
   -> p a b
   -> c
-bifoldlDefault f g z p =
-  unwrap
-    ( unwrap
-        (bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p)
-    )
-    z
+bifoldlDefault f g z p = unwrap endo z
+  where
+  endo = unwrap $ bifoldMap (Dual <<< Endo <<< flip f) (Dual <<< Endo <<< flip g) p
 
 -- | A default implementation of `bifoldMap` using `bifoldr`.
 -- |

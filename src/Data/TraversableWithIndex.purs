@@ -156,8 +156,11 @@ scanlWithIndex
   -> b
   -> f a
   -> f b
-scanlWithIndex f b0 xs =
-  (mapAccumLWithIndex (\i b a -> let b' = f i b a in { accum: b', value: b' }) b0 xs).value
+scanlWithIndex f b0 xs = (mapAccumLWithIndex step b0 xs).value
+  where
+  step i b a = do
+    let b' = f i b a
+    { accum: b', value: b' }
 
 -- | Fold a data structure from the left with access to the indices, keeping
 -- | all intermediate results instead of only the final result.
@@ -187,8 +190,11 @@ scanrWithIndex
   -> b
   -> f a
   -> f b
-scanrWithIndex f b0 xs =
-  (mapAccumRWithIndex (\i b a -> let b' = f i a b in { accum: b', value: b' }) b0 xs).value
+scanrWithIndex f b0 xs = (mapAccumRWithIndex step b0 xs).value
+  where
+  step i b a = do
+    let b' = f i a b
+    { accum: b', value: b' }
 
 -- | Fold a data structure from the right with access to the indices, keeping
 -- | all intermediate results instead of only the final result.

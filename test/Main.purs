@@ -168,20 +168,20 @@ main = do
   log "Test maximum"
   assert $ maximum (arrayFrom1UpTo 10) == Just 10
 
-  log "Test maximumBy"
-  assert $
-    maximumBy (compare `on` abs)
-      (map (negate <<< toNumber) (arrayFrom1UpTo 10))
-      == Just (-10.0)
+  log "Test maximumBy" *> do
+    let
+      negativeValues = map (negate <<< toNumber) (arrayFrom1UpTo 10)
+      actualMaximum = maximumBy (compare `on` abs) negativeValues
+    assert $ actualMaximum == Just (-10.0)
 
   log "Test minimum"
   assert $ minimum (arrayFrom1UpTo 10) == Just 1
 
-  log "Test minimumBy"
-  assert $
-    minimumBy (compare `on` abs)
-      (map (negate <<< toNumber) (arrayFrom1UpTo 10))
-      == Just (-1.0)
+  log "Test minimumBy" *> do
+    let
+      negativeValues = map (negate <<< toNumber) (arrayFrom1UpTo 10)
+      actualMinimum = minimumBy (compare `on` abs) negativeValues
+    assert $ actualMinimum == Just (-1.0)
 
   log "Test null"
   assert $ null Nothing == true
@@ -213,19 +213,17 @@ main = do
   assert $ "(a(b(cd)))" == foldMap (foldr1 (\x y -> "(" <> x <> y <> ")")) (maybeMkNEArray [ "a", "b", "c", "d" ])
   assert $ "(((ab)c)d)" == foldMap (foldl1 (\x y -> "(" <> x <> y <> ")")) (maybeMkNEArray [ "a", "b", "c", "d" ])
 
-  log "Test maximumBy"
-  assert $
-    ( Foldable1.maximumBy (compare `on` abs) <$>
-        (maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10))
-    )
-      == Just (-10.0)
+  log "Test maximumBy" *> do
+    let
+      negativeValues = maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10)
+      actualMaximum = Foldable1.maximumBy (compare `on` abs) <$> negativeValues
+    assert $ actualMaximum == Just (-10.0)
 
-  log "Test minimumBy"
-  assert $
-    ( Foldable1.minimumBy (compare `on` abs) <$>
-        (maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10))
-    )
-      == Just (-1.0)
+  log "Test minimumBy" *> do
+    let
+      negativeValues = maybeMkNEArray (negate <<< toNumber <$> arrayFrom1UpTo 10)
+      actualMinimum = Foldable1.minimumBy (compare `on` abs) <$> negativeValues
+    assert $ actualMinimum == Just (-1.0)
 
   log "All done!"
 
@@ -347,8 +345,8 @@ testTraversableWithIndexFWith f n = do
   assert $ traverseWithIndex (const Just) dat == traverse Just dat
   assert $ traverseWithIndex (\i -> pure <<< Tuple i) dat == [ mapWithIndex Tuple dat ]
   assert $
-    traverseWithIndex (const pure :: Int -> Int -> Array Int) dat ==
-      traverse pure dat
+    traverseWithIndex (const pure :: Int -> Int -> Array Int) dat
+      == traverse pure dat
 
 testTraversableWithIndexArrayWith
   :: Int -> Effect Unit
