@@ -6,6 +6,7 @@ module Data.Traversable.Accum.Internal
   ) where
 
 import Prelude
+
 import Data.Traversable.Accum (Accum)
 
 newtype StateL s a = StateL (s -> Accum s a)
@@ -24,7 +25,6 @@ instance applyStateL :: Apply (StateL s) where
 
 instance applicativeStateL :: Applicative (StateL s) where
   pure a = StateL \s -> { accum: s, value: a }
-
 
 newtype StateR s a = StateR (s -> Accum s a)
 

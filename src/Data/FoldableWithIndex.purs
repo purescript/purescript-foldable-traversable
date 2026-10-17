@@ -1,5 +1,8 @@
 module Data.FoldableWithIndex
-  ( class FoldableWithIndex, foldrWithIndex, foldlWithIndex, foldMapWithIndex
+  ( class FoldableWithIndex
+  , foldrWithIndex
+  , foldlWithIndex
+  , foldMapWithIndex
   , foldrWithIndexDefault
   , foldlWithIndexDefault
   , foldMapWithIndexDefaultR
@@ -162,11 +165,11 @@ instance foldableWithIndexMultiplicative :: FoldableWithIndex Unit Multiplicativ
   foldMapWithIndex f = foldMap $ f unit
 
 instance foldableWithIndexEither :: FoldableWithIndex Unit (Either a) where
-  foldrWithIndex _ z (Left _)  = z
+  foldrWithIndex _ z (Left _) = z
   foldrWithIndex f z (Right x) = f unit x z
-  foldlWithIndex _ z (Left _)  = z
+  foldlWithIndex _ z (Left _) = z
   foldlWithIndex f z (Right x) = f unit z x
-  foldMapWithIndex _ (Left _)  = mempty
+  foldMapWithIndex _ (Left _) = mempty
   foldMapWithIndex f (Right x) = f unit x
 
 instance foldableWithIndexTuple :: FoldableWithIndex Unit (Tuple a) where
@@ -203,7 +206,6 @@ instance foldableWithIndexApp :: FoldableWithIndex a f => FoldableWithIndex a (A
   foldrWithIndex f z (App x) = foldrWithIndex f z x
   foldlWithIndex f z (App x) = foldlWithIndex f z x
   foldMapWithIndex f (App x) = foldMapWithIndex f x
-
 
 -- | Similar to 'foldlWithIndex', but the result is encapsulated in a monad.
 -- |
@@ -287,7 +289,8 @@ surroundMapWithIndex
   -> f a
   -> m
 surroundMapWithIndex d t f = unwrap (foldMapWithIndex joined f) d
-  where joined i a = Endo \m -> d <> t i a <> m
+  where
+  joined i a = Endo \m -> d <> t i a <> m
 
 -- | `allWithIndex f` is the same as `and <<< mapWithIndex f`; map a function over the
 -- | structure, and then get the conjunction of the results.
@@ -321,13 +324,13 @@ findWithIndex
   -> Maybe { index :: i, value :: a }
 findWithIndex p = foldlWithIndex go Nothing
   where
-    go
-      :: i
-      -> Maybe { index :: i, value :: a }
-      -> a
-      -> Maybe { index :: i, value :: a }
-    go i Nothing x | p i x = Just { index: i, value: x }
-    go _ r _ = r
+  go
+    :: i
+    -> Maybe { index :: i, value :: a }
+    -> a
+    -> Maybe { index :: i, value :: a }
+  go i Nothing x | p i x = Just { index: i, value: x }
+  go _ r _ = r
 
 -- | Try to find an element in a data structure which satisfies a predicate mapping
 -- | with access to the index.
@@ -339,26 +342,32 @@ findMapWithIndex
   -> Maybe b
 findMapWithIndex f = foldlWithIndex go Nothing
   where
-    go
-      :: i
-      -> Maybe b
-      -> a
-      -> Maybe b
-    go i Nothing x = f i x
-    go _ r _ = r
+  go
+    :: i
+    -> Maybe b
+    -> a
+    -> Maybe b
+  go i Nothing x = f i x
+  go _ r _ = r
 
 -- | A default implementation of `foldr` using `foldrWithIndex`
 foldrDefault
   :: forall i f a b
    . FoldableWithIndex i f
-  => (a -> b -> b) -> b -> f a -> b
+  => (a -> b -> b)
+  -> b
+  -> f a
+  -> b
 foldrDefault f = foldrWithIndex (const f)
 
 -- | A default implementation of `foldl` using `foldlWithIndex`
 foldlDefault
   :: forall i f a b
    . FoldableWithIndex i f
-  => (b -> a -> b) -> b -> f a -> b
+  => (b -> a -> b)
+  -> b
+  -> f a
+  -> b
 foldlDefault f = foldlWithIndex (const f)
 
 -- | A default implementation of `foldMap` using `foldMapWithIndex`
@@ -366,5 +375,7 @@ foldMapDefault
   :: forall i f a m
    . FoldableWithIndex i f
   => Monoid m
-  => (a -> m) -> f a -> m
+  => (a -> m)
+  -> f a
+  -> m
 foldMapDefault f = foldMapWithIndex (const f)

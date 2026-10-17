@@ -1,5 +1,7 @@
 module Data.Bitraversable
-  ( class Bitraversable, bitraverse, bisequence
+  ( class Bitraversable
+  , bitraverse
+  , bisequence
   , bitraverseDefault
   , bisequenceDefault
   , ltraverse
@@ -13,7 +15,6 @@ module Data.Bitraversable
 import Prelude
 
 import Data.Bifoldable (class Bifoldable, biall, biany, bifold, bifoldMap, bifoldMapDefaultL, bifoldMapDefaultR, bifoldl, bifoldlDefault, bifoldr, bifoldrDefault, bifor_, bisequence_, bitraverse_)
-import Data.Traversable (class Traversable, traverse, sequence)
 import Data.Bifunctor (class Bifunctor, bimap)
 import Data.Const (Const(..))
 import Data.Either (Either(..))
@@ -21,6 +22,7 @@ import Data.Functor.Clown (Clown(..))
 import Data.Functor.Flip (Flip(..))
 import Data.Functor.Joker (Joker(..))
 import Data.Functor.Product2 (Product2(..))
+import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(..))
 
 -- | `Bitraversable` represents data structures with two type arguments which can be
