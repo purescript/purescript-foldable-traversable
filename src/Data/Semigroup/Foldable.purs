@@ -161,7 +161,10 @@ intercalateMap
   :: forall f m a
    . Foldable1 f
   => Semigroup m
-  => m -> (a -> m) -> f a -> m
+  => m
+  -> (a -> m)
+  -> f a
+  -> m
 intercalateMap j f foldable =
   joinee (foldMap1 (JoinWith <<< const <<< f) foldable) j
 

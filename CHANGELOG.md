@@ -2,7 +2,7 @@
 
 Notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased](https://github.com/purescript/purescript-foldable-traversable/compare/v6.0.1...HEAD)
 
 Breaking changes:
 
@@ -11,11 +11,24 @@ New features:
 Bugfixes:
 
 Other improvements:
+
+## [v6.0.1](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v6.0.1) - 2026-10-17
+
+Breaking changes:
+
+New features:
+
+Bugfixes:
+
+Other improvements:
+
 - Make `foldrDefault` and `foldlDefault` stack safe (#148)
+- Migrate from Bower/Pulp to Spago, update CI, and adopt purs-tidy, Oxfmt, and Oxlint. (#154 by @thomashoneyman)
 
 ## [v6.0.0](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v6.0.0) - 2022-04-27
 
 Breaking changes:
+
 - Migrate FFI to ES modules (#146 by @kl0tl and @JordanMartinez)
 - Drop deprecated `foldMap1Default` (#147 by @JordanMartinez)
 
@@ -24,28 +37,33 @@ New features:
 Bugfixes:
 
 Other improvements:
+
 - Narrow down unnecessarily imprecise type of `mapWithIndexArray` (#145)
 
 ## [v5.0.1](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v5.0.1) - 2021-04-20
 
 Other improvements:
+
 - Fix warnings revealed by v0.14.1 PureScript release (#135 by @JordanMartinez)
 
 ## [v5.0.0](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v5.0.0) - 2021-02-26
 
 Breaking changes:
+
 - Added support for PureScript 0.14 and dropped support for all previous versions (#120)
 - Removed `fold1Default` and deprecated `foldMap1Default` (#128)
 
 New features:
+
 - Added `findMapWithIndex` (#119)
 - Added `foldr1`, `foldl1`, `foldr1Default`, `foldl1Default`, `foldMap1DefaultR`, `foldMap1DefaultL` (#121, #128)
-- Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123) 
+- Added `maximumBy` and `minimumBy` to `Data.Semigroup.Foldable` (#123)
 - Added `lookup` to `Data.Foldable`; this function previously lived in `Data.Tuple` in the `purescript-tuples` package (#131)
 
 Bugfixes:
 
 Other improvements:
+
 - Migrated CI to GitHub Actions and updated installation instructions to use Spago (#127)
 - Added a CHANGELOG.md file and pull request template (#129, #130)
 - Wrapped `traverseArrayImpl` IIFE in parentheses (#52)
@@ -182,6 +200,7 @@ Updated docs
 ## [v0.3.0](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.3.0) - 2015-02-21
 
 **This release requires PureScript v0.6.8 or later**
+
 - Updated dependencies
 - Added `Foldable` and `Traversable` instances for the `Additive`, `Dual`, `First`, `Last`, and `Multiplicative` monoids
 
@@ -195,8 +214,6 @@ Updated docs
 
 ## [v0.1.6](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.1.6) - 2014-12-11
 
-
-
 ## [v0.1.5](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.1.5) - 2014-12-02
 
 - Added `mapAccumL` and `mapAccumR`.
@@ -206,8 +223,6 @@ Updated docs
 - Added `intercalate` to `Data.Foldable` (@garyb)
 
 ## [v0.1.3](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.1.3) - 2014-07-14
-
-
 
 ## [v0.1.2](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.1.2) - 2014-06-14
 
@@ -219,6 +234,3 @@ Updated docs
 - Added `lookup` (paf31)
 
 ## [v0.1.0](https://github.com/purescript/purescript-foldable-traversable/releases/tag/v0.1.0) - 2014-04-25
-
-
-

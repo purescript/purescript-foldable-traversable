@@ -1,6 +1,12 @@
 module Data.Foldable
-  ( class Foldable, foldr, foldl, foldMap
-  , foldrDefault, foldlDefault, foldMapDefaultL, foldMapDefaultR
+  ( class Foldable
+  , foldr
+  , foldl
+  , foldMap
+  , foldrDefault
+  , foldlDefault
+  , foldMapDefaultL
+  , foldMapDefaultR
   , fold
   , foldM
   , traverse_
@@ -75,17 +81,16 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 
-
 -- | This internal type is used just to implement a stack-safe and performant foldrDefault and foldlDefault.
 -- | It has O(1) append (because foldrDefault and foldlDefault are implemented in terms of foldMap), and 
 -- | an amortized O(1) uncons/unsnoc.  It behaves similarly to a CatList
 data FreeMonoidTree a = Empty | Node a | Append (FreeMonoidTree a) (FreeMonoidTree a)
 
-instance Foldable FreeMonoidTree where 
+instance Foldable FreeMonoidTree where
   -- these folding implementations could be written more plainly, but are optimized to minimize conditionals.
   foldl fn = (\a b -> go a b Empty)
     where
-    go acc lhs rhs = 
+    go acc lhs rhs =
       case lhs of
         Node a -> go (fn acc a) rhs Empty
         Append xs ys ->
@@ -101,27 +106,29 @@ instance Foldable FreeMonoidTree where
             _ -> go acc rhs Empty
 
   foldr fn = (\a b -> go a Empty b)
-    where 
-    go acc lhs rhs = 
-      case rhs of 
+    where
+    go acc lhs rhs =
+      case rhs of
         Node a -> go (fn a acc) Empty lhs
-        Append xs ys -> 
-          case xs of 
+        Append xs ys ->
+          case xs of
             Empty -> go acc lhs ys
-            _ -> 
-              case lhs of 
+            _ ->
+              case lhs of
                 Empty -> go acc xs ys
                 _ -> go acc (Append lhs xs) ys
-        Empty -> 
-          case lhs of 
+        Empty ->
+          case lhs of
             Empty -> acc
             _ -> go acc Empty lhs
 
-
   foldMap = foldMapDefaultR
 
-instance Semigroup (FreeMonoidTree a) where append = Append
-instance Monoid (FreeMonoidTree a) where mempty = Empty
+instance Semigroup (FreeMonoidTree a) where
+  append = Append
+
+instance Monoid (FreeMonoidTree a) where
+  mempty = Empty
 
 -- | A default implementation of `foldr` using `foldMap`.
 -- |
@@ -184,11 +191,11 @@ foreign import foldrArray :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foreign import foldlArray :: forall a b. (b -> a -> b) -> b -> Array a -> b
 
 instance foldableMaybe :: Foldable Maybe where
-  foldr _ z Nothing  = z
+  foldr _ z Nothing = z
   foldr f z (Just x) = x `f` z
-  foldl _ z Nothing  = z
+  foldl _ z Nothing = z
   foldl f z (Just x) = z `f` x
-  foldMap _ Nothing  = mempty
+  foldMap _ Nothing = mempty
   foldMap f (Just x) = f x
 
 instance foldableFirst :: Foldable First where
@@ -227,11 +234,11 @@ instance foldableMultiplicative :: Foldable Multiplicative where
   foldMap f (Multiplicative x) = f x
 
 instance foldableEither :: Foldable (Either a) where
-  foldr _ z (Left _)  = z
+  foldr _ z (Left _) = z
   foldr f z (Right x) = f x z
-  foldl _ z (Left _)  = z
+  foldl _ z (Left _) = z
   foldl f z (Right x) = f z x
-  foldMap _ (Left _)  = mempty
+  foldMap _ (Left _) = mempty
   foldMap f (Right x) = f x
 
 instance foldableTuple :: Foldable (Tuple a) where
@@ -357,7 +364,7 @@ intercalate :: forall f m. Foldable f => Monoid m => m -> f m -> m
 intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
   where
   go { init: true } x = { init: false, acc: x }
-  go { acc: acc }   x = { init: false, acc: acc <> sep <> x }
+  go { acc: acc } x = { init: false, acc: acc <> sep <> x }
 
 -- | `foldMap` but with each element surrounded by some fixed value.
 -- |
@@ -378,7 +385,8 @@ intercalate sep xs = (foldl go { init: true, acc: mempty } xs).acc
 -- | ```
 surroundMap :: forall f a m. Foldable f => Semigroup m => m -> (a -> m) -> f a -> m
 surroundMap d t f = unwrap (foldMap joined f) d
-  where joined a = Endo \m -> d <> t a <> m
+  where
+  joined a = Endo \m -> d <> t a <> m
 
 -- | `fold` but with each element surrounded by some fixed value.
 -- |
@@ -415,7 +423,7 @@ or = any identity
 -- | `all f` is the same as `and <<< map f`; map a function over the structure,
 -- | and then get the conjunction of the results.
 all :: forall a b f. Foldable f => HeytingAlgebra b => (a -> b) -> f a -> b
-all  = alaF Conj foldMap
+all = alaF Conj foldMap
 
 -- | `any f` is the same as `or <<< map f`; map a function over the structure,
 -- | and then get the disjunction of the results.
@@ -446,9 +454,10 @@ indexl idx = _.elem <<< foldl go { elem: Nothing, pos: 0 }
     case cursor.elem of
       Just _ -> cursor
       _ ->
-        if cursor.pos == idx
-          then { elem: Just a, pos: cursor.pos }
-          else { pos: cursor.pos + 1, elem: cursor.elem }
+        if cursor.pos == idx then
+          { elem: Just a, pos: cursor.pos }
+        else
+          { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to get nth element from the right in a data structure
 indexr :: forall a f. Foldable f => Int -> f a -> Maybe a
@@ -458,9 +467,10 @@ indexr idx = _.elem <<< foldr go { elem: Nothing, pos: 0 }
     case cursor.elem of
       Just _ -> cursor
       _ ->
-        if cursor.pos == idx
-          then { elem: Just a, pos: cursor.pos }
-          else { pos: cursor.pos + 1, elem: cursor.elem }
+        if cursor.pos == idx then
+          { elem: Just a, pos: cursor.pos }
+        else
+          { pos: cursor.pos + 1, elem: cursor.elem }
 
 -- | Try to find an element in a data structure which satisfies a predicate.
 find :: forall a f. Foldable f => (a -> Boolean) -> f a -> Maybe a
@@ -486,7 +496,7 @@ maximum = maximumBy compare
 maximumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
 maximumBy cmp = foldl max' Nothing
   where
-  max' Nothing x  = Just x
+  max' Nothing x = Just x
   max' (Just x) y = Just (if cmp x y == GT then x else y)
 
 -- | Find the smallest element of a structure, according to its `Ord` instance.
@@ -499,7 +509,7 @@ minimum = minimumBy compare
 minimumBy :: forall a f. Foldable f => (a -> a -> Ordering) -> f a -> Maybe a
 minimumBy cmp = foldl min' Nothing
   where
-  min' Nothing x  = Just x
+  min' Nothing x = Just x
   min' (Just x) y = Just (if cmp x y == LT then x else y)
 
 -- | Test whether the structure is empty.
